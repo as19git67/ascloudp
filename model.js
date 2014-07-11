@@ -2,9 +2,9 @@ var config = require('./config');
 var Promise = require('bluebird/js/main/promise')();
 
 var databaseClient = config.get('databaseClient');
-var databaseConnection = config.get('databaseConnection');
+var connectionString = config.get('connectionString');
 
-var knex = require('knex')({client: databaseClient, connection: databaseConnection });
+var knex = require('knex')({client: databaseClient, connection: connectionString });
 var bookshelf = require('bookshelf')(knex);
 
 /*function sequence(tasks) {
