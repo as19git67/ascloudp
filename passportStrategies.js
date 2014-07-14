@@ -1,9 +1,11 @@
-var config = require('config');
+var config = require('./config');
 var LocalStrategy = require('passport-local').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
 var FacebookStrategy = require('passport-facebook').Strategy;
-var GoogleStrategy = require('passport-google').Strategy;
+var GoogleStrategy = require('passport-google-oauth').OAuth2Strategy;
 
+// todo remove local users array
+var users = {};
 
 exports.init = function (passport, bookshelf) {
 
@@ -95,35 +97,53 @@ exports.init = function (passport, bookshelf) {
         });
     }));
 
-// Use the GoogleStrategy within Passport.
-//   Strategies in passport require a `validate` function, which accept
-//   credentials (in this case, an OpenID identifier and profile), and invoke a
-//   callback with a user object.
-    passport.use(new GoogleStrategy({
-        returnURL: 'https://localhost:3002/auth/google/return',
-        realm: 'https://localhost:3002/'
-    }, function (identifier, profile, done) {
-        // asynchronous verification, for effect...
-        process.nextTick(function () {
+  // Use the GoogleStrategy within Passport.
+  passport.use(new GoogleStrategy({
+        clientID: config.get('authGoogleClientId'),
+        clientSecret: config.get('authGoogleClientSecret'),
+        callbackURL: config.get('authGoogleCallbackURL')
+      },
+      function(accessToken, refreshToken, profile, done) {
+        var displayName = profile.displayName;
+        var emails = profile.emails;
+        var id = profile.id;
+        var familyName = '';
+        var givenName = '';
+        if (profile.name) {
+          familyName = profile.name.familyName;
+          givenName = profile.name.givenName;
+        }
+        var username;
+        if (emails && emails.length > 0) {
+          username = profile.emails[0].value;
+        }
 
-            // To keep the example simple, the user's Google profile is returned to
-            // represent the logged-in user.  In a typical application, you would want
-            // to associate the Google account with a user record in your database,
-            // and return that user instead.
-            // todo: use real user database to store and get user information
-            findById(profile.identifier, function (err, user) {
-                if (err) {
-                    console.log('GoogleStrategy: added user: ' + profile.username + ' with id ' + identifier);
-                    users[identifier] =
-                    { id: identifier, username: profile.emails[0].value, password: '', email: profile.emails[0].value, profile: profile };
-                    console.log(users[identifier]);
-                    return done(null, users[identifier]);
-                } else {
-                    return done(null, user);
-                }
-            });
+        // todo: use real user database to store and get user information
+        findById(id, function (err, user) {
+          if (err) {
+            // user not found -> add it
+            users[id] = {
+              id: id,
+              username: profile.emails[0].value,
+              password: '',
+              email: profile.emails[0].value,
+              profile: profile
+            };
+            console.log('GoogleStrategy: added user: ' + username + ' with id ' + id);
+            console.log(users[id]);
+            return done(null, users[id]);
+          } else {
+            return done(null, user);
+          }
         });
-    }));
+
+/*
+        User.findOrCreate({ googleId: profile.id }, function (err, user) {
+          return done(err, user);
+        });
+*/
+      }
+  ));
 
     function findById(id, fn) {
         var idx;

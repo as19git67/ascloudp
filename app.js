@@ -33,7 +33,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 // required for passport
 app.use(expressSession({
-    secret: conf.get('sessionSecret'),
+    secret: config.get('sessionSecret'),
     saveUninitialized: true,
     resave: true
 }));
@@ -54,6 +54,28 @@ app.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedi
     }
 });
 
+// GET /auth/google
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  The first step in Google authentication will involve redirecting
+//   the user to google.com.  After authenticating, Google will redirect the
+//   user back to this application at /auth/google/return
+app.get('/auth/google', passport.authenticate('google', {
+  failureRedirect: '/login',
+  scope: 'https://www.google.com/m8/feeds https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'}));
+
+// GET /auth/google/return
+//   Use passport.authenticate() as route middleware to authenticate the
+//   request.  If authentication fails, the user will be redirected back to the
+//   login page.  Otherwise, the primary route function function will be called,
+//   which, in this example, will redirect the user to the home page.
+app.get('/auth/google/return', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
+  if (req.body.nexturl) {
+    res.redirect(req.body.nexturl);
+  } else {
+    res.redirect('/');
+  }
+});
+
 // GET /auth/facebook
 //   Use passport.authenticate() as route middleware to authenticate the
 //   request.  The first step in Facebook authentication will involve
@@ -70,26 +92,6 @@ app.get('/auth/facebook', passport.authenticate('facebook'), function (req, res)
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
 app.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), function (req, res) {
-    if (req.body.nexturl) {
-        res.redirect(req.body.nexturl);
-    } else {
-        res.redirect('/');
-    }
-});
-
-// GET /auth/google
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  The first step in Google authentication will involve redirecting
-//   the user to google.com.  After authenticating, Google will redirect the
-//   user back to this application at /auth/google/return
-app.get('/auth/google', passport.authenticate('google', { failureRedirect: '/login' }));
-
-// GET /auth/google/return
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  If authentication fails, the user will be redirected back to the
-//   login page.  Otherwise, the primary route function function will be called,
-//   which, in this example, will redirect the user to the home page.
-app.get('/auth/google/return', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
     if (req.body.nexturl) {
         res.redirect(req.body.nexturl);
     } else {
