@@ -4,6 +4,7 @@ nconf.argv().env().file({ file: 'config.json' });
 
 nconf.defaults({
     "appName": "ASCloud",
+    "sessionSecret": "top secret",
     "tokenLifetime": '120',
     "httpPort": 0,
     "httpsPort": 0,
