@@ -1,0 +1,51 @@
+extends layout
+
+block content
+    h2= title
+    div.row
+        div.col-md-8
+            form(class="form-horizontal", role="form", action="/login", method="post")
+                h4 Verwende einen #{appName}-Benutzer um einzuloggen.
+                hr
+                div.form-group
+                    label(for="email",class="col-xs-12 col-md-2 control-label") Email:
+                    div(class="col-xs-12 col-md-10")
+                        input(class="form-control", data-val="true",
+                                data-val-email="Im Email Eingabefeld steht eine ungültige Email Adresse.",
+                                data-val-required="Das Email Feld muss ausgefüllt werden.",
+                                placeholder='Email Adresse',
+                                id="email", name="email", type="text", value="")
+
+                        span(class="field-validation-valid text-danger", data-valmsg-for="email", data-valmsg-replace="true")
+                div.form-group
+                    label(for="password",class="col-xs-12 col-md-2 control-label") Passwort:
+                    div(class="col-xs-12 col-md-10")
+                        input(class="form-control", data-val="true",
+                        data-val-email="Das Passwort ist ungültig.",
+                        data-val-required="Das Passwort muss eingegeben werden.",
+                        placeholder='Passwort',
+                        id="email", name="email", type="password", value="")
+                        span(class="field-validation-valid text-danger", data-valmsg-for="password", data-valmsg-replace="true")
+                div.form-group
+                    div(class="col-md-offset-2 col-md-10")
+                        div.checkbox
+                            input(data-val="true", data-val-required="The Remember me? field is required.", id="RememberMe",
+                                    name="RememberMe", type="checkbox", value="true")
+                            input(name="RememberMe",type="hidden",value="false")
+                            label(for="RememberMe") Remember me?
+                div.form-group
+                    div(class="col-md-offset-2 col-md-10")
+                        input(type="submit", value="Log in", class="btn btn-default")
+                p
+                    a(href="/registerAccount") Register as a new user
+
+        div.col-md-4
+            h4 Verwende einen anderen Dienst um einzuloggen.
+            hr
+            form(action="/loginExternal", method="post", novalidate="novalidate")
+                div(id="socialLoginList")
+                    p
+                        button(type="submit", class="btn btn-default", id="Windows Azure", name="provider", value="Windows Azure", title="Log in mit Windows Azure Benutzerkennung") Windows Azure
+                        button(type="submit", class="btn btn-default", id="Twitter", name="provider", value="Twitter", title="Log in mit Twitter Benutzerkennung") Twitter
+                        button(type="submit", class="btn btn-default", id="Google", name="provider", value="Google", title="Log in mit Google Benutzerkennung") Google
+                        button(type="submit", class="btn btn-default", id="Facebook", name="provider", value="Facebook",title="Log in mit Facebook Benutzerkennung") Facebook

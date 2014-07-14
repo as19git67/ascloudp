@@ -2,13 +2,12 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 
-
-/* GET home page. */
+/* GET login page. */
 router.get('/', function (req, res) {
     var appName = config.get('appName');
-    res.render('index', {
+    res.render('login', {
         appName: appName,
-        title: 'Start' });
+        title: 'Login' });
 });
 
 module.exports = router;
