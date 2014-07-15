@@ -16,14 +16,14 @@ exports.init = function (passport, bookshelf) {
 //   the user by ID when deserializing.
     passport.serializeUser(function (user, done) {
         console.log('serialize user with id ' + user.id);
-        console.log(user);
+//        console.log(user);
         done(null, user.id);
     });
 
     passport.deserializeUser(function (id, done) {
         findById(id, function (err, user) {
             console.log('deserialize user with id ' + id);
-            console.log(user);
+//            console.log(user);
             done(err, user);
         });
     });

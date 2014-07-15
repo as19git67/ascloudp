@@ -25,6 +25,9 @@ html
                                     a(href='/') Home
                             ul(class="nav navbar-nav navbar-right")
                                 li
-                                    a(href='/login') Login
+                                    if user != null
+                                        a(href='/logout') Logoff #{user.email}
+                                    else
+                                        a(href='/login') Login
         block content
         link(src="/lib/bootstrap-3.2.0/js/bootstrap.min.js", type="text/javascript")

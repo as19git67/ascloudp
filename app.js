@@ -19,6 +19,7 @@ var passportStrategies = require('./passportStrategies');
 
 var routes = require('./routes/index');
 var login = require('./routes/login');
+var loginRegister = require('./routes/loginRegister');
 var users = require('./routes/users');
 
 var app = express();
@@ -44,14 +45,17 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 
 app.use('/login', login);
+app.use('/loginRegister', loginRegister);
 
 app.get('/auth/twitter', passport.authenticate('twitter'));
 app.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), function (req, res) {
-    if (req.body.nexturl) {
-        res.redirect(req.body.nexturl);
-    } else {
-        res.redirect('/');
-    }
+    res.redirect('/loginRegister');
+//
+//    if (req.body.nexturl) {
+//        res.redirect(req.body.nexturl);
+//    } else {
+//        res.redirect('/');
+//    }
 });
 
 // GET /auth/google
@@ -69,11 +73,12 @@ app.get('/auth/google', passport.authenticate('google', {
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
 app.get('/auth/google/return', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
-  if (req.body.nexturl) {
-    res.redirect(req.body.nexturl);
-  } else {
-    res.redirect('/');
-  }
+    res.redirect('/loginRegister');
+//  if (req.body.nexturl) {
+//    res.redirect(req.body.nexturl);
+//  } else {
+//    res.redirect('/');
+//  }
 });
 
 // GET /auth/facebook
