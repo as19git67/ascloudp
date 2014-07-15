@@ -8,7 +8,9 @@ router.get('/', function (req, res) {
     var appName = config.get('appName');
     res.render('index', {
         appName: appName,
-        title: 'Start' });
+        title: 'Start',
+        user: req.user
+    });
 });
 
 module.exports = router;

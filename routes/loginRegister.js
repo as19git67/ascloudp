@@ -11,7 +11,7 @@ router.get('/', function (req, res) {
         res.render('loginRegister', {
             appName: appName,
             title: 'Registrierung.',
-            email: req.user.email,
+            user: req.user,
             provider: provider
         });
     } else {

@@ -9,7 +9,7 @@ block content
         div.form-group
             label(class="col-md-2 control-label", for="Email") Email Adresse:
             div.col-md-10
-                input(class="form-control", data-val="true", data-val-email="Die angegebene Email Adresse ist ungültig.", data-val-required="Die Email Adresse muss eingegeben werden.", id="email", name="email", type="text", value="#{email}")
+                input(class="form-control", data-val="true", data-val-email="Die angegebene Email Adresse ist ungültig.", data-val-required="Die Email Adresse muss eingegeben werden.", id="email", name="email", type="text", value="#{user.email}")
                 span(class="field-validation-valid text-danger", data-valmsg-for="Email", data-valmsg-replace="true")
         div.form-group
             div(class="col-md-offset-2 col-md-10")
