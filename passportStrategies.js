@@ -174,7 +174,7 @@ exports.init = function (passport, bookshelf) {
           findById(model.get('UserId'), fn);
         })
         .catch(function (error) {
-          fn(new Error('User ' + userId + ' does not exist. ' + error));
+          fn(new Error(providerName + ' User mit id ' + providerKey + ' does not exist. ' + error));
         });
 
   }

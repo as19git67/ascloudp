@@ -65,7 +65,7 @@ app.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedi
 //   user back to this application at /auth/google/return
 app.get('/auth/google', passport.authenticate('google', {
   failureRedirect: '/login',
-  scope: 'https://www.google.com/m8/feeds https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'}));
+  scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'}));
 
 // GET /auth/google/return
 //   Use passport.authenticate() as route middleware to authenticate the
