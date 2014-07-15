@@ -80,17 +80,22 @@ exports.createSchema = function () {
 };
 
 var User = bookshelf.Model.extend({
-    tableName: 'users',
+    tableName: 'Users',
     initialize: function () {
     }
 });
 
+var UserLogins = bookshelf.Model.extend({
+  tableName: 'UserLogins'
+});
+
 var Role = bookshelf.Model.extend({
-    tableName: 'roles'
+    tableName: 'Roles'
 });
 
 module.exports.models = {
     User: User,
+  UserLogins: UserLogins,
     Role: Role
 };
 
