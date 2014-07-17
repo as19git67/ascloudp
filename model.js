@@ -7,6 +7,40 @@ var connectionString = config.get('connectionString');
 var knex = require('knex')({client: databaseClient, connection: connectionString });
 var bookshelf = require('bookshelf')(knex);
 
+function authenticate() {
+    var user = getUsername().then(function (username) {
+        return getUser(username);
+    });
+
+    return user.then(function (user) {
+        return getPassword();
+    }).then(function (password) {
+        // Guaranteed that user promise is fulfilled, so .value() can be called here
+        if (user.value().passwordHash !== hash(password)) {
+            throw new Error("Can't authenticate");
+        }
+    });
+}
+
+exports.createSchemaIfNotExists = function () {
+    return new Promise(function (resolve, reject) {
+        knex.schema.hasTable('Roles').then(function (exists) {
+            if (exists) {
+                console.log('DB schema exists.');
+                resolve();
+            } else {
+                console.log('Must create DB schema.');
+                exports.createSchema().then(
+                    function () {
+                        console.log('DB schema created.');
+                        resolve();
+                    },
+                    reject);
+            }
+        });
+    });
+};
+
 exports.createSchema = function () {
     return Promise.reduce([
             function () {
@@ -56,10 +90,11 @@ exports.createSchema = function () {
             },
             function () {
                 return knex.schema.createTable('UserLogins', function (t) {
+                    t.increments('id').primary();
                     t.string('LoginProvider', 128).notNullable();
                     t.string('ProviderKey', 128).notNullable();
                     t.integer('UserId').notNullable().references('id').inTable('Users').index();
-                    t.primary(['LoginProvider','ProviderKey']);
+                    t.unique(['LoginProvider', 'ProviderKey']);
                 });
             },
             function () {
@@ -81,12 +116,16 @@ exports.createSchema = function () {
 
 var User = bookshelf.Model.extend({
     tableName: 'Users',
-    initialize: function () {
+    UserLogin: function () {
+        return this.hasOne(UserLogin);
     }
 });
 
-var UserLogins = bookshelf.Model.extend({
-  tableName: 'UserLogins'
+var UserLogin = bookshelf.Model.extend({
+    tableName: 'UserLogins',
+    User: function () {
+        return this.belongsTo(User);
+    }
 });
 
 var Role = bookshelf.Model.extend({
@@ -95,7 +134,7 @@ var Role = bookshelf.Model.extend({
 
 module.exports.models = {
     User: User,
-  UserLogins: UserLogins,
+    UserLogin: UserLogin,
     Role: Role
 };
 
