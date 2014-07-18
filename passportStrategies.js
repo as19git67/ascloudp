@@ -116,6 +116,7 @@ module.exports.init = function (passport, bookshelf) {
                     return done(null, false, { message: 'Unknown user ' + username });
                 }
                 if (user.password != password) {
+                  // todo compare hashed password
                     return done(null, false, { message: 'Invalid password' });
                 }
                 return done(null, user);
