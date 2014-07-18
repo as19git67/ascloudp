@@ -89,11 +89,11 @@ router.post('/', function (req, res, next) {
                             new UserLogin({
                                 LoginProvider: provider,
                                 ProviderKey: providerKey,
-                                UserId: userId})
+                                User_id: userId})
                                 .save()
                                 .then(function (userLoginModel) {
                                     console.log("New UserLogin saved in DB. UserID: " +
-                                        userLoginModel.get('UserId') + ", Provider: " + userLoginModel.get('LoginProvider'));
+                                        userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
                                     // redirect to next page
                                     if (req.body.nexturl) {
                                         res.redirect(req.body.nexturl);

@@ -9,16 +9,15 @@ var http = require('http');
 var https = require('https');
 var fs = require('fs');
 var config = require('./config');
-var Promise = require('bluebird/js/main/promise')();
 var _ = require('underscore');
-var moment = require('moment');
-var acl = require('acl');
 
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
 
 var routes = require('./routes/index');
 var admin = require('./routes/admin');
+var userManagement = require('./routes/userManagement');
+var userManagementUserEdit = require('./routes/userManagementUserEdit');
 var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
@@ -46,6 +45,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', routes);
 
 app.use('/admin', admin);
+app.use('/admin/userManagement', userManagement);
+app.use('/admin/userManagementUserEdit', userManagementUserEdit);
 app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);

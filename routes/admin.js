@@ -15,28 +15,35 @@ router.get('/', function (req, res) {
 router.post('/', function (req, res) {
     var appName = config.get('appName');
 
-    var model = require('../model');
-    model.createSchema()
-        .then(function () {
-            console.log("Database schema created");
-            var statusText = "Datenbanktabellen neu erzeugt";
-            res.render('admin', {
-                appName: appName,
-                title: 'Administration',
-                user: req.user,
-                status: statusText
+    if (req.body.dbinit) {
+        var model = require('../model');
+        model.createSchema()
+            .then(function () {
+                console.log("Database schema created");
+                var statusText = "Datenbanktabellen neu erzeugt";
+                res.render('admin', {
+                    appName: appName,
+                    title: 'Administration',
+                    user: req.user,
+                    status: statusText
+                });
+            })
+            .catch(function (err) {
+                console.log("ERROR when creating the database schema: " + err);
+                var errorText = "Fehler beim erzeugen der Datenbanktabellen. " + err;
+                res.render('admin', {
+                    appName: appName,
+                    title: 'Administration',
+                    user: req.user,
+                    error: errorText
+                });
             });
-        })
-        .catch(function (err) {
-            console.log("ERROR when creating the database schema: " + err);
-            var errorText = "Fehler beim erzeugen der Datenbanktabellen. " + err;
-            res.render('admin', {
-                appName: appName,
-                title: 'Administration',
-                user: req.user,
-                error: errorText
-            });
-        });
+    }
+    else if (req.body.usermanagement) {
+        res.redirect('/admin/usermanagement');
+    } else {
+        res.redirect('/admin');
+    }
 });
 
 module.exports = router;

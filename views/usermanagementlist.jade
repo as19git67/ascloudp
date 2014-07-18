@@ -1,0 +1,24 @@
+extends layout
+block content
+    h1= title
+    hr
+    form(action="/admin/userManagement",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        div(class="col-xs-12 col-sm-12 table-responsive")
+            table.table
+                thead
+                    tr
+                        th Username
+                        th Email
+                        th Login Provider
+                        th Aktionen
+                tbody
+                    each user in userlist
+                        tr
+                            td #{user.UserName}
+                            td #{user.Email}
+                            td #{user.LoginProvider}
+                            td
+                                a(href='/admin/userManagementUserEdit/#{user.User_id}') Details
+
+
+

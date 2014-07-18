@@ -73,7 +73,7 @@ module.exports.init = function (passport, bookshelf) {
             console.log("Suche Google user mit profile.id " + profile.id);
             findByProviderKey(profile.provider, profile.id, function (err, user) {
                 if (err) {
-                    console.log('Fehler bei der Suche nach Google user mit provider key ' + profile.id);
+                    console.log('Fehler bei der Suche nach Google user mit provider key ' + profile.id + ' Error: ' + err);
                     return done(err);
                 } else {
                     // it could be that findByProviderKey did not return a user and then it is null
@@ -171,8 +171,8 @@ module.exports.init = function (passport, bookshelf) {
         }).fetch({withRelated: ['User']})
             .then(function (model) {
                 if (model) {
-                    console.log('found user by providerName ' + providerName + '. userId: ' + model.get('UserId'));
-                    findById(model.get('UserId'), fn);
+                    console.log('found user by providerName ' + providerName + '. userId: ' + model.get('User_id'));
+                    findById(model.get('User_id'), fn);
                 } else {
                     // provider-key noch nicht als registrierter User bekannt
                     fn(null, null);

@@ -83,9 +83,9 @@ exports.createSchema = function () {
             },
             function () {
                 return  knex.schema.createTable('UserRoles', function (t) {
-                    t.integer('UserId').notNullable().references('id').inTable('Users').index();
-                    t.integer('RoleId').notNullable().references('id').inTable('Roles').index();
-                    t.primary(['UserId', 'RoleId']);
+                    t.integer('User_id').notNullable().references('id').inTable('Users').index();
+                    t.integer('Role_id').notNullable().references('id').inTable('Roles').index();
+                    t.primary(['User_id', 'Role_id']);
                 });
             },
             function () {
@@ -93,14 +93,14 @@ exports.createSchema = function () {
                     t.increments('id').primary();
                     t.string('LoginProvider', 128).notNullable();
                     t.string('ProviderKey', 128).notNullable();
-                    t.integer('UserId').notNullable().references('id').inTable('Users').index();
+                    t.integer('User_id').notNullable().references('id').inTable('Users').index();
                     t.unique(['LoginProvider', 'ProviderKey']);
                 });
             },
             function () {
                 return knex.schema.createTable('UserClaims', function (t) {
                     t.increments('id').primary();
-                    t.integer('UserId').notNullable().references('id').inTable('Users').index();
+                    t.integer('User_id').notNullable().references('id').inTable('Users').index();
                     t.string('ClaimType');
                     t.string('ClaimValue');
                 });
@@ -117,7 +117,7 @@ exports.createSchema = function () {
 var User = bookshelf.Model.extend({
     tableName: 'Users',
     UserLogin: function () {
-        return this.hasOne(UserLogin);
+        return this.hasMany(UserLogin);
     }
 });
 

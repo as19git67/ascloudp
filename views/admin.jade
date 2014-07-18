@@ -6,7 +6,11 @@ block content
         div.form-group
             label(class="col-xs-3 control-label", for="dbinit") Datenbank initialisieren:
             div.col-xs-1
-                input(type="submit", class="btn btn-default", value="start", name="dbinit" id="dbinit")
+                input(type="submit", class="btn btn-default", value="Start", name="dbinit" id="dbinit")
+        div.form-group
+            label(class="col-xs-3 control-label", for="usermanagement") User Management:
+            div.col-xs-1
+                input(type="submit", class="btn btn-default", value="Go", name="usermanagement" id="usermanagement")
             div.col-xs-8
                 span.text-info #{status}
                 span.text-danger #{error}
