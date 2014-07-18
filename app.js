@@ -16,8 +16,8 @@ var passportStrategies = require('./passportStrategies');
 
 var routes = require('./routes/index');
 var admin = require('./routes/admin');
-var userManagement = require('./routes/userManagement');
-var userManagementUserEdit = require('./routes/userManagementUserEdit');
+var userManagement = require('./routes/usermanagement');
+var userManagementUserEdit = require('./routes/usermanagementuseredit');
 var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
