@@ -21,6 +21,7 @@ var userManagementUserEdit = require('./routes/usermanagementuseredit');
 var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
+var loginRegisterNew = require('./routes/loginRegisterNew');
 
 var app = express();
 
@@ -50,6 +51,7 @@ app.use('/admin/userManagementUserEdit', userManagementUserEdit);
 app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
+app.use('/loginRegisterNew', loginRegisterNew);
 
 app.get('/auth/twitter', passport.authenticate('twitter'));
 app.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), function (req, res) {
