@@ -6,7 +6,10 @@ block content
         hr
         div(class="validation-summary-valid text-danger", data-valmsg-summary="true")
             ul
-                li(style="display:none")
+                if error
+                    li #{error}
+                else
+                    li(style="display:none")
         div.form-group
             label(class="col-md-2 control-label", for="Email") Email Adresse:
             div(class="col-md-10")

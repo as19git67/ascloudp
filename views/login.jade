@@ -21,7 +21,6 @@ block content
                     label(for="password",class="col-xs-12 col-md-2 control-label") Passwort:
                     div(class="col-xs-12 col-md-10")
                         input(class="form-control", data-val="true",
-                        data-val-email="Das Passwort ist ungültig.",
                         data-val-required="Das Passwort muss eingegeben werden.",
                         placeholder='Passwort',
                         id="email", name="email", type="password", value="")
@@ -35,7 +34,7 @@ block content
                             label(for="RememberMe") Remember me?
                 div.form-group
                     div(class="col-md-offset-2 col-md-10")
-                        input(type="submit", value="Log in", class="btn btn-default")
+                        input(type="submit", value="Einloggen", name="localLogin" class="btn btn-default")
                 p
                     a(href="/loginRegisterNew") Register as a new user
 

@@ -170,10 +170,17 @@ module.exports.init = function (passport, bookshelf) {
             'LoginProvider': providerName,
             'ProviderKey': providerKey
         }).fetch({withRelated: ['User']})
-            .then(function (model) {
-                if (model) {
-                    console.log('found user by providerName ' + providerName + '. userId: ' + model.get('User_id'));
-                    findById(model.get('User_id'), fn);
+            .then(function (userLogin) {
+                if (userLogin) {
+                    var user = userLogin.related('User');
+                    if (user) {
+                        console.log('found user by providerName ' + providerName + '. userId: ' + userLogin.get('User_id') + ', username: ' + user.get('UserName'));
+                        fn(null, user.attributes);
+                    }
+                    else {
+                        console.log('NO user found for UserLogin with providerName ' + providerName + '. userId: ' + userLogin.get('User_id'));
+                        fn(null, null);
+                    }
                 } else {
                     // provider-key noch nicht als registrierter User bekannt
                     fn(null, null);
@@ -189,8 +196,12 @@ module.exports.init = function (passport, bookshelf) {
         new User({'id': userId})
             .fetch()
             .then(function (model) {
-                console.log('found user by id ' + userId + ': ' + model.get('UserName'));
-                fn(null, model.attributes);
+                if (model) {
+                    console.log('found user by id ' + userId + ': ' + model.get('UserName'));
+                    fn(null, model.attributes);
+                } else {
+                    fn(null, null); // user not found
+                }
             })
             .catch(function (error) {
                 fn(new Error('User ' + userId + ' does not exist. ' + error));
@@ -199,7 +210,7 @@ module.exports.init = function (passport, bookshelf) {
 
     var findByUsername = function (username, fn) {
         new User({'UserName': username})
-            .fetch()
+            .fetch({withRelated: ['UserLogin']})
             .then(function (model) {
                 if (model) {
                     console.log('found user by username ' + username + ': ' + model.get('id'));
