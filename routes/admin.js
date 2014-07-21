@@ -6,6 +6,7 @@ var config = require('../config');
 router.get('/', function (req, res) {
     var appName = config.get('appName');
     res.render('admin', {
+      csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Administration',
         user: req.user

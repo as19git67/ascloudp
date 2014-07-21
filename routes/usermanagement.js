@@ -38,6 +38,7 @@ router.get('/', function (req, res) {
                     }
                 });
                 res.render('usermanagementlist', {
+                  csrfToken: req.csrfToken(),
                     appName: appName,
                     title: title,
                     user: req.user,
@@ -47,6 +48,7 @@ router.get('/', function (req, res) {
             })
             .catch(function (error) {
                 res.render('usermanagementlist', {
+                      csrfToken: req.csrfToken(),
                         appName: appName,
                         title: title,
                         user: req.user,

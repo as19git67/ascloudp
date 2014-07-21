@@ -5,6 +5,7 @@ block content
     div.row
         div.col-md-12
             form(class="form-horizontal", role="form", action="/admin/userManagementUserEdit", method="post")
+                input(type="hidden", value="#{csrfToken}" name="_csrf")
                 h4 Details von #{appName}-Benutzer #{userData.UserName}
                 hr
                 div.form-group

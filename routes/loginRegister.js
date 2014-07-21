@@ -19,6 +19,7 @@ router.get('/', function (req, res) {
         var provider = req.user.profile.provider;
         provider = provider.charAt(0).toUpperCase() + provider.slice(1);
         res.render('loginRegister', {
+          csrfToken: req.csrfToken(),
             appName: appName,
             title: 'Registrierung.',
             email: email,
@@ -55,6 +56,7 @@ router.post('/', function (req, res, next) {
         passportStrategies.findByUsername(username, function (err, user) {
             if (err) {
                 res.render('loginRegister', {
+                  csrfToken: req.csrfToken(),
                     appName: appName,
                     title: 'Registrierung.',
                     email: email,
@@ -65,6 +67,7 @@ router.post('/', function (req, res, next) {
             else {
                 if (user) {
                     res.render('loginRegister', {
+                      csrfToken: req.csrfToken(),
                         appName: appName,
                         title: 'Registrierung.',
                         email: email,

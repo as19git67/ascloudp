@@ -3,6 +3,7 @@ block content
     h1= title
     hr
     form(action="/admin/userManagement",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
         div(class="col-xs-12 col-sm-12 table-responsive")
             table.table
                 thead

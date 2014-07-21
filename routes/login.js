@@ -7,6 +7,7 @@ var passport = require('passport');
 router.get('/', function (req, res) {
     var appName = config.get('appName');
     res.render('login', {
+      csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Login',
         user: req.user
@@ -33,6 +34,10 @@ router.post('/', function (req, res, next) {
             break;
         case 'Google':
             console.log('calling passport.authenticate for google');
+          //   Use passport.authenticate() as route middleware to authenticate the
+          //   request.  The first step in Google authentication will involve redirecting
+          //   the user to google.com.  After authenticating, Google will redirect the
+          //   user back to this application at /login/auth/google/return
             passport.authenticate('google', {
                     failureRedirect: '/login',
                     scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'},
@@ -69,46 +74,6 @@ router.post('/', function (req, res, next) {
             })(req, res, next);
     }
 });
-
-/*
- router.post('/', function (req, res) {
- var appName = config.get('appName');
-
- var provider = req.body.provider;
- if (!provider) {
- provider = appName;
- }
- switch (provider) {
- case appName:
- res.redirect('/auth/local');
- break;
- case 'Azure':
- res.redirect('/auth/azure');
- break;
- case 'Twitter':
- res.redirect('/auth/twitter');
- break;
- case 'Facebook':
- res.redirect('/auth/facebook');
- break;
- case 'Google':
- res.redirect('/login/auth/google');
- break;
- default:
- res.redirect('/');
- }
- });
- */
-
-// GET /auth/google
-//   Use passport.authenticate() as route middleware to authenticate the
-//   request.  The first step in Google authentication will involve redirecting
-//   the user to google.com.  After authenticating, Google will redirect the
-//   user back to this application at /auth/google/return
-router.get('/auth/google', passport.authenticate('google', {
-        failureRedirect: '/login',
-        scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'}
-));
 
 // GET /auth/google/return
 //   Use passport.authenticate() as route middleware to authenticate the

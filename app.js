@@ -5,6 +5,7 @@ var logger = require('morgan');
 var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var bodyParser = require('body-parser');
+var csrf = require('csurf');
 var http = require('http');
 var https = require('https');
 var fs = require('fs');
@@ -42,6 +43,7 @@ app.use(expressSession({
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(csrf());
 
 app.use('/', routes);
 

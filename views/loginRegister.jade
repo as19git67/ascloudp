@@ -4,6 +4,7 @@ block content
     h2= title
     h3 Zuordnen des #{provider} Benutzers.
     form(action="/loginRegister",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
         hr
         p.text-info Ihr <strong>#{provider}</strong> Benutzer wurde erfolgreich authentifiziert. Bitte geben Sie eine Email Adresse ein, die Sie dann zukünftig als Benutzername für die Anmeldung bei #{appName} verwenden und klicken dann auf Registrieren.
         div.form-group

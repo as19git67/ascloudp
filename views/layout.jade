@@ -22,16 +22,22 @@ html
                             ul(class="nav navbar-nav")
                                 li
                                     a(href='/') Home
-                            ul(class="nav navbar-nav navbar-right")
-                                li
-                                    a(href='/admin') Administration
-                                li
-                                    a(href='/loginRegisterNew') Registrieren
-                                li
-                                    if user != null
-                                        a(href='/logoff') Logoff #{user.UserName}
-                                    else
-                                        a(href='/login') Login
+                            if user != null
+                                form(action="/logoff", class="navbar-right", id="logoutForm", method="post")
+                                    input(type="hidden", value="#{csrfToken}" name="_csrf")
+                                    ul(class="nav navbar-nav navbar-right")
+                                        li
+                                            a(href='/admin') Administration
+                                        li
+                                            a(href="/loginManageAccount", title="Manage") Hallo #{user.UserName}!
+                                        li
+                                            a(href="javascript:document.getElementById('logoutForm').submit()") Abmelden
+                            else
+                                ul(class="nav navbar-nav navbar-right")
+                                    li
+                                        a(href='/loginRegisterNew') Registrieren
+                                    li
+                                        a(href='/login') Anmelden
         block content
 
         script(src="/lib/jquery-2.1.1.min.js", type="text/javascript")

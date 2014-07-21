@@ -1,0 +1,76 @@
+extends layout
+block content
+    h2= title
+    div.row
+        p Sie sind als <string>#{username}</strong> angemeldet.
+        hr
+        form(action="/loginManageAccount",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+            input(type="hidden", value="#{csrfToken}" name="_csrf")
+            h4 Passwort ändern:
+            hr
+        p.text-info Ihr <strong>#{provider}</strong> Benutzer wurde erfolgreich authentifiziert. Bitte geben Sie eine Email Adresse ein, die Sie dann zukünftig als Benutzername für die Anmeldung bei #{appName} verwenden und klicken dann auf Registrieren.
+        div.form-group
+            label(class="col-md-2 control-label", for="Email") Email Adresse:
+            div.col-md-10
+                input(class="form-control", data-val="true", data-val-email="Die angegebene Email Adresse ist ungültig.", data-val-required="Die Email Adresse muss eingegeben werden.", id="email", name="email", type="text", value="#{email}")
+                span(class="field-validation-valid text-danger", data-valmsg-for="Email", data-valmsg-replace="true")
+        div.form-group
+            div(class="col-md-offset-2 col-md-10")
+                input(type="submit", class="btn btn-default", value="Registrieren")
+        hr
+
+
+
+            <div class="validation-summary-valid text-danger" data-valmsg-summary="true"><ul><li style="display:none"></li>
+            </ul></div>    <div class="form-group">
+                <label class="col-md-2 control-label" for="OldPassword">Current password</label>
+                <div class="col-md-10">
+                    <input class="form-control" data-val="true" data-val-required="The Current password field is required." id="OldPassword" name="OldPassword" type="password">
+                </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="NewPassword">New password</label>
+                    <div class="col-md-10">
+                        <input class="form-control" data-val="true" data-val-length="The New password must be at least 6 characters long." data-val-length-max="100" data-val-length-min="6" data-val-required="The New password field is required." id="NewPassword" name="NewPassword" type="password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-2 control-label" for="ConfirmPassword">Confirm new password</label>
+                    <div class="col-md-10">
+                        <input class="form-control" data-val="true" data-val-equalto="The new password and confirmation password do not match." data-val-equalto-other="*.NewPassword" id="ConfirmPassword" name="ConfirmPassword" type="password">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-10">
+                        <input type="submit" value="Change password" class="btn btn-default">
+                    </div>
+                </div>
+            </form>
+                <section id="externalLogins">
+                    <h4>Registered Logins</h4>
+                <table class="table">
+                    <tbody>
+                        <tr>
+                            <td>Google</td>
+                            <td>
+            <form action="/Account/Disassociate" method="post" novalidate="novalidate"><input name="__RequestVerificationToken" type="hidden" value="I6K-JxxlFZf144UJJdIGEB6Bu892TmA8uCTfG81ZIbPW1p3eLoWYS5ED5DWItFBxYejC6Wv7f97v9Xchzk9dIrigI4WsRzzLJntyGedD8zJw5nGKjOkqYufl11Bh7fVQISD-uqdMprgYbAI4fXKbQw2">                            <div>
+                <input id="loginProvider" name="loginProvider" type="hidden" value="Google">
+                <input id="providerKey" name="providerKey" type="hidden" value="114456860115617742455">
+                <input type="submit" class="btn btn-default" value="Remove" title="Remove this Google login from your account">
+                </div>
+            </form>                    </td>
+                </tr>
+                </tbody>
+                </table>
+                    <h4>Use another service to log in.</h4>
+            <hr>
+            <form action="/Account/LinkLogin?ReturnUrl=%2FAccount%2FManage" method="post" novalidate="novalidate"><input name="__RequestVerificationToken" type="hidden" value="kwUfGt_wIBpbaaonNbG1gZMkQ-fuI6ZW-DdHiDDSdYnMYhS2h8hP6Gc5aBqLoDNxtiXnlhTKETrkQ4zIb382F5-aF-YpkLXwMYpfsCqL63jbaYJPxh0KkUYNfTX-ArKuOtPixBgphybB8K2Jf5443Q2">            <div id="socialLoginList">
+                <p>
+                    <button type="submit" class="btn btn-default" id="Google" name="provider" value="Google" title="Log in using your Google account">Google</button>
+                    <button type="submit" class="btn btn-default" id="Facebook" name="provider" value="Facebook" title="Log in using your Facebook account">Facebook</button>
+                </p>
+                </div>
+            </form>
+                </section>
+                </div>
+            </div>

@@ -3,6 +3,7 @@ block content
     h2= title
     h3 Registrieren eines #{provider} Benutzers.
     form(action="/loginRegisterNew", class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
         hr
         div(class="validation-summary-valid text-danger", data-valmsg-summary="true")
             ul

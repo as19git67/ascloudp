@@ -2,6 +2,7 @@ extends layout
 block content
     h1= title
     form(action="/logoff",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
         hr
         p.text-info Abmelden bei #{appName}.
         div.form-group

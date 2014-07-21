@@ -34,6 +34,7 @@ router.get('/:userId', function (req, res) {
                 });
             }
             res.render('usermanagementuseredit', {
+              csrfToken: req.csrfToken(),
                 appName: appName,
                 title: title,
                 user: req.user,
@@ -43,6 +44,7 @@ router.get('/:userId', function (req, res) {
         })
             .catch(function (error) {
                 res.render('usermanagementuseredit', {
+                      csrfToken: req.csrfToken(),
                         appName: appName,
                         title: title,
                         user: req.user,

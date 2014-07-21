@@ -18,6 +18,7 @@ router.get('/', function (req, res) {
         }
     }
     res.render('loginRegisterNew', {
+      csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Neuen Benutzer registrieren.',
         email: email,
@@ -40,6 +41,7 @@ router.post('/', function (req, res, next) {
         if (err) {
             console.log('Fehler bei der Suche nach registriertem Benutzer: ' + username);
             res.render('loginRegisterNew', {
+              csrfToken: req.csrfToken(),
                 appName: appName,
                 title: 'Fehler bei der Registrierung.',
                 email: username,
@@ -50,6 +52,7 @@ router.post('/', function (req, res, next) {
         else {
             if (user) {
                 res.render('loginRegisterNew', {
+                  csrfToken: req.csrfToken(),
                     appName: appName,
                     title: 'Fehler bei der Benutzerregistrierung.',
                     email: username,
@@ -76,6 +79,7 @@ router.post('/', function (req, res, next) {
                             if (err) {
                                 console.log('Failed to do passport.login with newly registered user: ' + err);
                                 res.render('loginRegisterNew', {
+                                  csrfToken: req.csrfToken(),
                                     appName: appName,
                                     title: 'Fehler bei der Benutzerregistrierung',
                                     email: username,

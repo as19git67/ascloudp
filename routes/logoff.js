@@ -6,6 +6,7 @@ var config = require('../config');
 router.get('/', function (req, res) {
     var appName = config.get('appName');
     res.render('logoff', {
+      csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Logoff',
         user: req.user
