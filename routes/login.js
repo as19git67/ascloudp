@@ -7,7 +7,7 @@ var passport = require('passport');
 router.get('/', function (req, res) {
     var appName = config.get('appName');
     res.render('login', {
-      csrfToken: req.csrfToken(),
+        csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Login',
         user: req.user
@@ -34,10 +34,10 @@ router.post('/', function (req, res, next) {
             break;
         case 'Google':
             console.log('calling passport.authenticate for google');
-          //   Use passport.authenticate() as route middleware to authenticate the
-          //   request.  The first step in Google authentication will involve redirecting
-          //   the user to google.com.  After authenticating, Google will redirect the
-          //   user back to this application at /login/auth/google/return
+            //   Use passport.authenticate() as route middleware to authenticate the
+            //   request.  The first step in Google authentication will involve redirecting
+            //   the user to google.com.  After authenticating, Google will redirect the
+            //   user back to this application at /login/auth/google/return
             passport.authenticate('google', {
                     failureRedirect: '/login',
                     scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'},

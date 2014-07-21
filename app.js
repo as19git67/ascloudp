@@ -23,6 +23,7 @@ var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
+var loginManageAccount = require('./routes/loginManageAccount');
 
 var app = express();
 
@@ -54,6 +55,7 @@ app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
+app.use('/loginManageAccount', loginManageAccount);
 
 
 /// catch 404 and forward to error handler
