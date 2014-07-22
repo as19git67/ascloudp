@@ -119,7 +119,6 @@ router.post('/', function (req, res, next) {
                                     });
                                 });
                         }).catch(function (error) {
-
                             console.log("Error while saving new user in DB: " + error);
                             var err = new Error(error);
                             err.status = 500;

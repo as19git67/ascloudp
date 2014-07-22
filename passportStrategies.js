@@ -183,7 +183,7 @@ module.exports.init = function (passport, bookshelf) {
             var providerKey = userSpec.providerKey;
             findByProviderKey(provider, providerKey, function (err, user) {
                 if (err) {
-                    console.log('Error in deserializeUser returned from findByProviderKey: ' + err);
+                    console.log('Error in findUser. Error returned from findByProviderKey: ' + err);
                     done(err);
                 }
                 else {
@@ -193,10 +193,10 @@ module.exports.init = function (passport, bookshelf) {
                     else {
                         var id = userSpec.providerAndKey;
                         if (id && notRegisteredUsers[id]) {
-                            console.log('deserialize not registered user with provider key ' + id);
+                            console.log('findUser: found not registered user with provider key ' + id);
                             done(null, notRegisteredUsers[id]);
                         } else {
-                            console.log('deserialize unknown user with provider key ' + id + ' not possible');
+                            console.log('findUser: found unknown user with provider key ' + id);
                             done(null, false);
                         }
                     }
@@ -242,7 +242,7 @@ function findByProviderKey(providerName, providerKey, fn) {
 
 function findById(userId, fn) {
     new User({'id': userId})
-        .fetch()
+        .fetch({withRelated: ['UserLogin']})
         .then(function (model) {
             if (model) {
                 console.log('found user by id ' + userId + ': ' + model.get('UserName'));
