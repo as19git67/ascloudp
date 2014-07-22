@@ -9,6 +9,8 @@ block content
         hr
         if error
             p.text-danger #{error}
+        if info
+            p.text-info #{info}
         div(class="validation-summary-valid text-danger", data-valmsg-summary="true")
             ul
                 li(style="display:none")
