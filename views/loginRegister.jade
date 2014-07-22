@@ -1,11 +1,11 @@
 extends layout
-
 block content
-    h2= title
-    h3 Zuordnen des #{provider} Benutzers.
+    h4 Zuordnen des #{provider} Benutzers.
+    hr
     form(action="/loginRegister",class="form-horizontal", method="post", role="form", novalidate="novalidate")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
-        hr
+        if error
+            p.text-danger #{error}
         p.text-info Ihr <strong>#{provider}</strong> Benutzer wurde erfolgreich authentifiziert. Bitte geben Sie eine Email Adresse ein, die Sie dann zukünftig als Benutzername für die Anmeldung bei #{appName} verwenden und klicken dann auf Registrieren.
         div.form-group
             label(class="col-md-2 control-label", for="Email") Email Adresse:
@@ -16,5 +16,3 @@ block content
             div(class="col-md-offset-2 col-md-10")
                 input(type="submit", class="btn btn-default", value="Registrieren")
         hr
-        if error
-            p.text-danger #{error}

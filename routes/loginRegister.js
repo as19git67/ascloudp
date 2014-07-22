@@ -11,12 +11,18 @@ router.get('/', function (req, res) {
     var appName = config.get('appName');
     var email = '';
     if (req.user) {
-        var emails = req.user.profile.emails;
-        if (emails && emails.length > 0) {
-            email = emails[0].value;
+        var profile = req.user.profile;
+        var provider = profile.provider;
+        switch (provider) {
+            case 'twitter':
+                email = profile.username;
+                break;
+            default:
+                var emails = req.user.profile.emails;
+                if (emails && emails.length > 0) {
+                    email = emails[0].value;
+                }
         }
-
-        var provider = req.user.profile.provider;
         provider = provider.charAt(0).toUpperCase() + provider.slice(1);
         res.render('loginRegister', {
           csrfToken: req.csrfToken(),

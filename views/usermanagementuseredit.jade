@@ -1,35 +1,35 @@
 extends layout
-
 block content
-    h2= title
-    div.row
-        div.col-md-12
-            form(class="form-horizontal", role="form", action="/admin/userManagementUserEdit", method="post")
-                input(type="hidden", value="#{csrfToken}" name="_csrf")
-                h4 Details von #{appName}-Benutzer #{userData.UserName}
-                hr
-                div.form-group
-                    label(for="username",class="col-xs-12 col-md-2 control-label") Benutzerkennung:
-                    div(class="col-xs-12 col-md-10")
-                        input(class="form-control", data-val="true",
-                        data-val-email="Der Username muss im email Format sein",
-                        data-val-required="Das Passwort muss eingegeben werden.",
-                        placeholder='Benutzerkennung',
-                        id="username", name="username", type="text", value='#{userData.UserName}')
-                        span(class="field-validation-valid text-danger", data-valmsg-for="password", data-valmsg-replace="true")
-                div.form-group
-                    label(for="email",class="col-xs-12 col-md-2 control-label") Email:
-                    div(class="col-xs-12 col-md-10")
-                        input(class="form-control", data-val="true",
-                        data-val-email="Im Email Eingabefeld steht eine ungültige Email Adresse.",
-                        data-val-required="Das Email Feld muss ausgefüllt werden.",
-                        placeholder='Email Adresse',
-                        id="email", name="email", type="text", value="#{userData.Email}")
-                        span(class="field-validation-valid text-danger", data-valmsg-for="email", data-valmsg-replace="true")
-                div.form-group
-                    label(for="email",class="col-xs-12 col-md-2 control-label") Login Provider:
-                    div(class="col-xs-12 col-md-10 table-responsive")
-                        table.table
+    h4 Details von #{appName}-Benutzer #{userData.UserName}
+    hr
+    if error
+        p.text-danger #{error}
+    div.col-md-12
+        form(class="form-horizontal", role="form", action="/admin/userManagementUserEdit", method="post")
+            input(type="hidden", value="#{csrfToken}" name="_csrf")
+            div.form-group
+                label(for="username",class="col-xs-12 col-md-2 control-label") Benutzerkennung:
+                div(class="col-xs-12 col-md-10")
+                    input(class="form-control", data-val="true",
+                    data-val-email="Der Username muss im email Format sein",
+                    data-val-required="Das Passwort muss eingegeben werden.",
+                    placeholder='Benutzerkennung',
+                    id="username", name="username", type="text", value='#{userData.UserName}')
+                    span(class="field-validation-valid text-danger", data-valmsg-for="password", data-valmsg-replace="true")
+            div.form-group
+                label(for="email",class="col-xs-12 col-md-2 control-label") Email:
+                div(class="col-xs-12 col-md-10")
+                    input(class="form-control", data-val="true",
+                    data-val-email="Im Email Eingabefeld steht eine ungültige Email Adresse.",
+                    data-val-required="Das Email Feld muss ausgefüllt werden.",
+                    placeholder='Email Adresse',
+                    id="email", name="email", type="text", value="#{userData.Email}")
+                    span(class="field-validation-valid text-danger", data-valmsg-for="email", data-valmsg-replace="true")
+            div.form-group
+                label(for="email",class="col-xs-12 col-md-2 control-label") Login Provider:
+                div(class="col-xs-12 col-md-10 table-responsive")
+                    table.table
+                        if userData.UserLogins
                             for userLogin in userData.UserLogins
                                 tr
                                     td

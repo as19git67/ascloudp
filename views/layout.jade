@@ -38,7 +38,9 @@ html
                                         a(href='/loginRegisterNew') Registrieren
                                     li
                                         a(href='/login') Anmelden
-        block content
+            div.row
+                h2= title
+                block content
 
         script(src="/lib/jquery-2.1.1.min.js", type="text/javascript")
         script(src="/lib/bootstrap-3.2.0/js/bootstrap.min.js", type="text/javascript")

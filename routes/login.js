@@ -22,16 +22,6 @@ router.post('/', function (req, res, next) {
         provider = appName;
     }
     switch (provider) {
-
-        case 'Azure':
-            res.redirect('/login/auth/azure');
-            break;
-        case 'Twitter':
-            res.redirect('/login/auth/twitter');
-            break;
-        case 'Facebook':
-            res.redirect('/login/auth/facebook');
-            break;
         case 'Google':
             console.log('calling passport.authenticate for google');
             //   Use passport.authenticate() as route middleware to authenticate the
@@ -55,6 +45,29 @@ router.post('/', function (req, res, next) {
                         return res.redirect('/');
                     });
                 })(req, res, next);
+            break;
+        case 'Twitter':
+            passport.authenticate('twitter', {failureRedirect: '/login'},
+                function (err, user, info) {
+                    if (err) {
+                        return next(err);
+                    }
+                    if (!user) {
+                        return res.redirect('/login');
+                    }
+                    req.logIn(user, function (err) {
+                        if (err) {
+                            return next(err);
+                        }
+                        return res.redirect('/');
+                    });
+                })(req, res, next);
+            break;
+        case 'Azure':
+            res.redirect('/login/auth/azure');
+            break;
+        case 'Facebook':
+            res.redirect('/login/auth/facebook');
             break;
         default:
             console.log('calling passport.authenticate for local');
@@ -100,15 +113,23 @@ router.get('/auth/google/return', passport.authenticate('google', { failureRedir
 });
 
 
-router.get('/auth/twitter', passport.authenticate('twitter'));
 router.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), function (req, res) {
-    res.redirect('/loginRegister');
-//
-//    if (req.body.nexturl) {
-//        res.redirect(req.body.nexturl);
-//    } else {
-//        res.redirect('/');
-//    }
+    if (req.user) {
+        if (req.user.isNotLocalUser) {
+            res.redirect('/loginRegister');
+        } else {
+            var username = req.user.UserName;
+            console.log(username + ' is a locally registered user. No need to register again.');
+            if (req.body.nexturl) {
+                res.redirect(req.body.nexturl);
+            } else {
+                res.redirect('/');
+            }
+        }
+    } else {
+        console.log('No user profile from Google oauth callback');
+        res.redirect('/');
+    }
 });
 
 // GET /auth/facebook

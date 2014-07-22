@@ -1,9 +1,9 @@
 extends layout
 block content
-    h1= title
+    h4 verschiedene Administrationsaufgaben
+    hr
     form(action="/admin",class="form-horizontal", method="post", role="form", novalidate="novalidate")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
-        hr
         div.form-group
             label(class="col-xs-3 control-label", for="dbinit") Datenbank initialisieren:
             div.col-xs-1

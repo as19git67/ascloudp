@@ -6,52 +6,49 @@ var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 
 /* GET user list page. */
-router.get('/:userId', function (req, res) {
+router.get('/:userId', function (req, res, next) {
         var appName = config.get('appName');
         var title = 'User Management - Benutzerdetails';
         var userId = req.params.userId;
-        new User().fetch({
-            User_id: userId,
+        new User({'id': userId}).fetch({
             withRelated: ['UserLogin']
         }).then(function (user) {
-            var userLoginsArray = [];
-            var userObj = {
-                User_id: user.get('id'),
-                Email: user.get('Email'),
-                UserName: user.get('UserName'),
-                UserLogins: userLoginsArray
-            };
+            if (user) {
+                var userLoginsArray = [];
+                var userObj = {
+                    User_id: user.get('id'),
+                    Email: user.get('Email'),
+                    UserName: user.get('UserName'),
+                    UserLogins: userLoginsArray
+                };
+                var userLogins = user.related('UserLogin');
+                if (userLogins.length > 0) {
+                    userLogins.each(function (userLogin) {
+                        userLoginsArray.push({
+                            UserLogin_id: userLogin.get('id'),
+                            LoginProvider: userLogin.get('LoginProvider'),
+                            ProviderKey: userLogin.get('ProviderKey')
 
-            var userLogins = user.related('UserLogin');
-            if (userLogins.length > 0) {
-                userLogins.each(function (userLogin) {
-                    userLoginsArray.push({
-                        UserLogin_id: userLogin.get('id'),
-                        LoginProvider: userLogin.get('LoginProvider'),
-                        ProviderKey: userLogin.get('ProviderKey')
-
+                        });
                     });
+                }
+                res.render('usermanagementuseredit', {
+                    csrfToken: req.csrfToken(),
+                    appName: appName,
+                    title: title,
+                    user: req.user,
+                    error: "",
+                    userData: userObj
                 });
             }
-            res.render('usermanagementuseredit', {
-              csrfToken: req.csrfToken(),
-                appName: appName,
-                title: title,
-                user: req.user,
-                error: "",
-                userData: userObj
-            });
-        })
-            .catch(function (error) {
-                res.render('usermanagementuseredit', {
-                      csrfToken: req.csrfToken(),
-                        appName: appName,
-                        title: title,
-                        user: req.user,
-                        error: 'Error: ' + error,
-                        userData: {}
-                    }
-                );
+            else {
+                console.log('No user with ID ' + userId);
+                res.redirect('/');
+            }
+        }).catch(function (error) {
+                var err = new Error(error);
+                err.status = 500;
+                next(err);
             }
         );
     }

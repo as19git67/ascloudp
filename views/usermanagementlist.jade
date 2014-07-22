@@ -1,9 +1,10 @@
 extends layout
 block content
-    h1= title
-    hr
+    h4 Benutzerliste
     form(action="/admin/userManagement",class="form-horizontal", method="post", role="form", novalidate="novalidate")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
+        if error
+            p.text-danger #{error}
         div(class="col-xs-12 col-sm-12 table-responsive")
             table.table
                 thead
