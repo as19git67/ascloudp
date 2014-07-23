@@ -33,73 +33,114 @@ module.exports.init = function (passport, bookshelf) {
         findUser(userSpec, done);
     });
 
-    // Use the GoogleStrategy within Passport.
-    passport.use(new GoogleStrategy({
-            clientID: config.get('authGoogleClientId'),
-            clientSecret: config.get('authGoogleClientSecret'),
-            callbackURL: config.get('authGoogleCallbackURL')
-        },
-        function (accessToken, refreshToken, profile, done) {
-            if (!profile) {
-                return done(null, null);
-            }
-            console.log("Suche Google user mit profile.id " + profile.id);
-            findByProviderKey(profile.provider, profile.id, function (err, user) {
-                if (err) {
-                    console.log('Fehler bei der Suche nach Google user mit provider key ' + profile.id + ' Error: ' + err);
-                    return done(err);
-                } else {
-                    // it could be that findByProviderKey did not return a user and then it is null
-                    if (user) {
-                        console.log('Google user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
-                    } else {
-                        console.log('Kein Google user mit provider key ' + profile.id + ' bekannt');
-                        // user from given provider is not registered in DB -> create temp user object to pass forward
-                        // to the registration page
-                        user = {
-                            id: profile.provider + '_' + profile.id,
-                            isNotLocalUser: true,
-                            profile: profile
-                        };
-                    }
-                    return done(null, user);
+    if (config.get('authGoogleClientId') && config.get('authGoogleClientSecret') && config.get('authGoogleCallbackURL')) {
+        // Use the GoogleStrategy within Passport.
+        passport.use(new GoogleStrategy({
+                clientID: config.get('authGoogleClientId'),
+                clientSecret: config.get('authGoogleClientSecret'),
+                callbackURL: config.get('authGoogleCallbackURL')
+            },
+            function (accessToken, refreshToken, profile, done) {
+                if (!profile) {
+                    return done(null, null);
                 }
-            });
-        }
-    ));
+                console.log("Suche Google user mit profile.id " + profile.id);
+                findByProviderKey(profile.provider, profile.id, function (err, user) {
+                    if (err) {
+                        console.log('Fehler bei der Suche nach Google user mit provider key ' + profile.id + ' Error: ' + err);
+                        return done(err);
+                    } else {
+                        // it could be that findByProviderKey did not return a user and then it is null
+                        if (user) {
+                            console.log('Google user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
+                        } else {
+                            console.log('Kein Google user mit provider key ' + profile.id + ' bekannt');
+                            // user from given provider is not registered in DB -> create temp user object to pass forward
+                            // to the registration page
+                            user = {
+                                id: profile.provider + '_' + profile.id,
+                                isNotLocalUser: true,
+                                profile: profile
+                            };
+                        }
+                        return done(null, user);
+                    }
+                });
+            }
+        ));
+    }
 
-    passport.use(new TwitterStrategy({
-        consumerKey: config.get('authTwitterConsumerKey'),
-        consumerSecret: config.get('authTwitterConsumerSecret'),
-        callbackURL: config.get('authTwitterCallbackURL')
-    }, function (token, tokenSecret, profile, done) {
-            if (!profile) {
-                return done(null, null);
-            }
-            console.log("Suche Twitter user mit profile.id " + profile.id);
-            findByProviderKey(profile.provider, profile.id, function (err, user) {
-                if (err) {
-                    console.log('Fehler bei der Suche nach Twitter user mit provider key ' + profile.id + ' Error: ' + err);
-                    return done(err);
-                } else {
-                    // it could be that findByProviderKey did not return a user and then it is null
-                    if (user) {
-                        console.log('Twitter user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
-                    } else {
-                        console.log('Kein Twitter user mit provider key ' + profile.id + ' bekannt');
-                        // user from given provider is not registered in DB -> create temp user object to pass forward
-                        // to the registration page
-                        user = {
-                            id: profile.provider + '_' + profile.id,
-                            isNotLocalUser: true,
-                            profile: profile
-                        };
-                    }
-                    return done(null, user);
+    if (config.get('authTwitterConsumerKey') && config.get('authTwitterConsumerSecret') && config.get('authTwitterCallbackURL')) {
+        passport.use(new TwitterStrategy({
+                consumerKey: config.get('authTwitterConsumerKey'),
+                consumerSecret: config.get('authTwitterConsumerSecret'),
+                callbackURL: config.get('authTwitterCallbackURL')
+            },
+            function (token, tokenSecret, profile, done) {
+                if (!profile) {
+                    return done(null, null);
                 }
-            });
-        }
-    ));
+                console.log("Suche Twitter user mit profile.id " + profile.id);
+                findByProviderKey(profile.provider, profile.id, function (err, user) {
+                    if (err) {
+                        console.log('Fehler bei der Suche nach Twitter user mit provider key ' + profile.id + ' Error: ' + err);
+                        return done(err);
+                    } else {
+                        // it could be that findByProviderKey did not return a user and then it is null
+                        if (user) {
+                            console.log('Twitter user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
+                        } else {
+                            console.log('Kein Twitter user mit provider key ' + profile.id + ' bekannt');
+                            // user from given provider is not registered in DB -> create temp user object to pass forward
+                            // to the registration page
+                            user = {
+                                id: profile.provider + '_' + profile.id,
+                                isNotLocalUser: true,
+                                profile: profile
+                            };
+                        }
+                        return done(null, user);
+                    }
+                });
+            }
+        ));
+    }
+
+    if (config.get('authFacebookAppId') && config.get('authFacebookClientSecret') && config.get('authFacebookCallbackURL')) {
+        passport.use(new FacebookStrategy({
+            clientID: config.get('authFacebookAppId'),
+            clientSecret: config.get('authFacebookClientSecret'),
+            callbackURL: config.get('authFacebookCallbackURL')
+        },
+            function (token, tokenSecret, profile, done) {
+                if (!profile) {
+                    return done(null, null);
+                }
+                console.log("Suche Facebook user mit profile.id " + profile.id);
+                findByProviderKey(profile.provider, profile.id, function (err, user) {
+                    if (err) {
+                        console.log('Fehler bei der Suche nach Facebook user mit provider key ' + profile.id + ' Error: ' + err);
+                        return done(err);
+                    } else {
+                        // it could be that findByProviderKey did not return a user and then it is null
+                        if (user) {
+                            console.log('Facebook user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
+                        } else {
+                            console.log('Kein Facebook user mit provider key ' + profile.id + ' bekannt');
+                            // user from given provider is not registered in DB -> create temp user object to pass forward
+                            // to the registration page
+                            user = {
+                                id: profile.provider + '_' + profile.id,
+                                isNotLocalUser: true,
+                                profile: profile
+                            };
+                        }
+                        return done(null, user);
+                    }
+                });
+            }
+        ));
+    }
 
     // Use the LocalStrategy within Passport.
     //   Strategies in passport require a `verify` function, which accept
@@ -132,28 +173,6 @@ module.exports.init = function (passport, bookshelf) {
                 })
             });
         }));
-
-    passport.use(new FacebookStrategy({
-        clientID: '352113358207935',
-        clientSecret: '61401eb81f2c04fbaa1098ae86710651',
-        callbackURL: "https://localhost:3002/auth/facebook/callback"
-    }, function (accessToken, refreshToken, profile, done) {
-        // asynchronous verification, for effect...
-        process.nextTick(function () {
-            // todo: use real user database to store and get user information
-            findById(profile.id, function (err, user) {
-                if (err) {
-                    console.log('FacebookStrategy: added user: ' + profile.username + ' with id ' + profile.id);
-                    users[profile.id] =
-                    { id: profile.id, username: profile.username, password: '', email: profile.email, token: accessToken, refreshToken: refreshToken, profile: profile };
-                    console.log(users[profile.id]);
-                    return done(null, users[profile.id]);
-                } else {
-                    return done(null, user);
-                }
-            });
-        });
-    }));
 
 
     var findByUsername = function (username, fn) {
