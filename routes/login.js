@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 var passport = require('passport');
+var passportStrategies = require('../passportStrategies');
 var model = require('../model');
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
@@ -9,11 +10,14 @@ var UserLogin = model.models.UserLogin;
 /* GET login page. */
 router.get('/', function (req, res) {
     var appName = config.get('appName');
-    res.render('login', {
+
+  var strategies = passportStrategies.getEnabledStrategies();
+  res.render('login', {
         csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Login',
-        user: req.user
+        user: req.user,
+    passportStrategies: strategies
     });
 });
 
@@ -145,8 +149,8 @@ function linkUser(req, res, next) {
                     req.login(userModel.attributes, function (err) {
                         if (err) {
                             console.log('Failed to re-passport.login with newly registered user: ' + err);
-                            res.redirect('/loginManageAccount');
                         }
+                      res.redirect('/loginManageAccount');
                     });
 
                 })

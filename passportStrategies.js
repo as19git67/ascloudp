@@ -12,6 +12,8 @@ var notRegisteredUsers = {};
 
 module.exports.init = function (passport, bookshelf, callback) {
 
+  var enabledStrategies = {};
+
     // Passport session setup.
     //   To support persistent login sessions, Passport needs to be able to
     //   serialize users into and deserialize users out of the session.  Typically,
@@ -69,6 +71,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     });
                 }
             ));
+          enabledStrategies['google'] = true;
         }
         catch (error) {
             callback({ strategy: "google", error: error});
@@ -112,6 +115,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     });
                 }
             ));
+          enabledStrategies['twitter'] = true;
         }
         catch (error) {
             callback({ strategy: "twitter", error: error});
@@ -154,6 +158,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     });
                 }
             ));
+          enabledStrategies['facebook'] = true;
         }
         catch (error) {
             callback({ strategy: "facebook", error: error});
@@ -193,6 +198,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     })
                 });
             }));
+      enabledStrategies['local'] = true;
     }
     catch (error) {
         callback({ strategy: "local", error: error});
@@ -252,6 +258,12 @@ module.exports.init = function (passport, bookshelf, callback) {
         }
     };
 
+  var getEnabledStrategies = function()
+  {
+    return enabledStrategies;
+  }
+
+  module.exports.getEnabledStrategies = getEnabledStrategies;
     module.exports.findByUsername = findByUsername;
     module.exports.findUser = findUser;
 

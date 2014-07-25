@@ -4,6 +4,10 @@ var config = require('../config');
 var model = require('../model');
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
+var passportStrategies = require('../passportStrategies');
+
+
+// TODO: passwort ändern auch wenn kein passwort gesetzt, da nur via extern eingeloggt
 
 router.get('/', function (req, res, next) {
     if (req.user) {
@@ -133,10 +137,11 @@ router.post('/', function (req, res, next) {
 
 function prepareResponseDataFromUser(userModel, req) {
     var appName = config.get('appName');
-    var canAssociateWithAzure = true;
-    var canAssociateWithTwitter = true;
-    var canAssociateWithGoogle = true;
-    var canAssociateWithFacebook = true;
+  var strategies = passportStrategies.getEnabledStrategies();
+    var canAssociateWithAzure = strategies.azure;
+    var canAssociateWithTwitter = strategies.twitter;
+    var canAssociateWithGoogle = strategies.google;
+    var canAssociateWithFacebook = strategies.facebook;
 
     var user = {
         Email: userModel.get('Email') ? userModel.get('Email') : '',

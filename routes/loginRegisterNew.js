@@ -6,7 +6,6 @@ var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
 
-
 /* GET loginRegisterNew page. */
 router.get('/', function (req, res) {
     var appName = config.get('appName');
