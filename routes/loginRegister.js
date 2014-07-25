@@ -20,7 +20,9 @@ router.get('/', function (req, res) {
             default:
                 var emails = req.user.profile.emails;
                 if (emails && emails.length > 0) {
-                    email = emails[0].value;
+                    if (emails[0].value) {
+                        email = emails[0].value;
+                    }
                 }
         }
         provider = provider.charAt(0).toUpperCase() + provider.slice(1);

@@ -2,6 +2,9 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 var passport = require('passport');
+var model = require('../model');
+var User = model.models.User;
+var UserLogin = model.models.UserLogin;
 
 /* GET login page. */
 router.get('/', function (req, res) {
@@ -16,6 +19,12 @@ router.get('/', function (req, res) {
 
 router.post('/', function (req, res, next) {
     var appName = config.get('appName');
+
+    if (req.user && req.body.provider && !req.user.isNotLocalUser) {
+        req.session.loginToLink = req.user.id;
+    } else {
+        delete req.session['loginToLink'];
+    }
 
     var provider = req.body.provider;
     if (!provider) {
@@ -49,27 +58,27 @@ router.post('/', function (req, res, next) {
 //   request.  If authentication fails, the user will be redirected back to the
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
-router.get('/auth/google/return', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res) {
+router.get('/auth/google/return', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res, next) {
     if (req.user) {
-        handleExternalLoginCallback(req, res);
+        handleExternalLoginCallback(req, res, next);
     } else {
         console.log('No user profile from Google oauth callback');
         res.redirect('/');
     }
 });
 
-router.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), function (req, res) {
+router.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), function (req, res, next) {
     if (req.user) {
-        handleExternalLoginCallback(req, res);
+        handleExternalLoginCallback(req, res, next);
     } else {
         console.log('No user profile from Twitter oauth callback');
         res.redirect('/');
     }
 });
 
-router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), function (req, res) {
+router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), function (req, res, next) {
     if (req.user) {
-        handleExternalLoginCallback(req, res);
+
     } else {
         console.log('No user profile from Facebook oauth callback');
         res.redirect('/');
@@ -94,18 +103,70 @@ function handlePassportAuthenticate(next, res, req) {
     };
 }
 
-function handleExternalLoginCallback(req, res) {
-    if (req.user.isNotLocalUser) {
-        res.redirect('/loginRegister');
+function handleExternalLoginCallback(req, res, next) {
+    // check for user_id set in previous post request to /login
+    if (req.session.loginToLink) {
+        linkUser(req, res, next);
     } else {
-        var username = req.user.UserName;
-        console.log(username + ' is a locally registered user. No need to register again.');
-        if (req.body.nexturl) {
-            res.redirect(req.body.nexturl);
+        if (req.user.isNotLocalUser) {
+            res.redirect('/loginRegister');
         } else {
-            res.redirect('/');
+            var username = req.user.UserName;
+            console.log(username + ' is a locally registered user. No need to register again.');
+            if (req.body.nexturl) {
+                res.redirect(req.body.nexturl);
+            } else {
+                res.redirect('/');
+            }
         }
     }
+}
+
+function linkUser(req, res, next) {
+    var loggedInUserId = req.session.loginToLink;
+    console.log('link user. loggedInUserId: ' + loggedInUserId);
+    delete req.session['loginToLink'];
+
+    new User({'id': loggedInUserId}).fetch({
+        withRelated: ['UserLogin']
+    }).then(function (userModel) {
+        if (userModel) {
+            var profile = req.user.profile;
+            var providerKey = profile.id;
+            var provider = profile.provider;
+            new UserLogin({
+                LoginProvider: provider,
+                ProviderKey: providerKey,
+                User_id: loggedInUserId})
+                .save()
+                .then(function (userLoginModel) {
+                    console.log("New UserLogin saved in DB. UserID: " +
+                        userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
+                    req.login(userModel.attributes, function (err) {
+                        if (err) {
+                            console.log('Failed to re-passport.login with newly registered user: ' + err);
+                            res.redirect('/loginManageAccount');
+                        }
+                    });
+
+                })
+                .catch(function (error) {
+                    console.log("Error while saving new UserLogin in DB: " + error);
+                    var err = new Error(error);
+                    err.status = 500;
+                    next(err);
+                });
+
+        } else {
+            console.log("Can't manage user: user not found in database.");
+            res.redirect('/');
+        }
+    }).catch(function (error) {
+        console.log("Error while accessing users in the database: " + error);
+        var err = new Error(error);
+        err.status = 500;
+        next(err);
+    });
 }
 
 module.exports = router;

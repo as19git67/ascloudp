@@ -32,48 +32,98 @@ router.get('/', function (req, res, next) {
 
 router.post('/', function (req, res, next) {
     if (req.user) {
-        new User({'id': req.user.id}).fetch({
-            withRelated: ['UserLogin']
-        }).then(function (userModel) {
-            if (userModel) {
-                var responseData = prepareResponseDataFromUser(userModel, req);
-                if (req.body.changePassword) {
-                    var oldPassword = req.body.OldPassword;
-                    var newPassword = req.body.NewPassword;
-                    var confirmPassword = req.body.ConfirmPassword;
-                    // todo: check hashed password
-                    if (oldPassword != userModel.get('PasswordHash')) {
-                        responseData.error = "Das Passwort ist falsch.";
-                        res.render('loginManageAccount', responseData);
-                    } else {
-                        if (newPassword != confirmPassword) {
-                            responseData.error = "Die Passwortwiederholung stimmt nicht mit dem neuen Passwort überein.";
+        if (req.body.changePassword) {
+            console.log('Changing password for user with id ' + req.user.id);
+            new User({'id': req.user.id}).fetch({
+                withRelated: ['UserLogin']
+            }).then(function (userModel) {
+                if (userModel) {
+                    var responseData = prepareResponseDataFromUser(userModel, req);
+                    if (req.body.changePassword) {
+                        var oldPassword = req.body.OldPassword;
+                        var newPassword = req.body.NewPassword;
+                        var confirmPassword = req.body.ConfirmPassword;
+                        // todo: check hashed password
+                        if (oldPassword != userModel.get('PasswordHash')) {
+                            responseData.error = "Das Passwort ist falsch.";
                             res.render('loginManageAccount', responseData);
-                        }
-                        else {
-                            userModel.set('PasswordHash', newPassword);
-                            userModel.save().then(function () {
-                                responseData.info = "Das Passwort wurde geändert.";
+                        } else {
+                            if (newPassword != confirmPassword) {
+                                responseData.error = "Die Passwortwiederholung stimmt nicht mit dem neuen Passwort überein.";
                                 res.render('loginManageAccount', responseData);
+                            }
+                            else {
+                                userModel.set('PasswordHash', newPassword);
+                                userModel.save().then(function () {
+                                    responseData.info = "Das Passwort wurde geändert.";
+                                    res.render('loginManageAccount', responseData);
+                                }).catch(function (error) {
+                                    console.log("Error while accessing users in the database: " + error);
+                                    var err = new Error(error);
+                                    err.status = 500;
+                                    next(err);
+                                });
+                            }
+                        }
+                    }
+                } else {
+                    console.log("Can't manage user: user not found in database.");
+                    res.redirect('/');
+                }
+            }).catch(function (error) {
+                console.log("Error while accessing users in the database: " + error);
+                var err = new Error(error);
+                err.status = 500;
+                next(err);
+            });
+        }
+        else {
+            if (req.body.unlink) {
+                var provider = req.body.loginProvider;
+                var providerKey = req.body.providerKey;
+                var user_id = req.user.id;
+                console.log("removing " + provider + " login that is linked to user " + user_id);
+
+                new UserLogin({
+                    LoginProvider: provider,
+                    ProviderKey: providerKey,
+                    User_id: user_id}).fetch().then(function (userLogin) {
+                        userLogin.destroy().then(function(){
+                            console.log("UserLogin removed from User. UserID: " + user_id + ", Provider: " + provider);
+
+                            // reload user and render same page again
+
+                            new User({'id': user_id}).fetch({
+                                withRelated: ['UserLogin']
+                            }).then(function (userModel) {
+                                if (userModel) {
+                                    var responseData = prepareResponseDataFromUser(userModel, req);
+                                    responseData.info = "Der " + provider + " Login wurde entfernt.";
+                                    res.render('loginManageAccount', responseData);
+                                } else {
+                                    console.log("Can't manage user: user not found in database.");
+                                    res.redirect('/');
+                                }
                             }).catch(function (error) {
                                 console.log("Error while accessing users in the database: " + error);
                                 var err = new Error(error);
                                 err.status = 500;
                                 next(err);
                             });
-                        }
-                    }
-                }
+                        });
+                    })
+                    .catch(function (error) {
+                        console.log("Error while deleting from UserLogin in DB: " + error);
+                        var err = new Error(error);
+                        err.status = 500;
+                        next(err);
+                    });
+
             } else {
-                console.log("Can't manage user: user not found in database.");
+                console.log("post to loginManageAccount with unknown submitted value - don't know what to do");
                 res.redirect('/');
             }
-        }).catch(function (error) {
-            console.log("Error while accessing users in the database: " + error);
-            var err = new Error(error);
-            err.status = 500;
-            next(err);
-        });
+        }
     } else {
         console.log("No user object in request. Redirecting to /");
         res.redirect('/');

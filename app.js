@@ -24,6 +24,7 @@ var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
+var loginLinkLogin = require('./routes/loginLinkLogin');
 
 var app = express();
 
@@ -56,6 +57,7 @@ app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
+app.use('/loginLinkLogin', loginLinkLogin);
 
 
 /// catch 404 and forward to error handler
@@ -95,26 +97,32 @@ var httpsPort = config.get('httpsPort');
 var model = require('./model');
 model.createSchemaIfNotExists().then(function () {
 
-    passportStrategies.init(passport, model.bookshelf);
-
-
-    if (httpPort > 0) {
-        // create http server
-        http.createServer(app).listen(httpPort, function () {
-            console.log('Express server listening on port ' + httpPort);
-            if (httpsPort > 0) {
-                // create https server
-                startHttpsServer(app, httpsPort);
-            }
-        });
-    } else {
-        if (httpsPort > 0) {
-            // create https server
-            startHttpsServer(app, httpsPort);
-        } else {
-            console.log('httpPort and httpsPort are not specified in config.json. Not starting a http server.');
+    passportStrategies.init(passport, model.bookshelf, function (error) {
+        if (error) {
+            console.log("Initializing passport strategy " + error.strategy + " failed: " + error.error);
         }
-    }
+        else {
+
+            if (httpPort > 0) {
+                // create http server
+                http.createServer(app).listen(httpPort, function () {
+                    console.log('Express server listening on port ' + httpPort);
+                    if (httpsPort > 0) {
+                        // create https server
+                        startHttpsServer(app, httpsPort);
+                    }
+                });
+            } else {
+                if (httpsPort > 0) {
+                    // create https server
+                    startHttpsServer(app, httpsPort);
+                } else {
+                    console.log('httpPort and httpsPort are not specified in config.json. Not starting a http server.');
+                }
+            }
+        }
+    });
+
 }).catch(function (err) {
     console.log("ERROR when creating the database schema: " + err);
 });

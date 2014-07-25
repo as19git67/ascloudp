@@ -10,7 +10,7 @@ var UserLogin = model.models.UserLogin;
 var notRegisteredUsers = {};
 
 
-module.exports.init = function (passport, bookshelf) {
+module.exports.init = function (passport, bookshelf, callback) {
 
     // Passport session setup.
     //   To support persistent login sessions, Passport needs to be able to
@@ -35,111 +35,130 @@ module.exports.init = function (passport, bookshelf) {
 
     if (config.get('authGoogleClientId') && config.get('authGoogleClientSecret') && config.get('authGoogleCallbackURL')) {
         // Use the GoogleStrategy within Passport.
-        passport.use(new GoogleStrategy({
-                clientID: config.get('authGoogleClientId'),
-                clientSecret: config.get('authGoogleClientSecret'),
-                callbackURL: config.get('authGoogleCallbackURL')
-            },
-            function (accessToken, refreshToken, profile, done) {
-                if (!profile) {
-                    return done(null, null);
-                }
-                console.log("Suche Google user mit profile.id " + profile.id);
-                findByProviderKey(profile.provider, profile.id, function (err, user) {
-                    if (err) {
-                        console.log('Fehler bei der Suche nach Google user mit provider key ' + profile.id + ' Error: ' + err);
-                        return done(err);
-                    } else {
-                        // it could be that findByProviderKey did not return a user and then it is null
-                        if (user) {
-                            console.log('Google user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
-                        } else {
-                            console.log('Kein Google user mit provider key ' + profile.id + ' bekannt');
-                            // user from given provider is not registered in DB -> create temp user object to pass forward
-                            // to the registration page
-                            user = {
-                                id: profile.provider + '_' + profile.id,
-                                isNotLocalUser: true,
-                                profile: profile
-                            };
-                        }
-                        return done(null, user);
+        try {
+            passport.use(new GoogleStrategy({
+                    clientID: config.get('authGoogleClientId'),
+                    clientSecret: config.get('authGoogleClientSecret'),
+                    callbackURL: config.get('authGoogleCallbackURL')
+                },
+                function (accessToken, refreshToken, profile, done) {
+                    if (!profile) {
+                        return done(null, null);
                     }
-                });
-            }
-        ));
+                    console.log("Suche Google user mit profile.id " + profile.id);
+                    findByProviderKey(profile.provider, profile.id, function (err, user) {
+                        if (err) {
+                            console.log('Fehler bei der Suche nach Google user mit provider key ' + profile.id + ' Error: ' + err);
+                            return done(err);
+                        } else {
+                            // it could be that findByProviderKey did not return a user and then it is null
+                            if (user) {
+                                console.log('Google user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
+                            } else {
+                                console.log('Kein Google user mit provider key ' + profile.id + ' bekannt');
+                                // user from given provider is not registered in DB -> create temp user object to pass forward
+                                // to the registration page
+                                user = {
+                                    id: profile.provider + '_' + profile.id,
+                                    isNotLocalUser: true,
+                                    profile: profile
+                                };
+                            }
+                            return done(null, user);
+                        }
+                    });
+                }
+            ));
+        }
+        catch (error) {
+            callback({ strategy: "google", error: error});
+            return;
+        }
     }
+
 
     if (config.get('authTwitterConsumerKey') && config.get('authTwitterConsumerSecret') && config.get('authTwitterCallbackURL')) {
-        passport.use(new TwitterStrategy({
-                consumerKey: config.get('authTwitterConsumerKey'),
-                consumerSecret: config.get('authTwitterConsumerSecret'),
-                callbackURL: config.get('authTwitterCallbackURL')
-            },
-            function (token, tokenSecret, profile, done) {
-                if (!profile) {
-                    return done(null, null);
-                }
-                console.log("Suche Twitter user mit profile.id " + profile.id);
-                findByProviderKey(profile.provider, profile.id, function (err, user) {
-                    if (err) {
-                        console.log('Fehler bei der Suche nach Twitter user mit provider key ' + profile.id + ' Error: ' + err);
-                        return done(err);
-                    } else {
-                        // it could be that findByProviderKey did not return a user and then it is null
-                        if (user) {
-                            console.log('Twitter user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
-                        } else {
-                            console.log('Kein Twitter user mit provider key ' + profile.id + ' bekannt');
-                            // user from given provider is not registered in DB -> create temp user object to pass forward
-                            // to the registration page
-                            user = {
-                                id: profile.provider + '_' + profile.id,
-                                isNotLocalUser: true,
-                                profile: profile
-                            };
-                        }
-                        return done(null, user);
+        try {
+            passport.use(new TwitterStrategy({
+                    consumerKey: config.get('authTwitterConsumerKey'),
+                    consumerSecret: config.get('authTwitterConsumerSecret'),
+                    callbackURL: config.get('authTwitterCallbackURL')
+                },
+                function (token, tokenSecret, profile, done) {
+                    if (!profile) {
+                        return done(null, null);
                     }
-                });
-            }
-        ));
+                    console.log("Suche Twitter user mit profile.id " + profile.id);
+                    findByProviderKey(profile.provider, profile.id, function (err, user) {
+                        if (err) {
+                            console.log('Fehler bei der Suche nach Twitter user mit provider key ' + profile.id + ' Error: ' + err);
+                            return done(err);
+                        } else {
+                            // it could be that findByProviderKey did not return a user and then it is null
+                            if (user) {
+                                console.log('Twitter user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
+                            } else {
+                                console.log('Kein Twitter user mit provider key ' + profile.id + ' bekannt');
+                                // user from given provider is not registered in DB -> create temp user object to pass forward
+                                // to the registration page
+                                user = {
+                                    id: profile.provider + '_' + profile.id,
+                                    isNotLocalUser: true,
+                                    profile: profile
+                                };
+                            }
+                            return done(null, user);
+                        }
+                    });
+                }
+            ));
+        }
+        catch (error) {
+            callback({ strategy: "twitter", error: error});
+            return;
+        }
     }
 
-    if (config.get('authFacebookAppId') && config.get('authFacebookClientSecret') && config.get('authFacebookCallbackURL')) {
-        passport.use(new FacebookStrategy({
-            clientID: config.get('authFacebookAppId'),
-            clientSecret: config.get('authFacebookClientSecret'),
-            callbackURL: config.get('authFacebookCallbackURL')
-        },
-            function (token, tokenSecret, profile, done) {
-                if (!profile) {
-                    return done(null, null);
-                }
-                console.log("Suche Facebook user mit profile.id " + profile.id);
-                findByProviderKey(profile.provider, profile.id, function (err, user) {
-                    if (err) {
-                        console.log('Fehler bei der Suche nach Facebook user mit provider key ' + profile.id + ' Error: ' + err);
-                        return done(err);
-                    } else {
-                        // it could be that findByProviderKey did not return a user and then it is null
-                        if (user) {
-                            console.log('Facebook user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
-                        } else {
-                            console.log('Kein Facebook user mit provider key ' + profile.id + ' bekannt');
-                            // user from given provider is not registered in DB -> create temp user object to pass forward
-                            // to the registration page
-                            user = {
-                                id: profile.provider + '_' + profile.id,
-                                isNotLocalUser: true,
-                                profile: profile
-                            };
-                        }
-                        return done(null, user);
+    if (config.get('authFacebookAppId') && config.get('authFacebookAppSecret') && config.get('authFacebookCallbackURL')) {
+        try {
+            passport.use(new FacebookStrategy({
+                    clientID: config.get('authFacebookAppId'),
+                    clientSecret: config.get('authFacebookAppSecret'),
+                    callbackURL: config.get('authFacebookCallbackURL')
+                },
+                function (token, tokenSecret, profile, done) {
+                    if (!profile) {
+                        return done(null, null);
                     }
-                });
-            }
-        ));
+                    console.log("Suche Facebook user mit profile.id " + profile.id);
+                    findByProviderKey(profile.provider, profile.id, function (err, user) {
+                        if (err) {
+                            console.log('Fehler bei der Suche nach Facebook user mit provider key ' + profile.id + ' Error: ' + err);
+                            return done(err);
+                        } else {
+                            // it could be that findByProviderKey did not return a user and then it is null
+                            if (user) {
+                                console.log('Facebook user mit provider key ' + profile.id + ' ist als ' + user.UserName + ' in der DB vorhanden');
+                            } else {
+                                console.log('Kein Facebook user mit provider key ' + profile.id + ' bekannt');
+                                // user from given provider is not registered in DB -> create temp user object to pass forward
+                                // to the registration page
+                                user = {
+                                    id: profile.provider + '_' + profile.id,
+                                    isNotLocalUser: true,
+                                    profile: profile
+                                };
+                            }
+                            return done(null, user);
+                        }
+                    });
+                }
+            ));
+        }
+        catch (error) {
+            callback({ strategy: "facebook", error: error});
+            return;
+        }
     }
 
     // Use the LocalStrategy within Passport.
@@ -147,33 +166,38 @@ module.exports.init = function (passport, bookshelf) {
     //   credentials (in this case, a username and password), and invoke a callback
     //   with a user object.  In the real world, this would query a database;
     //   however, in this example we are using a baked-in set of users.
-    passport.use(new LocalStrategy({
-            usernameField: 'email',
-            passwordField: 'password'},
-        function (username, password, done) {
-            // asynchronous verification, for effect...
-            process.nextTick(function () {
+    try {
+        passport.use(new LocalStrategy({
+                usernameField: 'email',
+                passwordField: 'password'},
+            function (username, password, done) {
+                // asynchronous verification, for effect...
+                process.nextTick(function () {
 
-                // Find the user by username.  If there is no user with the given
-                // username, or the password is not correct, set the user to `false` to
-                // indicate failure and set a flash message.  Otherwise, return the
-                // authenticated `user`.
-                findByUsername(username, function (err, user) {
-                    if (err) {
-                        return done(err);
-                    }
-                    if (!user) {
-                        return done(null, false, { message: 'Unknown user ' + username });
-                    }
-                    if (user.PasswordHash != password) {
-                        // todo compare hashed password
-                        return done(null, false, { message: 'Invalid password' });
-                    }
-                    return done(null, user);
-                })
-            });
-        }));
-
+                    // Find the user by username.  If there is no user with the given
+                    // username, or the password is not correct, set the user to `false` to
+                    // indicate failure and set a flash message.  Otherwise, return the
+                    // authenticated `user`.
+                    findByUsername(username, function (err, user) {
+                        if (err) {
+                            return done(err);
+                        }
+                        if (!user) {
+                            return done(null, false, { message: 'Unknown user ' + username });
+                        }
+                        if (user.PasswordHash != password) {
+                            // todo compare hashed password
+                            return done(null, false, { message: 'Invalid password' });
+                        }
+                        return done(null, user);
+                    })
+                });
+            }));
+    }
+    catch (error) {
+        callback({ strategy: "local", error: error});
+        return;
+    }
 
     var findByUsername = function (username, fn) {
         new User({'UserName': username})
@@ -196,7 +220,7 @@ module.exports.init = function (passport, bookshelf) {
             });
     };
 
-    var findUser = function(userSpec, done) {
+    var findUser = function (userSpec, done) {
         if (userSpec.isNotLocalUser) {
             var provider = userSpec.provider;
             var providerKey = userSpec.providerKey;
@@ -230,6 +254,8 @@ module.exports.init = function (passport, bookshelf) {
 
     module.exports.findByUsername = findByUsername;
     module.exports.findUser = findUser;
+
+    callback(null);
 };
 
 function findByProviderKey(providerName, providerKey, fn) {

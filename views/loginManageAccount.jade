@@ -2,15 +2,15 @@ extends layout
 block content
     if user
         p.text-info Sie sind als <string>#{user.UserName}</strong> angemeldet.
+    if error
+        p.text-danger #{error}
+    if info
+        p.text-info #{info}
     br
     form(action="/loginManageAccount",class="form-horizontal", method="post", role="form", novalidate="novalidate")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
         h4 Passwort ändern
         hr
-        if error
-            p.text-danger #{error}
-        if info
-            p.text-info #{info}
         div(class="validation-summary-valid text-danger", data-valmsg-summary="true")
             ul
                 li(style="display:none")
@@ -37,28 +37,33 @@ block content
                 input(type="submit", value="Passwort ändern", name="changePassword", class="btn btn-default")
 
     h4 Registrierte Logins
-    div(class="col-xs-12 col-sm-12 table-responsive")
-        table.table
-            thead
-                tr
-                    th Provider
-                    th Aktion
-            tbody
-                if user && user.UserLogins
+    if user && user.UserLogins && user.UserLogins.length > 0
+        div(class="col-xs-12 col-sm-12 table-responsive")
+            table.table
+                thead
+                    tr
+                        th Provider
+                        th Aktion
+                tbody
                     each userLogin in user.UserLogins
                         tr
                             td
                                 span.text-capitalize #{userLogin.LoginProvider}
                             td
-                                form(action="/loginDisassociate" method="post" novalidate="novalidate")
+                                form(action="/loginManageAccount" method="post" novalidate="novalidate")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
                                     input(id="loginProvider", name="loginProvider",type="hidden",value="#{userLogin.LoginProvider}")
                                     input(id="providerKey",name="providerKey", type="hidden", value="#{userLogin.ProviderKey}")
-                                    input(type="submit", class="btn btn-default", value="Löschen", title="Lösche die Zuordnung dieses #{userLogin.LoginProvider} Benutzers")
+                                    input(type="submit", class="btn btn-default", name="unlink", value="Löschen", title="Lösche die Zuordnung dieses #{userLogin.LoginProvider} Benutzers")
+    else
+        hr
+        div.text-info keine
+        br
 
     h4 Einen anderen Dienst zum einloggen zuordnen
     hr
-    form(action="/loginLinkLogin?nexturl=%2FloginManageAccount", method="post", novalidate="novalidate")
+    form(action="/login", method="post", novalidate="novalidate")
+        input(type="hidden", value="/loginManageAccount", name="nexturl")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
         div(id="socialLoginList")
             p
