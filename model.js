@@ -71,6 +71,7 @@ exports.createSchema = function () {
                     t.string('Email', 256);
                     t.boolean('EmailConfirmed').notNullable();
                     t.string('PasswordHash');
+                    t.string('PasswordSalt');
                     t.string('SecurityStamp');
                     t.string('PhoneNumber');
                     t.boolean('PhoneNumberConfirmed').notNullable();
@@ -132,6 +133,26 @@ var Role = bookshelf.Model.extend({
     tableName: 'Roles'
 });
 
+var createSalt = function () {
+    var salt = crypto.randomBytes(32).toString('base64');
+    return salt;
+};
+
+var encryptPassword = function (password, salt) {
+    return crypto.createHmac('sha1', salt).update(password).digest('hex');
+    //more secure – return crypto.pbkdf2Sync(password, this.salt, 10000, 512);
+};
+
+var checkPassword = function (hashedPassword, password, salt) {
+    if (!hashedPassword) {
+        return false;
+    }
+    return encryptPassword(password, salt) === hashedPassword;
+};
+
+module.exports.createSalt = createSalt;
+module.exports.encryptPassword = encryptPassword;
+module.exports.checkPassword = checkPassword;
 module.exports.models = {
     User: User,
     UserLogin: UserLogin,

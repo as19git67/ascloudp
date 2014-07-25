@@ -47,8 +47,9 @@ router.post('/', function (req, res, next) {
                         var oldPassword = req.body.OldPassword;
                         var newPassword = req.body.NewPassword;
                         var confirmPassword = req.body.ConfirmPassword;
-                        // todo: check hashed password
-                        if (oldPassword != userModel.get('PasswordHash')) {
+                        var salt = user.PasswordSalt;
+                        var hashedPassword = model.encryptPassword(oldPassword, salt);
+                        if (userModel.get('PasswordHash') != hashedPassword) {
                             responseData.error = "Das Passwort ist falsch.";
                             res.render('loginManageAccount', responseData);
                         } else {
@@ -57,7 +58,9 @@ router.post('/', function (req, res, next) {
                                 res.render('loginManageAccount', responseData);
                             }
                             else {
-                                userModel.set('PasswordHash', newPassword);
+                                var salt = model.createSalt();
+                                userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
+                                userModel.set('PasswordSalt', salt);
                                 userModel.save().then(function () {
                                     responseData.info = "Das Passwort wurde geändert.";
                                     res.render('loginManageAccount', responseData);
@@ -92,7 +95,7 @@ router.post('/', function (req, res, next) {
                     LoginProvider: provider,
                     ProviderKey: providerKey,
                     User_id: user_id}).fetch().then(function (userLogin) {
-                        userLogin.destroy().then(function(){
+                        userLogin.destroy().then(function () {
                             console.log("UserLogin removed from User. UserID: " + user_id + ", Provider: " + provider);
 
                             // reload user and render same page again
@@ -137,7 +140,7 @@ router.post('/', function (req, res, next) {
 
 function prepareResponseDataFromUser(userModel, req) {
     var appName = config.get('appName');
-  var strategies = passportStrategies.getEnabledStrategies();
+    var strategies = passportStrategies.getEnabledStrategies();
     var canAssociateWithAzure = strategies.azure;
     var canAssociateWithTwitter = strategies.twitter;
     var canAssociateWithGoogle = strategies.google;

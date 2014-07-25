@@ -190,8 +190,9 @@ module.exports.init = function (passport, bookshelf, callback) {
                         if (!user) {
                             return done(null, false, { message: 'Unknown user ' + username });
                         }
-                        if (user.PasswordHash != password) {
-                            // todo compare hashed password
+                        var salt = user.PasswordSalt;
+                        var hashedPassword = model.encryptPassword(password, salt);
+                        if (user.PasswordHash != hashedPassword) {
                             return done(null, false, { message: 'Invalid password' });
                         }
                         return done(null, user);

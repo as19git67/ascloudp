@@ -31,9 +31,19 @@ router.post('/', function (req, res, next) {
     var password = req.body.Password;
     var passwordConfirmation = req.body.ConfirmPassword;
 
-    // todo check password are equal
-
     var provider = appName;
+
+    if (password != passwordConfirmation) {
+        res.render('loginRegisterNew', {
+            csrfToken: req.csrfToken(),
+            appName: appName,
+            title: 'Benutzerregistrierung',
+            email: username,
+            provider: provider,
+            error: 'Passwort und Wiederholung stimmen nicht überein.'
+        });
+        return;
+    }
 
     // prüfe auf bereits existierenden Eintrag in der DB mit gleichem Usernamen
     passportStrategies.findByUsername(username, function (err, user) {
@@ -59,7 +69,8 @@ router.post('/', function (req, res, next) {
                     error: "Es existiert bereits ein Account mit diesem Benutzernamen"
                 });
             } else {
-                // todo: hash password
+                var salt = model.createSalt();
+
                 new User({
                     Email: username,
                     EmailConfirmed: false,
@@ -68,7 +79,8 @@ router.post('/', function (req, res, next) {
                     LockoutEnabled: false,
                     AccessFailedCount: 0,
                     UserName: username,
-                    PasswordHash: password
+                    PasswordSalt: salt,
+                    PasswordHash: model.encryptPassword(password, salt)
                 }).save()
                     .then(function (model) {
                         var userId = model.id;
