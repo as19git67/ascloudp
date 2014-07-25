@@ -78,7 +78,7 @@ router.get('/auth/twitter/callback', passport.authenticate('twitter', { failureR
 
 router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), function (req, res, next) {
     if (req.user) {
-
+        handleExternalLoginCallback(req, res, next);
     } else {
         console.log('No user profile from Facebook oauth callback');
         res.redirect('/');
