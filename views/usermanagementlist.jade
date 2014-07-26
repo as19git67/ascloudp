@@ -19,7 +19,8 @@ block content
                             td #{user.UserName}
                             td #{user.Email}
                             td
-                                span.text-capitalize #{user.LoginProvider}
+                                each loginProvider in user.LoginProvider
+                                    span.text-capitalize #{loginProvider}
                             td
                                 a(href='/admin/userManagementUserEdit/#{user.User_id}') Details
 
