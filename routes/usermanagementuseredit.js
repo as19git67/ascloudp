@@ -4,9 +4,10 @@ var config = require('../config');
 var model = require('../model');
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
+var passportStrategies = require('../passportStrategies');
 
 /* GET user list page. */
-router.get('/:userId', function (req, res, next) {
+router.get('/:userId', passportStrategies.ensureAuthenticated, function (req, res, next) {
         var appName = config.get('appName');
         var title = 'User Management - Benutzerdetails';
         var userId = req.params.userId;

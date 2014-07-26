@@ -1,9 +1,10 @@
 var express = require('express');
 var router = express.Router();
 var config = require('../config');
+var passportStrategies = require('../passportStrategies');
 
 /* GET Admin page. */
-router.get('/', function (req, res) {
+router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
     var appName = config.get('appName');
     res.render('admin', {
       csrfToken: req.csrfToken(),
@@ -13,7 +14,7 @@ router.get('/', function (req, res) {
     });
 });
 
-router.post('/', function (req, res) {
+router.post('/', passportStrategies.ensureAuthenticated, function (req, res) {
     var appName = config.get('appName');
 
     if (req.body.dbinit) {

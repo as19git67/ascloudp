@@ -7,6 +7,8 @@ var connectionString = config.get('connectionString');
 var knex = require('knex')({client: databaseClient, connection: connectionString });
 var bookshelf = require('bookshelf')(knex);
 
+var crypto = require('crypto');
+
 function authenticate() {
     var user = getUsername().then(function (username) {
         return getUser(username);

@@ -9,7 +9,7 @@ var passportStrategies = require('../passportStrategies');
 
 // TODO: passwort ändern auch wenn kein passwort gesetzt, da nur via extern eingeloggt
 
-router.get('/', function (req, res, next) {
+router.get('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
     if (req.user) {
 
         new User({'id': req.user.id}).fetch({
@@ -34,7 +34,7 @@ router.get('/', function (req, res, next) {
     }
 });
 
-router.post('/', function (req, res, next) {
+router.post('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
     if (req.user) {
         if (req.body.changePassword) {
             console.log('Changing password for user with id ' + req.user.id);

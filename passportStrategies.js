@@ -12,7 +12,7 @@ var notRegisteredUsers = {};
 
 module.exports.init = function (passport, bookshelf, callback) {
 
-  var enabledStrategies = {};
+    var enabledStrategies = {};
 
     // Passport session setup.
     //   To support persistent login sessions, Passport needs to be able to
@@ -71,7 +71,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     });
                 }
             ));
-          enabledStrategies['google'] = true;
+            enabledStrategies['google'] = true;
         }
         catch (error) {
             callback({ strategy: "google", error: error});
@@ -115,7 +115,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     });
                 }
             ));
-          enabledStrategies['twitter'] = true;
+            enabledStrategies['twitter'] = true;
         }
         catch (error) {
             callback({ strategy: "twitter", error: error});
@@ -158,7 +158,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     });
                 }
             ));
-          enabledStrategies['facebook'] = true;
+            enabledStrategies['facebook'] = true;
         }
         catch (error) {
             callback({ strategy: "facebook", error: error});
@@ -199,7 +199,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     })
                 });
             }));
-      enabledStrategies['local'] = true;
+        enabledStrategies['local'] = true;
     }
     catch (error) {
         callback({ strategy: "local", error: error});
@@ -259,17 +259,37 @@ module.exports.init = function (passport, bookshelf, callback) {
         }
     };
 
-  var getEnabledStrategies = function()
-  {
-    return enabledStrategies;
-  }
+    var getEnabledStrategies = function () {
+        return enabledStrategies;
+    };
 
-  module.exports.getEnabledStrategies = getEnabledStrategies;
+
+    module.exports.getEnabledStrategies = getEnabledStrategies;
     module.exports.findByUsername = findByUsername;
     module.exports.findUser = findUser;
 
     callback(null);
 };
+
+// Simple route middleware to ensure user is authenticated.
+//   Use this route middleware on any resource that needs to be protected.  If
+//   the request is authenticated (typically via a persistent login session),
+//   the request will proceed.  Otherwise, the user will be redirected to the
+//   login page.
+var ensureAuthenticated = function (req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    var nextUrl = req.route.path;
+    if (nextUrl && nextUrl != '/') {
+        res.redirect('/login?nexturl=' + nextUrl);
+    } else {
+        res.redirect('/login');
+    }
+    return null;
+};
+
+module.exports.ensureAuthenticated = ensureAuthenticated;
 
 function findByProviderKey(providerName, providerKey, fn) {
     new UserLogin({
