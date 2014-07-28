@@ -26,7 +26,7 @@ function authenticate() {
 
 exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
-        knex.schema.hasTable('Roles').then(function (exists) {
+        knex.schema.hasTable('Audits').then(function (exists) {
             if (exists) {
                 console.log('DB schema exists.');
                 resolve();
@@ -45,6 +45,9 @@ exports.createSchemaIfNotExists = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return  knex.schema.dropTableIfExists('Audits');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('UserClaims');
             },
@@ -107,6 +110,15 @@ exports.createSchema = function () {
                     t.string('ClaimType');
                     t.string('ClaimValue');
                 });
+            },
+            function () {
+                return  knex.schema.createTable('Audits', function (t) {
+                    t.increments('id').primary();
+                    t.timestamp('ChangedAt').notNullable().index();
+                    t.string('Table').notNullable().index();
+                    t.string('ChangedBy').notNullable().index();
+                    t.string('Description').notNullable();
+                });
             }
         ],
         function (total, current, index, arrayLength) {
@@ -135,6 +147,10 @@ var Role = bookshelf.Model.extend({
     tableName: 'Roles'
 });
 
+var Audit = bookshelf.Model.extend({
+    tableName: 'Audits'
+});
+
 var createSalt = function () {
     var salt = crypto.randomBytes(32).toString('base64');
     return salt;
@@ -158,7 +174,8 @@ module.exports.checkPassword = checkPassword;
 module.exports.models = {
     User: User,
     UserLogin: UserLogin,
-    Role: Role
+    Role: Role,
+    Audit: Audit
 };
 
 module.exports.bookshelf = bookshelf;

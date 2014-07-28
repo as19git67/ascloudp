@@ -31,20 +31,9 @@ block content
                     id="email", name="email", type="text", value="#{userData.Email}")
                     span(class="field-validation-valid text-danger", data-valmsg-for="email", data-valmsg-replace="true")
             div.form-group
-                label(for="email",class="col-xs-12 col-md-2 control-label") Login Provider:
-                div(class="col-xs-12 col-md-10 table-responsive")
-                    table.table
-                        if userData.UserLogins
-                            for userLogin in userData.UserLogins
-                                tr
-                                    td
-                                        span.text-capitalize #{userLogin.LoginProvider}
-                                    td
-                                        span #{userLogin.ProviderKey}&nbsp
-                                    td
-                                        button(class="btn btn-default", id="delete_UserLogin_#{userLogin.UserLogin_id}", name="delete_UserLogin_#{userLogin.UserLogin_id}")
-                                            span(class="glyphicon glyphicon-trash")
-                                            | &nbsp Löschen
+                label(for="provider",class="col-xs-12 col-md-2 control-label") Login Provider:
+                div(class="col-xs-12 col-md-10 form-control-static", id="provider")
+                    span #{userData.UserLoginProviders_formatted}
             div.form-group
                 button(class="btn btn-default", id="save", value="save", name="save")
                     span(class="glyphicon glyphicon-save")

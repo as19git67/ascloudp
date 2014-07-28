@@ -19,12 +19,19 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
                         User_id: user.get('id'),
                         Email: user.get('Email'),
                         UserName: user.get('UserName'),
+                        UserLoginProviders_formatted: "",
                         LoginProvider: []
                     };
 
                     var userLogins = user.related('UserLogin');
                     if (userLogins.length > 0) {
                         userLogins.each(function (userLogin) {
+                            if (userObj.UserLoginProviders_formatted.length > 0) {
+                                userObj.UserLoginProviders_formatted = userObj.UserLoginProviders_formatted + ', ';
+                            }
+                            var loginProvider = userLogin.get('LoginProvider');
+                            loginProvider = loginProvider.charAt(0).toUpperCase() + loginProvider.substr(1);
+                            userObj.UserLoginProviders_formatted = userObj.UserLoginProviders_formatted + loginProvider;
                             userObj.LoginProvider.push(userLogin.get('LoginProvider'));
                         });
                     }

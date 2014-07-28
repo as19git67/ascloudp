@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 var model = require('../model');
+var Audit = model.models.Audit;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
@@ -13,16 +14,23 @@ function prepareResponse(user) {
         User_id: user.get('id'),
         Email: user.get('Email'),
         UserName: user.get('UserName'),
+        UserLoginProviders_formatted: "",
         UserLogins: userLoginsArray
     };
     var userLogins = user.related('UserLogin');
     if (userLogins.length > 0) {
         userLogins.each(function (userLogin) {
+            if (userObj.UserLoginProviders_formatted.length > 0) {
+                userObj.UserLoginProviders_formatted = userObj.UserLoginProviders_formatted + ', ';
+            }
+            var loginProvider = userLogin.get('LoginProvider');
+            loginProvider = loginProvider.charAt(0).toUpperCase() + loginProvider.substr(1);
+            userObj.UserLoginProviders_formatted = userObj.UserLoginProviders_formatted + loginProvider;
+
             userLoginsArray.push({
                 UserLogin_id: userLogin.get('id'),
                 LoginProvider: userLogin.get('LoginProvider'),
                 ProviderKey: userLogin.get('ProviderKey')
-
             });
         });
     }
@@ -80,22 +88,57 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                             res.redirect('/admin/userManagement');
                         } else {
                             if (req.body.save) {
+                                var emailChanged = false;
+                                var userNameChanged = false;
+                                var changeText = "";
                                 console.log("Saving user " + userId + ' (' + user.get('Email') + ')');
-                                user.set('Email', req.body.email);
-                                user.set('UserName', req.body.username);
-                                user.save().then(function () {
-                                    res.redirect('/admin/userManagement');
-                                }).catch(function (error) {
-                                    console.log("ERROR while saving user: " + error);
+                                if (user.get('Email') != req.body.email) {
+                                    changeText = "Email: " + user.get('Email') + " -> " + req.body.email;
+                                    user.set('Email', req.body.email);
+                                    emailChanged = true;
+                                }
+                                if (user.get('UserName') != req.body.username) {
+                                    if (emailChanged) {
+                                        changeText = changeText + ', ';
+                                    }
+                                    changeText = changeText + "UserName: " + user.get('UserName') + " -> " + req.body.username;
+                                    user.set('UserName', req.body.username);
+                                    userNameChanged = true;
+                                }
+                                if (emailChanged || userNameChanged) {
+                                    user.save().then(function () {
+                                        new Audit({
+                                                ChangedAt: new Date(),
+                                                Table: user.tableName,
+                                                ChangedBy: req.user.Email,
+                                                Description: changeText
+                                            }
+                                        ).save().then(function () {
+                                                res.redirect('/admin/userManagement');
+                                            }
+                                        );
+                                    }).catch(function (error) {
+                                        console.log("ERROR while saving user: " + error);
+                                        res.render('usermanagementuseredit', {
+                                            csrfToken: req.csrfToken(),
+                                            appName: appName,
+                                            title: title,
+                                            user: req.user,
+                                            error: "Fehler beim Speichern der Benutzerinformationen.",
+                                            userData: userObj
+                                        });
+                                    });
+                                }
+                                else {
                                     res.render('usermanagementuseredit', {
                                         csrfToken: req.csrfToken(),
                                         appName: appName,
                                         title: title,
                                         user: req.user,
-                                        error: "Fehler beim Speichern der Benutzerinformationen.",
+                                        info: "Keine Änderungen. Es wurde nichts gespeichert.",
                                         userData: userObj
                                     });
-                                });
+                                }
                             }
                             else {
                                 var infoMessage = "Externer Login wurde nicht gelöscht.";
