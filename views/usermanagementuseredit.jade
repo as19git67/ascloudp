@@ -1,21 +1,26 @@
 extends layout
 block content
-    h4 Details von #{appName}-Benutzer #{userData.UserName}
-    hr
     if error
         p.text-danger #{error}
+    if info
+        p.text-info #{info}
+    if error || info
+        br
+    h4 Details von #{appName}-Benutzer #{userData.UserName}
+    hr
     div.col-md-12
         form(class="form-horizontal", role="form", action="/admin/userManagementUserEdit", method="post")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
+            input(type="hidden", value="#{userData.User_id}" name="User_id")
             div.form-group
                 label(for="username",class="col-xs-12 col-md-2 control-label") Benutzerkennung:
                 div(class="col-xs-12 col-md-10")
                     input(class="form-control", data-val="true",
-                    data-val-email="Der Username muss im email Format sein",
-                    data-val-required="Das Passwort muss eingegeben werden.",
+                    data-val-email="Die Benutzerkennung muss im email Format sein",
+                    data-val-required="Die Benutzerkennung muss eingegeben werden.",
                     placeholder='Benutzerkennung',
                     id="username", name="username", type="text", value='#{userData.UserName}')
-                    span(class="field-validation-valid text-danger", data-valmsg-for="password", data-valmsg-replace="true")
+                    span(class="field-validation-valid text-danger", data-valmsg-for="username", data-valmsg-replace="true")
             div.form-group
                 label(for="email",class="col-xs-12 col-md-2 control-label") Email:
                 div(class="col-xs-12 col-md-10")
@@ -35,9 +40,20 @@ block content
                                     td
                                         span.text-capitalize #{userLogin.LoginProvider}
                                     td
-                                        span #{userLogin.ProviderKey}
+                                        span #{userLogin.ProviderKey}&nbsp
                                     td
-                                        button(class="btn btn-default", id="delete_UserLogin_#{userLogin.UserLogin_id}")
+                                        button(class="btn btn-default", id="delete_UserLogin_#{userLogin.UserLogin_id}", name="delete_UserLogin_#{userLogin.UserLogin_id}")
                                             span(class="glyphicon glyphicon-trash")
-                                            | Löschen
-
+                                            | &nbsp Löschen
+            div.form-group
+                button(class="btn btn-default", id="save", value="save", name="save")
+                    span(class="glyphicon glyphicon-save")
+                    | &nbsp Änderungen Speichern
+                button(class="btn btn-default", id="cancel", value="cancel", name="cancel")
+                    span(class="glyphicon glyphicon-remove")
+                    | &nbsp Abbrechen
+            div.form-group
+                hr
+                button(class="btn btn-default btn-danger", id="deleteAccount", value="deleteAccount", name="deleteAccount")
+                    span(class="glyphicon glyphicon-trash")
+                    | &nbsp Benutzer löschen
