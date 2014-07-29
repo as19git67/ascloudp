@@ -88,6 +88,7 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                             res.redirect('/admin/userManagement');
                         } else {
                             if (req.body.save) {
+                                var origUserName = user.get('UserName');
                                 var emailChanged = false;
                                 var userNameChanged = false;
                                 var changeText = "";
@@ -97,11 +98,11 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                     user.set('Email', req.body.email);
                                     emailChanged = true;
                                 }
-                                if (user.get('UserName') != req.body.username) {
+                                if (origUserName != req.body.username) {
                                     if (emailChanged) {
                                         changeText = changeText + ', ';
                                     }
-                                    changeText = changeText + "UserName: " + user.get('UserName') + " -> " + req.body.username;
+                                    changeText = changeText + "UserName: " + origUserName + " -> " + req.body.username;
                                     user.set('UserName', req.body.username);
                                     userNameChanged = true;
                                 }
@@ -110,7 +111,7 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                         new Audit({
                                                 ChangedAt: new Date(),
                                                 Table: user.tableName,
-                                                ChangedBy: req.user.Email,
+                                                ChangedBy: origUserName,
                                                 Description: changeText
                                             }
                                         ).save().then(function () {

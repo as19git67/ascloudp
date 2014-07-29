@@ -48,8 +48,8 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                         var oldPassword = req.body.OldPassword;
                         var newPassword = req.body.NewPassword;
                         var confirmPassword = req.body.ConfirmPassword;
-                        var salt = user.PasswordSalt;
-                        var hashedPassword = model.encryptPassword(oldPassword, salt);
+                        var oldSalt = req.user.PasswordSalt;
+                        var hashedPassword = model.encryptPassword(oldPassword, oldSalt);
                         if (userModel.get('PasswordHash') != hashedPassword) {
                             responseData.error = "Das Passwort ist falsch.";
                             res.render('loginManageAccount', responseData);
@@ -65,8 +65,8 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                 userModel.save().then(function () {
                                     new Audit({
                                             ChangedAt: new Date(),
-                                            Table: user.tableName,
-                                            ChangedBy: req.user.Email,
+                                            Table: userModel.tableName,
+                                            ChangedBy: userModel.get('UserName'),
                                             Description: "Password changed"
                                         }
                                     ).save().then(function () {
@@ -84,7 +84,7 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                         }
                     }
                 } else {
-                    console.log("Can't manage user: user not found in database.");
+                    console.log("Can't change users password: user not found in database.");
                     res.redirect('/');
                 }
             }).catch(function (error) {
@@ -104,39 +104,49 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                 new UserLogin({
                     LoginProvider: provider,
                     ProviderKey: providerKey,
-                    User_id: user_id}).fetch().then(function (userLogin) {
-                        userLogin.destroy().then(function () {
-                            console.log("UserLogin removed from User. UserID: " + user_id + ", Provider: " + provider);
-                            new Audit({
-                                    ChangedAt: new Date(),
-                                    Table: user.tableName,
-                                    ChangedBy: req.user.Email,
-                                    Description: "UserLogin removed from User. Provider: " + provider
-                                }
-                            ).save().then(function () {
+                    User_id: user_id}).fetch({
+                        withRelated: ['User']
+                    }).then(function (userLogin) {
+                        if (userLogin) {
+                            var userModel = userLogin.related('User');
+                            userLogin.destroy().then(function () {
+                                var userDesc = userModel.get('UserName') + ' (' + user_id + ')';
+                                console.log("UserLogin removed from user " + userDesc + ", Provider: " + provider);
+                                new Audit({
+                                        ChangedAt: new Date(),
+                                        Table: userModel.tableName,
+                                        ChangedBy: userModel.get('UserName'),
+                                        Description: "UserLogin removed from user " + userDesc + ", Provider: " + provider
+                                    }
+                                ).save().then(function () {
 
-                                    // reload user and render same page again
+                                        // reload user and render same page again
 
-                                    new User({'id': user_id}).fetch({
-                                        withRelated: ['UserLogin']
-                                    }).then(function (userModel) {
-                                        if (userModel) {
-                                            var responseData = prepareResponseDataFromUser(userModel, req);
-                                            responseData.info = "Der " + provider + " Login wurde entfernt.";
-                                            res.render('loginManageAccount', responseData);
-                                        } else {
-                                            console.log("Can't manage user: user not found in database.");
-                                            res.redirect('/');
-                                        }
+                                        new User({'id': user_id}).fetch({
+                                            withRelated: ['UserLogin']
+                                        }).then(function (userModel) {
+                                            if (userModel) {
+                                                var responseData = prepareResponseDataFromUser(userModel, req);
+                                                responseData.info = "Der " + provider + " Login wurde entfernt.";
+                                                res.render('loginManageAccount', responseData);
+                                            } else {
+                                                console.log("Can't manage user: user not found in database.");
+                                                res.redirect('/');
+                                            }
 
-                                    }).catch(function (error) {
-                                        console.log("Error while accessing users in the database: " + error);
-                                        var err = new Error(error);
-                                        err.status = 500;
-                                        next(err);
+                                        }).catch(function (error) {
+                                            console.log("Error while accessing users in the database: " + error);
+                                            var err = new Error(error);
+                                            err.status = 500;
+                                            next(err);
+                                        });
                                     });
-                                });
-                        });
+                            });
+                        }
+                        else {
+                            console.log("Can't manage unlink external login from user: user not found in database.");
+                            res.redirect('/');
+                        }
                     })
                     .catch(function (error) {
                         console.log("Error while deleting from UserLogin in DB: " + error);
@@ -144,7 +154,6 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                         err.status = 500;
                         next(err);
                     });
-
             } else {
                 console.log("post to loginManageAccount with unknown submitted value - don't know what to do");
                 res.redirect('/');

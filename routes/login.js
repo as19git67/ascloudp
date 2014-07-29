@@ -4,6 +4,7 @@ var config = require('../config');
 var passport = require('passport');
 var passportStrategies = require('../passportStrategies');
 var model = require('../model');
+var Audit = model.models.Audit;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 
@@ -11,13 +12,13 @@ var UserLogin = model.models.UserLogin;
 router.get('/', function (req, res) {
     var appName = config.get('appName');
 
-  var strategies = passportStrategies.getEnabledStrategies();
-  res.render('login', {
+    var strategies = passportStrategies.getEnabledStrategies();
+    res.render('login', {
         csrfToken: req.csrfToken(),
         appName: appName,
         title: 'Login',
         user: req.user,
-    passportStrategies: strategies
+        passportStrategies: strategies
     });
 });
 
@@ -146,13 +147,23 @@ function linkUser(req, res, next) {
                 .then(function (userLoginModel) {
                     console.log("New UserLogin saved in DB. UserID: " +
                         userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
-                    req.login(userModel.attributes, function (err) {
-                        if (err) {
-                            console.log('Failed to re-passport.login with newly registered user: ' + err);
-                        }
-                      res.redirect('/loginManageAccount');
-                    });
 
+                    new Audit({
+                            ChangedAt: new Date(),
+                            Table: userModel.tableName,
+                            ChangedBy: userModel.get('UserName'),
+                            Description: "UserLogin added to user. Provider: " + provider
+                        }
+                    ).save().then(function () {
+
+                            req.login(userModel.attributes, function (err) {
+                                if (err) {
+                                    console.log('Failed to re-passport.login with newly registered user: ' + err);
+                                }
+                                res.redirect('/loginManageAccount');
+                            });
+                        }
+                    );
                 })
                 .catch(function (error) {
                     console.log("Error while saving new UserLogin in DB: " + error);
