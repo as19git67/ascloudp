@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 var model = require('../model');
+var Audit = model.models.Audit;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
@@ -62,8 +63,17 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                 userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
                                 userModel.set('PasswordSalt', salt);
                                 userModel.save().then(function () {
-                                    responseData.info = "Das Passwort wurde geändert.";
-                                    res.render('loginManageAccount', responseData);
+                                    new Audit({
+                                            ChangedAt: new Date(),
+                                            Table: user.tableName,
+                                            ChangedBy: req.user.Email,
+                                            Description: "Password changed"
+                                        }
+                                    ).save().then(function () {
+                                            responseData.info = "Das Passwort wurde geändert.";
+                                            res.render('loginManageAccount', responseData);
+                                        }
+                                    );
                                 }).catch(function (error) {
                                     console.log("Error while accessing users in the database: " + error);
                                     var err = new Error(error);
@@ -97,26 +107,35 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                     User_id: user_id}).fetch().then(function (userLogin) {
                         userLogin.destroy().then(function () {
                             console.log("UserLogin removed from User. UserID: " + user_id + ", Provider: " + provider);
-
-                            // reload user and render same page again
-
-                            new User({'id': user_id}).fetch({
-                                withRelated: ['UserLogin']
-                            }).then(function (userModel) {
-                                if (userModel) {
-                                    var responseData = prepareResponseDataFromUser(userModel, req);
-                                    responseData.info = "Der " + provider + " Login wurde entfernt.";
-                                    res.render('loginManageAccount', responseData);
-                                } else {
-                                    console.log("Can't manage user: user not found in database.");
-                                    res.redirect('/');
+                            new Audit({
+                                    ChangedAt: new Date(),
+                                    Table: user.tableName,
+                                    ChangedBy: req.user.Email,
+                                    Description: "UserLogin removed from User. Provider: " + provider
                                 }
-                            }).catch(function (error) {
-                                console.log("Error while accessing users in the database: " + error);
-                                var err = new Error(error);
-                                err.status = 500;
-                                next(err);
-                            });
+                            ).save().then(function () {
+
+                                    // reload user and render same page again
+
+                                    new User({'id': user_id}).fetch({
+                                        withRelated: ['UserLogin']
+                                    }).then(function (userModel) {
+                                        if (userModel) {
+                                            var responseData = prepareResponseDataFromUser(userModel, req);
+                                            responseData.info = "Der " + provider + " Login wurde entfernt.";
+                                            res.render('loginManageAccount', responseData);
+                                        } else {
+                                            console.log("Can't manage user: user not found in database.");
+                                            res.redirect('/');
+                                        }
+
+                                    }).catch(function (error) {
+                                        console.log("Error while accessing users in the database: " + error);
+                                        var err = new Error(error);
+                                        err.status = 500;
+                                        next(err);
+                                    });
+                                });
                         });
                     })
                     .catch(function (error) {
