@@ -26,7 +26,7 @@ function authenticate() {
 
 exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
-        knex.schema.hasTable('Audits').then(function (exists) {
+        knex.schema.hasTable('RolePermissions').then(function (exists) {
             if (exists) {
                 console.log('DB schema exists.');
                 resolve();
@@ -61,6 +61,9 @@ exports.createSchema = function () {
                 return  knex.schema.dropTableIfExists('Users');
             },
             function () {
+                return  knex.schema.dropTableIfExists('RolePermissions');
+            },
+            function () {
                 return  knex.schema.dropTableIfExists('Roles');
             },
             // ### CREATION STARTS HERE
@@ -68,6 +71,14 @@ exports.createSchema = function () {
                 return  knex.schema.createTable('Roles', function (t) {
                     t.increments('id').primary();
                     t.string('Name').unique().notNullable();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('RolePermissions', function (t) {
+                    t.integer('Role_id').notNullable().references('id').inTable('Roles').index();
+                    t.string('Resource').notNullable().index();
+                    t.string('Permission', 6).notNullable().index();
+                    t.primary(['Role_id', 'Resource', 'Permission']);
                 });
             },
             function () {
@@ -144,7 +155,27 @@ var UserLogin = bookshelf.Model.extend({
 });
 
 var Role = bookshelf.Model.extend({
-    tableName: 'Roles'
+    tableName: 'Roles',
+    UserRole: function () {
+        return this.hasMany(UserRole);
+    },
+    RolePermission: function () {
+        return this.hasMany(RolePermission);
+    }
+});
+
+var UserRole = bookshelf.Model.extend({
+    tableName: 'UserRoles',
+    User: function () {
+        return this.belongsTo(User);
+    }
+});
+
+var RolePermission = bookshelf.Model.extend({
+    tableName: 'RolePermissions',
+    Role: function () {
+        return this.belongsTo(Role);
+    }
 });
 
 var Audit = bookshelf.Model.extend({
@@ -175,6 +206,8 @@ module.exports.models = {
     User: User,
     UserLogin: UserLogin,
     Role: Role,
+    RolePermission: RolePermission,
+    UserRole: UserRole,
     Audit: Audit
 };
 

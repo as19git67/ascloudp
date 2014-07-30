@@ -2,7 +2,6 @@ var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
-var cookieParser = require('cookie-parser');
 var expressSession = require('express-session');
 var bodyParser = require('body-parser');
 var csrf = require('csurf');
@@ -14,6 +13,7 @@ var _ = require('underscore');
 
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
+var acl = require('acl');
 
 var routes = require('./routes/index');
 var admin = require('./routes/admin');
@@ -25,6 +25,8 @@ var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
+
+var acl = new acl(new acl.memoryBackend());
 
 var app = express();
 
