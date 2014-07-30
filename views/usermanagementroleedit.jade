@@ -1,0 +1,29 @@
+extends layout
+block content
+    if error
+        p.text-danger #{error}
+    if info
+        p.text-info #{info}
+    if error || info
+        br
+    if editRole
+        h4 Details von #{appName}-Rolle #{role.Name}
+    else
+        h4 Neue Rolle anlegen
+    hr
+    div.col-md-12
+        form(class="form-horizontal", role="form", action="/admin/userManagementRoleEdit", method="post")
+            input(type="hidden", value="#{csrfToken}" name="_csrf")
+            if editRole
+                input(type="hidden", value="#{role.Role_id}" name="Role_id")
+            div.form-group
+                label(for="rolename",class="col-xs-12 col-md-1 control-label") Name:
+                div(class="col-xs-12 col-md-11")
+                    input(class="form-control", data-val="true",
+                    data-val-required="Der Rollenname muss eingegeben werden.",
+                    placeholder='Rollenname',
+                    id="rolename", name="rolename", type="text", value='#{role.Name}')
+                    span(class="field-validation-valid text-danger", data-valmsg-for="rolename", data-valmsg-replace="true")
+            div.form-group
+                label(for="roleprofiles",class="col-xs-12 col-md-1 control-label") Profile:
+                div(class="col-xs-12 col-md-11")

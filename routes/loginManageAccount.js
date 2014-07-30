@@ -37,11 +37,41 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res, next
 
 router.post('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
     if (req.user) {
-        if (req.body.changePassword) {
-            console.log('Changing password for user with id ' + req.user.id);
+        if (req.body.changePassword || req.body.setPassword) {
+            console.log('Changing/Setting password for user with id ' + req.user.id);
             new User({'id': req.user.id}).fetch({
                 withRelated: ['UserLogin']
             }).then(function (userModel) {
+
+                function setPassword(newPassword, responseData) {
+                    var salt = model.createSalt();
+                    userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
+                    userModel.set('PasswordSalt', salt);
+                    userModel.save().then(function () {
+                        new Audit({
+                                ChangedAt: new Date(),
+                                Table: userModel.tableName,
+                                ChangedBy: userModel.get('UserName'),
+                                Description: "Password changed"
+                            }
+                        ).save().then(function () {
+                                if (responseData.setPassword) {
+                                    responseData.info = "Das Passwort wurde gesetzt.";
+                                    responseData.setPassword = false;   // next time allow changing the password
+                                } else {
+                                    responseData.info = "Das Passwort wurde geändert.";
+                                }
+                                res.render('loginManageAccount', responseData);
+                            }
+                        );
+                    }).catch(function (error) {
+                        console.log("Error while accessing users in the database: " + error);
+                        var err = new Error(error);
+                        err.status = 500;
+                        next(err);
+                    });
+                }
+
                 if (userModel) {
                     var responseData = prepareResponseDataFromUser(userModel, req);
                     if (req.body.changePassword) {
@@ -59,28 +89,25 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                 res.render('loginManageAccount', responseData);
                             }
                             else {
-                                var salt = model.createSalt();
-                                userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
-                                userModel.set('PasswordSalt', salt);
-                                userModel.save().then(function () {
-                                    new Audit({
-                                            ChangedAt: new Date(),
-                                            Table: userModel.tableName,
-                                            ChangedBy: userModel.get('UserName'),
-                                            Description: "Password changed"
-                                        }
-                                    ).save().then(function () {
-                                            responseData.info = "Das Passwort wurde geändert.";
-                                            res.render('loginManageAccount', responseData);
-                                        }
-                                    );
-                                }).catch(function (error) {
-                                    console.log("Error while accessing users in the database: " + error);
-                                    var err = new Error(error);
-                                    err.status = 500;
-                                    next(err);
-                                });
+                                setPassword(newPassword, responseData);
                             }
+                        }
+                    }
+                    else {
+                        if (req.body.setPassword) {
+                            var newPassword = req.body.NewPassword;
+                            var confirmPassword = req.body.ConfirmPassword;
+                            if (newPassword != confirmPassword) {
+                                responseData.error = "Die Passwortwiederholung stimmt nicht mit dem Passwort überein.";
+                                res.render('loginManageAccount', responseData);
+                            }
+                            else {
+                                setPassword(newPassword, responseData);
+                            }
+                        }
+                        else {
+                            // wrong post - parameter not set -> display this page again
+                            res.render('loginManageAccount', responseData);
                         }
                     }
                 } else {
@@ -213,11 +240,17 @@ function prepareResponseDataFromUser(userModel, req) {
         appName: appName,
         title: 'Benutzereinstellungen',
         user: user,
+        setPassword: false,
         canAssociateWithAzure: canAssociateWithAzure,
         canAssociateWithTwitter: canAssociateWithTwitter,
         canAssociateWithGoogle: canAssociateWithGoogle,
         canAssociateWithFacebook: canAssociateWithFacebook
     };
+    // markiere responseData wenn bisher kein Passwort gesetzt ist
+    var passwordHash = userModel.get('PasswordHash');
+    if (!passwordHash || passwordHash == "") {
+        responseData.setPassword = true;
+    }
     return responseData;
 }
 

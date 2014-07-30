@@ -5,6 +5,15 @@ block content
         input(type="hidden", value="#{csrfToken}" name="_csrf")
         if error
             p.text-danger #{error}
+        div.form-horizontal
+            div.form-group
+                label(class="col-xs-7 col-sm-3 control-label", for="addNewRole") Neue Rolle hinzufügen:
+                div(class="col-xs-5 col-sm-2")
+                    button(class="btn btn-default", id="addNewRole", value="Hinzufügen", name="addNewRole")
+                        span(class="glyphicon glyphicon-add")
+                        | &nbsp Hinzufügen
+
+
         div(class="col-xs-12 col-sm-12 table-responsive")
             table.table
                 thead

@@ -20,13 +20,12 @@ var admin = require('./routes/admin');
 var userManagementUserList = require('./routes/usermanagementuserlist');
 var userManagementUserEdit = require('./routes/usermanagementuseredit');
 var userManagementRoles = require('./routes/usermanagementroles');
+var userManagementRoleEdit = require('./routes/usermanagementroleedit');
 var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
-
-var acl = new acl(new acl.memoryBackend());
 
 var app = express();
 
@@ -55,6 +54,7 @@ app.use('/admin', admin);
 app.use('/admin/userManagementUserList', userManagementUserList);
 app.use('/admin/userManagementUserEdit', userManagementUserEdit);
 app.use('/admin/userManagementRoles', userManagementRoles);
+app.use('/admin/userManagementRoleEdit', userManagementRoleEdit);
 app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);

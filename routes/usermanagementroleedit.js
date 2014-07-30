@@ -7,44 +7,46 @@ var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
 
-router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
+router.get('/:roleId', passportStrategies.ensureAuthenticated, function (req, res, next) {
+        var title;
         var appName = config.get('appName');
-        var title = 'Rollenmanagement - Alle Rollen';
+        var roleId = req.params.roleId;
+        if (roleId) {
+            title = 'Rollenmanagement - Rolle ändern';
+        } else {
+            title = 'Rollenmanagement - Neue Rolle';
+        }
 
-        new Role().fetchAll({withRelated: ['UserRole']})
-            .then(function (roleList) {
-                var roles = [];
-                roleList.each(function (role) {
-                    var roleObj = {
-                        Role_id: role.get('id'),
-                        Name: role.get('Name'),
-                        UserRoles: []
-                    };
+        new Role({id: roleId}).fetch({withRelated: ['RolePermission']})
+            .then(function (role) {
+                var roleObj = {
+                    Role_id: role.get('id'),
+                    Name: role.get('Name'),
+                    RolePermissions: []
+                };
 
-                    var userRoles = role.related('UserRole');
-                    if (userRoles.length > 0) {
-                        userRoles.each(function (userRole) {
-                            role.UserRoles.push(userRole.get('User_id'));
-                        });
-                    }
-                    roles.push(roleObj);
-                });
-                res.render('usermanagementroles', {
+                var rolePermissions = role.related('RolePermission');
+                if (rolePermissions.length > 0) {
+                    rolePermissions.each(function (rolePermission) {
+                        roleObj.RolePermission.push(rolePermission.attributes);
+                    });
+                }
+                res.render('usermanagementroleedit', {
                     csrfToken: req.csrfToken(),
                     appName: appName,
                     title: title,
                     user: req.user,
-                    roles: roles
+                    role: roleObj
                 });
             })
             .catch(function (error) {
-                res.render('usermanagementroles', {
+                res.render('usermanagementroleedit', {
                         csrfToken: req.csrfToken(),
                         appName: appName,
                         title: title,
                         user: req.user,
                         error: 'Error: ' + error,
-                        roles: []
+                        role: {}
                     }
                 );
             }
@@ -59,25 +61,14 @@ router.post('/', function (req, res, next) {
             withRelated: ['UserLogin']
         }).then(function (userModel) {
             if (userModel) {
-                var appName = config.get('appName');
 
-                if (req.body.addNewRole) {
-                    res.render('usermanagementroleedit', {
-                        appName: appName,
-                        role: {
-                            Name: ""
-                        }
-                    });
+                var provider = req.body.provider;
 
+
+                if (req.body.nexturl) {
+                    res.redirect(req.body.nexturl);
                 } else {
-
-                    var provider = req.body.provider;
-
-                    if (req.body.nexturl) {
-                        res.redirect(req.body.nexturl);
-                    } else {
-                        res.redirect('/');
-                    }
+                    res.redirect('/');
                 }
             }
             else {
