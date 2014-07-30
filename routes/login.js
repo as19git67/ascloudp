@@ -97,7 +97,15 @@ function handlePassportAuthenticate(next, res, req) {
             return next(err);
         }
         if (!user) {
-            return res.redirect('/login');
+            console.log('Authentication failed.');
+            res.render('login', {
+                csrfToken: req.csrfToken(),
+                appName: config.get('appName'),
+                title: 'Login failed',
+                user: req.user,
+                passportStrategies: passportStrategies.getEnabledStrategies(),
+                error: "Der eingegebene Benutzername (Email) oder das Passwort ist falsch."
+            });
         }
         req.logIn(user, function (err) {
             if (err) {

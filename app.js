@@ -17,14 +17,14 @@ var passportStrategies = require('./passportStrategies');
 
 var routes = require('./routes/index');
 var admin = require('./routes/admin');
-var userManagement = require('./routes/usermanagement');
+var userManagementUserList = require('./routes/usermanagementuserlist');
 var userManagementUserEdit = require('./routes/usermanagementuseredit');
+var userManagementRoles = require('./routes/usermanagementroles');
 var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
-var loginLinkLogin = require('./routes/loginLinkLogin');
 
 var app = express();
 
@@ -50,14 +50,14 @@ app.use(csrf());
 app.use('/', routes);
 
 app.use('/admin', admin);
-app.use('/admin/userManagement', userManagement);
+app.use('/admin/userManagementUserList', userManagementUserList);
 app.use('/admin/userManagementUserEdit', userManagementUserEdit);
+app.use('/admin/userManagementRoles', userManagementRoles);
 app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
-app.use('/loginLinkLogin', loginLinkLogin);
 
 
 /// catch 404 and forward to error handler

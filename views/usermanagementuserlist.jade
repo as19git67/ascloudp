@@ -1,7 +1,7 @@
 extends layout
 block content
     h4 Benutzerliste
-    form(action="/admin/userManagement",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+    form(action="/admin/userManagementUserList",class="form-horizontal", method="post", role="form", novalidate="novalidate")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
         if error
             p.text-danger #{error}

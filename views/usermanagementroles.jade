@@ -1,0 +1,19 @@
+extends layout
+block content
+    h4 Rollenliste
+    form(action="/admin/userManagementRoles",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
+        if error
+            p.text-danger #{error}
+        div(class="col-xs-12 col-sm-12 table-responsive")
+            table.table
+                thead
+                    tr
+                        th Rollenname
+                        th Aktionen
+                tbody
+                    each role in roles
+                        tr
+                            td #{role.Name}
+                            td
+                                a(href='/admin/userManagementRoleEdit/#{role.Role_id}') Details

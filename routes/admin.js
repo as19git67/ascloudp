@@ -42,7 +42,10 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res) {
             });
     }
     else if (req.body.usermanagement) {
-        res.redirect('/admin/usermanagement');
+        res.redirect('/admin/usermanagementuserlist');
+    }
+    else if (req.body.rolemanagement) {
+            res.redirect('/admin/usermanagementroles');
     } else {
         res.redirect('/admin');
     }

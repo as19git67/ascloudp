@@ -6,7 +6,6 @@ var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
 
-/* GET user list page. */
 router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
         var appName = config.get('appName');
         var title = 'User Management - Benutzer';
@@ -37,7 +36,7 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
                     }
                     users.push(userObj);
                 });
-                res.render('usermanagementlist', {
+                res.render('usermanagementuserlist', {
                     csrfToken: req.csrfToken(),
                     appName: appName,
                     title: title,
@@ -47,7 +46,7 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
                 });
             })
             .catch(function (error) {
-                res.render('usermanagementlist', {
+                res.render('usermanagementuserlist', {
                         csrfToken: req.csrfToken(),
                         appName: appName,
                         title: title,

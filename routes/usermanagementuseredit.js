@@ -82,10 +82,10 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                     if (req.body.deleteAccount) {
                         console.log("Deleting user " + userId + ' (' + user.get('Email') + ')');
                         // todo: confirmation message
-                        res.redirect('/admin/userManagement');
+                        res.redirect('/admin/userManagementUserList');
                     } else {
                         if (req.body.cancel) {
-                            res.redirect('/admin/userManagement');
+                            res.redirect('/admin/userManagementUserList');
                         } else {
                             if (req.body.save) {
                                 var origUserName = user.get('UserName');
@@ -115,7 +115,7 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                                 Description: changeText
                                             }
                                         ).save().then(function () {
-                                                res.redirect('/admin/userManagement');
+                                                res.redirect('/admin/userManagementUserList');
                                             }
                                         );
                                     }).catch(function (error) {
