@@ -1,4 +1,5 @@
 var express = require('express');
+var _ = require('underscore');
 var router = express.Router();
 var config = require('../config');
 var model = require('../model');
@@ -6,10 +7,11 @@ var Role = model.models.Role;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
+var Profiles = require('../profiles');
 
 router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
         var appName = config.get('appName');
-        var title = 'Rollenmanagement - Alle Rollen';
+        var title = 'User Management - Rollen';
 
         new Role().fetchAll({withRelated: ['UserRole']})
             .then(function (roleList) {
@@ -52,48 +54,29 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
     }
 );
 
-
 router.post('/', function (req, res, next) {
+    var title = 'User Management - Rollen';
     if (req.user) {
-        new User({'id': req.user.id}).fetch({
-            withRelated: ['UserLogin']
-        }).then(function (userModel) {
-            if (userModel) {
-                var appName = config.get('appName');
+        if (req.body.addNewRole) {
 
-                if (req.body.addNewRole) {
-                    res.render('usermanagementroleedit', {
-                        appName: appName,
-                        role: {
-                            Name: ""
-                        }
-                    });
+            var roleName = req.body.newRoleName;
 
-                } else {
-
-                    var provider = req.body.provider;
-
-                    if (req.body.nexturl) {
-                        res.redirect(req.body.nexturl);
-                    } else {
-                        res.redirect('/');
-                    }
+            new Role({'Name': roleName}).save()
+                .then(function (newRoleModel) {
+                    res.redirect('/admin/userManagementRoles');
+                })
+                .catch(function (error) {
+                    console.log("Error while saving new role in the database: " + error);
+                    var err = new Error(error);
+                    err.status = 500;
+                    next(err);
                 }
-            }
-            else {
-                if (req.body.nexturl) {
-                    res.redirect(req.body.nexturl);
-                } else {
-                    res.redirect('/');
-                }
-
-            }
-        }).catch(function (error) {
-            console.log("Error while accessing users in the database: " + error);
-            var err = new Error(error);
-            err.status = 500;
-            next(err);
-        });
+            );
+        }
+        else {
+            console.log("No known post parameter in request. Redirecting to /");
+            res.redirect('/');
+        }
     } else {
         console.log("No user object in request. Redirecting to /");
         res.redirect('/');

@@ -6,24 +6,37 @@ block content
         p.text-info #{info}
     if error || info
         br
-    if editRole
-        h4 Details von #{appName}-Rolle #{role.Name}
-    else
-        h4 Neue Rolle anlegen
+    h4 Details von #{appName}-Rolle #{rolename}
     hr
     div.col-md-12
         form(class="form-horizontal", role="form", action="/admin/userManagementRoleEdit", method="post")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
-            if editRole
-                input(type="hidden", value="#{role.Role_id}" name="Role_id")
+            input(type="hidden", value="#{role.Role_id}" name="Role_id")
             div.form-group
                 label(for="rolename",class="col-xs-12 col-md-1 control-label") Name:
                 div(class="col-xs-12 col-md-11")
                     input(class="form-control", data-val="true",
                     data-val-required="Der Rollenname muss eingegeben werden.",
                     placeholder='Rollenname',
-                    id="rolename", name="rolename", type="text", value='#{role.Name}')
+                    id="rolename", name="rolename", type="text", value="#{role.Name}")
                     span(class="field-validation-valid text-danger", data-valmsg-for="rolename", data-valmsg-replace="true")
             div.form-group
                 label(for="roleprofiles",class="col-xs-12 col-md-1 control-label") Profile:
                 div(class="col-xs-12 col-md-11")
+                    for profile in profiles
+                        input(type="checkbox",value="#{profile.id}", id="cb_#{profile.id}")
+                        | &nbsp #{profile.description}
+                        br
+            div.form-group
+                hr
+                button(class="btn btn-default", id="save", value="save", name="save")
+                    span(class="glyphicon glyphicon-save")
+                    | &nbsp Speichern
+                button(class="btn btn-default cancel", id="cancel", value="cancel", name="cancel")
+                    span(class="glyphicon glyphicon-remove")
+                    | &nbsp Abbrechen
+            div.form-group
+                hr
+                button(class="btn btn-default btn-danger", id="deleteRole", value="deleteRole", name="deleteRole")
+                    span(class="glyphicon glyphicon-trash")
+                    | &nbsp Rolle löschen
