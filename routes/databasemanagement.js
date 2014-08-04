@@ -22,18 +22,14 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res) {
         model.createSchema()
             .then(function () {
                 console.log("Database schema created");
-                var statusText = "Datenbanktabellen neu erzeugt";
-                res.render('databaseManagement', {
-                    appName: appName,
-                    title: 'Datenbankverwaltung',
-                    user: req.user,
-                    status: statusText
-                });
+                req.logout();
+                res.redirect('/');
             })
             .catch(function (err) {
                 console.log("ERROR when creating the database schema: " + err);
                 var errorText = "Fehler beim erzeugen der Datenbanktabellen. " + err;
                 res.render('databaseManagement', {
+                    csrfToken: req.csrfToken(),
                     appName: appName,
                     title: 'Datenbankverwaltung',
                     user: req.user,

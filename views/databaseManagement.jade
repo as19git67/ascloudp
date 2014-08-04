@@ -9,32 +9,21 @@ block content
     hr
     div(class="form-horizontal", role="form")
         div.form-group
-            label(class="col-xs-3 col-md-3 control-label", for="dbinit") Datenbank initialisieren:
-            div(class="col-xs-1 col-md-9 form-contol")
-                button(class="btn btn-danger", data-toggle="modal", data-target="#confirmModal") Start
+            div(class="col-xs-12 col-md-12 form-contol")
+                button(class="btn", data-toggle="modal", data-target="#confirmModal") Datenbank initialisieren
 
             div(class="modal fade", id="confirmModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
                 div(class="modal-dialog")
                     div(class="modal-content")
                         div(class="modal-header")
                             button(type="button", class="close", data-dismiss="modal")
-                                <span aria-hidden="true">&times;</span>
-                                <span class="sr-only">Close</span></button>
-                            <h4 class="modal-title">Modal title</h4>
-                        </div>
-                        <div class="modal-body">
-                            <p>One fine body&hellip;</p>
-                        </div>
-                        <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                            <button type="button" class="btn btn-primary">Save changes</button>
-
-
-
-            div(class="modal fade bs-example-modal-sm",tabindex="-1", role="dialog", aria-labelledby="mySmallModalLabel", aria-hidden="true")
-                div(class="modal-dialog modal-sm")
-                    div(class="modal-content")
-                        |Datenbank löschen und neu anlegen?
-                        form(action="/admin/databaseManagement", method="post", novalidate="novalidate")
-                            input(type="hidden", value="#{csrfToken}" name="_csrf")
-                            input(type="submit", class="btn btn-default", value="Start", name="dbinit" id="dbinit")
+                                span(aria-hidden="true") &times;
+                                span(class="sr-only") Close
+                            h4(class="modal-title") Datenbank initialisieren
+                        div(class="modal-body")
+                            p Datenbanktabellen löschen und neu erzeugen?
+                        div(class="modal-footer")
+                            form(action="/admin/databaseManagement", method="post", novalidate="novalidate")
+                                button(type="button", class="btn btn-default", data-dismiss="modal") Abbrechen
+                                input(type="hidden", value="#{csrfToken}" name="_csrf")
+                                input(type="submit", class="btn btn-danger", value="Ausführen", name="dbinit" id="dbinit")
