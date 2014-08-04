@@ -16,7 +16,7 @@ var passportStrategies = require('./passportStrategies');
 var acl = require('acl');
 
 var routes = require('./routes/index');
-var admin = require('./routes/admin');
+var databaseManagement = require('./routes/databasemanagement');
 var userManagementUserList = require('./routes/usermanagementuserlist');
 var userManagementUserEdit = require('./routes/usermanagementuseredit');
 var userManagementRoles = require('./routes/usermanagementroles');
@@ -50,7 +50,7 @@ app.use(csrf());
 
 app.use('/', routes);
 
-app.use('/admin', admin);
+app.use('/admin/databaseManagement', databaseManagement);
 app.use('/admin/userManagementUserList', userManagementUserList);
 app.use('/admin/userManagementUserEdit', userManagementUserEdit);
 app.use('/admin/userManagementRoles', userManagementRoles);

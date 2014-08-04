@@ -6,10 +6,10 @@ var passportStrategies = require('../passportStrategies');
 /* GET Admin page. */
 router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
     var appName = config.get('appName');
-    res.render('admin', {
-      csrfToken: req.csrfToken(),
+    res.render('databaseManagement', {
+        csrfToken: req.csrfToken(),
         appName: appName,
-        title: 'Administration',
+        title: 'Datenbankverwaltung',
         user: req.user
     });
 });
@@ -23,9 +23,9 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res) {
             .then(function () {
                 console.log("Database schema created");
                 var statusText = "Datenbanktabellen neu erzeugt";
-                res.render('admin', {
+                res.render('databaseManagement', {
                     appName: appName,
-                    title: 'Administration',
+                    title: 'Datenbankverwaltung',
                     user: req.user,
                     status: statusText
                 });
@@ -33,21 +33,15 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res) {
             .catch(function (err) {
                 console.log("ERROR when creating the database schema: " + err);
                 var errorText = "Fehler beim erzeugen der Datenbanktabellen. " + err;
-                res.render('admin', {
+                res.render('databaseManagement', {
                     appName: appName,
-                    title: 'Administration',
+                    title: 'Datenbankverwaltung',
                     user: req.user,
                     error: errorText
                 });
             });
-    }
-    else if (req.body.usermanagement) {
-        res.redirect('/admin/usermanagementuserlist');
-    }
-    else if (req.body.rolemanagement) {
-            res.redirect('/admin/usermanagementroles');
     } else {
-        res.redirect('/admin');
+        res.redirect('/');
     }
 });
 

@@ -6,7 +6,8 @@ block content
         p.text-danger #{error}
     if info
         p.text-info #{info}
-    br
+    if error || info
+        br
     form(action="/loginManageAccount",class="form-horizontal", method="post", role="form", novalidate="novalidate")
         input(type="hidden", value="#{csrfToken}" name="_csrf")
         if setPassword
