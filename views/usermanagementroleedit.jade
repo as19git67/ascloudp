@@ -24,8 +24,12 @@ block content
                 label(for="roleprofiles",class="col-xs-12 col-md-1 control-label") Profile:
                 div(class="col-xs-12 col-md-11")
                     for profile in profiles
-                        input(type="checkbox",value="#{profile.id}", name="cb_#{profile.id}")
-                        | &nbsp #{profile.description}
+                        if profile.assignedToRole
+                            input(type="checkbox",value="#{profile.id}", checked="checked", name="cb_#{profile.id}")
+                            | &nbsp #{profile.description}
+                        else
+                            input(type="checkbox",value="#{profile.id}", name="cb_#{profile.id}")
+                            | &nbsp #{profile.description}
                         br
             div.form-group
                 hr
