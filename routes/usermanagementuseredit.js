@@ -5,6 +5,7 @@ var model = require('../model');
 var Audit = model.models.Audit;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
+var Role = model.models.Role;
 var passportStrategies = require('../passportStrategies');
 
 /* GET user list page. */
@@ -35,11 +36,26 @@ function prepareResponse(user) {
             });
         });
     }
+    var roleHash = {};
     var userRoles = user.related('UserRole');
     userRoles.each(function (userRole) {
         var role = userRole.related('Role');
-        userObj.roles.push({ id: role.get('id'), Name: role.get('Name'), assignedToUser: true});
+        roleHash[role.get('id')] = role;
     });
+
+    new Role().query(function (qb) {
+        qb.orderBy('Name', 'ASC');
+    }).fetch().then(function (roles) {
+        roles.each(function (roleModel) {
+            var roleId = roleModel.get('id');
+            var roleName = roleModel.get('Name');
+            var assignedToUser = roleHash[roleId] != undefined;
+            userObj.roles.push({ id: roleId, Name: roleName, assignedToUser: assignedToUser});
+        });
+    }).catch(function (error) {
+        console.log("Error while getting roles from database: " + error);
+    });
+
     return userObj;
 }
 

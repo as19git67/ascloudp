@@ -1,7 +1,7 @@
 var config = require('./config');
 var Promise = require('bluebird/js/main/promise')();
 var _ = require('underscore');
-var getProfiles = require('./profiles');
+var getProfiles = require('./Profiles');
 
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
