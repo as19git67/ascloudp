@@ -10,15 +10,8 @@ var RolePermissions = model.models.RolePermissions;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
-var Profiles = require('../profiles');
+var getProfiles = require('../profiles');
 
-function getProfiles() {
-    var profiles = _.map(Profiles, function (value, key, list) {
-        value.id = key;
-        return value;
-    });
-    return profiles;
-}
 
 router.get('/:roleId', passportStrategies.ensureAuthenticated, function (req, res, next) {
     var appName = config.get('appName');

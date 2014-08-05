@@ -1,5 +1,7 @@
 var config = require('./config');
 var Promise = require('bluebird/js/main/promise')();
+var _ = require('underscore');
+var getProfiles = require('./profiles');
 
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
@@ -28,8 +30,20 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RolePermissions').then(function (exists) {
             if (exists) {
-                console.log('DB schema exists.');
-                resolve();
+                knex.schema.hasTable('UserLogins').then(function (exists) {
+                    if (exists) {
+                        console.log('DB schema exists.');
+                        resolve();
+                    } else {
+                        console.log('Must create DB schema.');
+                        exports.createSchema().then(
+                            function () {
+                                console.log('DB schema created.');
+                                resolve();
+                            },
+                            reject);
+                    }
+                });
             } else {
                 console.log('Must create DB schema.');
                 exports.createSchema().then(
@@ -79,7 +93,7 @@ exports.createSchema = function () {
                     t.integer('Role_id').notNullable().references('id').inTable('Roles').index();
                     t.string('Resource').notNullable().index();
                     t.string('Permission', 6).notNullable().index();
-                    t.primary(['Role_id', 'Resource', 'Permission']);
+                    t.unique(['Role_id', 'Resource', 'Permission']);
                 });
             },
             function () {
@@ -101,9 +115,10 @@ exports.createSchema = function () {
             },
             function () {
                 return  knex.schema.createTable('UserRoles', function (t) {
+                    t.increments('id').primary();
                     t.integer('User_id').notNullable().references('id').inTable('Users').index();
                     t.integer('Role_id').notNullable().references('id').inTable('Roles').index();
-                    t.primary(['User_id', 'Role_id']);
+                    t.unique(['User_id', 'Role_id']);
                 });
             },
             function () {
@@ -131,6 +146,85 @@ exports.createSchema = function () {
                     t.string('ChangedBy').notNullable().index();
                     t.string('Description').notNullable();
                 });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var username = config.get('adminUser');
+                    var password = config.get('initialAdminPassword');
+                    if (username && username.trim().length > 0 && password && password.trim().length > 0) {
+                        var adminRoleName = "Administrator";
+                        var salt = createSalt();
+
+                        new User({
+                            Email: username,
+                            EmailConfirmed: false,
+                            PhoneNumberConfirmed: false,
+                            TwoFactorEnabled: false,
+                            LockoutEnabled: false,
+                            AccessFailedCount: 0,
+                            UserName: username,
+                            PasswordSalt: salt,
+                            PasswordHash: encryptPassword(password, salt)})
+                            .save()
+                            .then(function (newUserModel) {
+                                var userId = newUserModel.get('id');
+                                console.log("Admin User '" + username + "' added to DB. ID: " + userId);
+
+                                new Role({Name: adminRoleName}).save().then(function (newRoleModel) {
+                                    var roleId = newRoleModel.get('id');
+                                    console.log("Role " + newRoleModel.get('Name') + " added to DB. ID: " + roleId);
+                                    new UserRole({ User_id: userId, Role_id: roleId}).save().then(function (userRole) {
+                                        console.log("Role " + newRoleModel.get('Name') + " assigned to " + newUserModel.get('UserName'));
+
+                                        // add all profiles to Administrator role
+                                        var profiles = getProfiles();
+                                        var allRolePermissions = [];
+                                        var checkHash = {};
+
+                                        _.each(profiles, function (profile) {
+                                            _.each(profile.resources, function (resource) {
+                                                _.each(profile.permissions, function (permission) {
+                                                    // use hash map to quickly check for unique resource and permission
+                                                    var checkKey = resource + "_" + permission;
+                                                    if (!checkHash[checkKey]) {
+                                                        allRolePermissions.push(
+                                                            {
+                                                                Role_id: roleId,
+                                                                Resource: resource,
+                                                                Permission: permission
+                                                            }
+                                                        );
+                                                        checkHash[checkKey] = true;
+                                                    }
+                                                });
+                                            });
+                                        });
+                                        var rolePermissions = RolePermissions.forge(allRolePermissions);
+                                        console.log("Adding role permissions to role " + newRoleModel.get('Name'));
+                                        Promise.all(rolePermissions.invoke('save')).then(function () {
+                                            console.log("Role permissions added to role " + newRoleModel.get('Name'));
+                                            resolve();
+                                        }).catch(function (error) {
+                                            console.log("Error while saving role permissions for role " + newRoleModel.get('Name'));
+                                            reject(error);
+                                        });
+
+                                    }).catch(function (error) {
+                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName'));
+                                        reject(error);
+                                    });
+
+                                }).catch(function (error) {
+                                    console.log("Error while adding new role " + adminRoleName);
+                                    reject(error);
+                                });
+                            });
+                    }
+                    else {
+                        console.log("Not adding admin user, because it is not configured.");
+                        resolve();
+                    }
+                });
             }
         ],
         function (total, current, index, arrayLength) {
@@ -145,6 +239,9 @@ var User = bookshelf.Model.extend({
     tableName: 'Users',
     UserLogin: function () {
         return this.hasMany(UserLogin);
+    },
+    UserRole: function () {
+        return this.hasMany(UserRole);
     }
 });
 
@@ -169,6 +266,9 @@ var UserRole = bookshelf.Model.extend({
     tableName: 'UserRoles',
     User: function () {
         return this.belongsTo(User);
+    },
+    Role: function () {
+        return this.belongsTo(Role);
     }
 });
 
@@ -182,7 +282,6 @@ var RolePermission = bookshelf.Model.extend({
 var RolePermissions = bookshelf.Collection.extend({
     model: RolePermission
 });
-
 
 var Audit = bookshelf.Model.extend({
     tableName: 'Audits'

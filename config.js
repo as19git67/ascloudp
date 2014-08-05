@@ -4,6 +4,8 @@ nconf.argv().env().file({ file: 'config.json' });
 
 nconf.defaults({
     "appName": "ASCloud",
+    "adminUser": undefined,
+    "initialAdminPassword": undefined,
     "sessionSecret": "top secret",
     "authGoogleClientId": undefined,
     "authGoogleClientSecret": undefined,

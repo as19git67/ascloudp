@@ -15,7 +15,8 @@ function prepareResponse(user) {
         Email: user.get('Email'),
         UserName: user.get('UserName'),
         UserLoginProviders_formatted: "",
-        UserLogins: userLoginsArray
+        UserLogins: userLoginsArray,
+        roles: []
     };
     var userLogins = user.related('UserLogin');
     if (userLogins.length > 0) {
@@ -34,6 +35,11 @@ function prepareResponse(user) {
             });
         });
     }
+    var userRoles = user.related('UserRole');
+    userRoles.each(function (userRole) {
+        var role = userRole.related('Role');
+        userObj.roles.push({ id: role.get('id'), Name: role.get('Name'), assignedToUser: true});
+    });
     return userObj;
 }
 
@@ -42,10 +48,11 @@ router.get('/:userId', passportStrategies.ensureAuthenticated, function (req, re
         var appName = config.get('appName');
         var title = 'User Management - Benutzerdetails';
         new User({'id': userId}).fetch({
-            withRelated: ['UserLogin']
+            withRelated: ['UserLogin', 'UserRole.Role']
         }).then(function (user) {
             if (user) {
                 var userObj = prepareResponse(user);
+
                 res.render('usermanagementuseredit', {
                     csrfToken: req.csrfToken(),
                     appName: appName,

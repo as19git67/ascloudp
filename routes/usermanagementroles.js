@@ -7,7 +7,6 @@ var Role = model.models.Role;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
-var Profiles = require('../profiles');
 
 router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
         var appName = config.get('appName');
@@ -26,7 +25,7 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
                     var userRoles = role.related('UserRole');
                     if (userRoles.length > 0) {
                         userRoles.each(function (userRole) {
-                            role.UserRoles.push(userRole.get('User_id'));
+                            roleObj.UserRoles.push(userRole.get('User_id'));
                         });
                     }
                     roles.push(roleObj);

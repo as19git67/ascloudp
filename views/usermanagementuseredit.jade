@@ -34,6 +34,18 @@ block content
                 label(for="provider",class="col-xs-12 col-md-2 control-label") Login Provider:
                 div(class="col-xs-12 col-md-10 form-control-static", id="provider")
                     span #{userData.UserLoginProviders_formatted}
+            if userData && userData.roles && userData.roles.length > 0
+                div.form-group
+                    label(for="roles",class="col-xs-12 col-md-2 control-label") Rollen:
+                    div(class="col-xs-12 col-md-10 form-control-static", id="roles")
+                        for role in userData.roles
+                            if role.assignedToUser
+                                input(type="checkbox",value="#{role.id}", checked="checked", name="cb_#{role.id}")
+                                | &nbsp #{role.Name}
+                            else
+                                input(type="checkbox",value="#{role.id}", name="cb_#{role.id}")
+                                | &nbsp #{role.Name}
+                            br
             div.form-group
                 button(class="btn btn-default", id="save", value="save", name="save")
                     span(class="glyphicon glyphicon-save")
