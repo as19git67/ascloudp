@@ -60,18 +60,25 @@ router.post('/', function (req, res, next) {
         if (req.body.addNewRole) {
 
             var roleName = req.body.newRoleName;
+            if (roleName && roleName.trim().length > 0) {
 
-            new Role({'Name': roleName}).save()
-                .then(function (newRoleModel) {
-                    res.redirect('/admin/userManagementRoles');
-                })
-                .catch(function (error) {
-                    console.log("Error while saving new role in the database: " + error);
-                    var err = new Error(error);
-                    err.status = 500;
-                    next(err);
-                }
-            );
+                new Role({'Name': roleName}).save()
+                    .then(function (newRoleModel) {
+                        res.redirect('/admin/userManagementRoles');
+                    })
+                    .catch(function (error) {
+                        console.log("Error while saving new role in the database: " + error);
+                        var err = new Error(error);
+                        err.status = 500;
+                        next(err);
+                    }
+                );
+            }
+            else
+            {
+                console.log("Not saving role without name");
+                res.redirect('/admin/userManagementRoles');
+            }
         }
         else {
             console.log("No known post parameter in request. Redirecting to /");

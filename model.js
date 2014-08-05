@@ -75,6 +75,7 @@ exports.createSchema = function () {
             },
             function () {
                 return  knex.schema.createTable('RolePermissions', function (t) {
+                    t.increments('id').primary();
                     t.integer('Role_id').notNullable().references('id').inTable('Roles').index();
                     t.string('Resource').notNullable().index();
                     t.string('Permission', 6).notNullable().index();
@@ -178,6 +179,11 @@ var RolePermission = bookshelf.Model.extend({
     }
 });
 
+var RolePermissions = bookshelf.Collection.extend({
+    model: RolePermission
+});
+
+
 var Audit = bookshelf.Model.extend({
     tableName: 'Audits'
 });
@@ -207,6 +213,7 @@ module.exports.models = {
     UserLogin: UserLogin,
     Role: Role,
     RolePermission: RolePermission,
+    RolePermissions: RolePermissions,
     UserRole: UserRole,
     Audit: Audit
 };
