@@ -10,7 +10,7 @@ var RolePermissions = model.models.RolePermissions;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
-var getProfiles = require('../profiles');
+var getProfiles = require('../Profiles');
 
 
 router.get('/:roleId', passportStrategies.ensureAuthenticated, function (req, res, next) {
