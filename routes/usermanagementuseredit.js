@@ -114,7 +114,12 @@ function makeRoleNamesFormatted(roles, allRoleNamesById) {
         if (roles_formatted.length > 0) {
             roles_formatted += ", ";
         }
-        roles_formatted += allRoleNamesById[role.Role_id];
+        if (role instanceof Object) {
+            roles_formatted += allRoleNamesById[role.Role_id];
+        }
+        else {
+            roles_formatted += allRoleNamesById[role];
+        }
     });
     return roles_formatted;
 }
