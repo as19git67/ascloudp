@@ -12,7 +12,9 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
         var appName = config.get('appName');
         var title = 'User Management - Rollen';
 
-        new Role().fetchAll({withRelated: ['UserRole']})
+        new Role().query(function (qb) {
+            qb.orderBy('Name', 'ASC');
+        }).fetchAll({withRelated: ['UserRole']})
             .then(function (roleList) {
                 var roles = [];
                 roleList.each(function (role) {
@@ -73,8 +75,7 @@ router.post('/', function (req, res, next) {
                     }
                 );
             }
-            else
-            {
+            else {
                 console.log("Not saving role without name");
                 res.redirect('/admin/userManagementRoles');
             }

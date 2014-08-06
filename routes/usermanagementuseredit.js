@@ -131,11 +131,16 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                 if (typeof userObj === "string") {
                     res.redirect(userObj);
                 } else {
-
                     if (req.body.deleteAccount) {
                         console.log("Deleting user " + userId + ' (' + userObj.Email + ')');
-                        // todo: implement deletion
-                        res.redirect('/admin/userManagementUserList');
+                        model.bookshelf.knex('UserRoles').where('User_id', userId).del().then(function () {
+                            model.bookshelf.knex('UserLogins').where('User_id', userId).del().then(function () {
+                                userModel.destroy().then(function () {
+                                    console.log("user " + userId + ' (' + userObj.Email + ') has been deleted.');
+                                    res.redirect('/admin/userManagementUserList');
+                                });
+                            });
+                        });
                     } else {
                         if (req.body.cancel) {
                             res.redirect('/admin/userManagementUserList');
@@ -230,7 +235,7 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                                             var changeText = "Roles removed from user " + origUserName + " (" + userId + "): " + rolesFormatted;
                                                             new Audit({
                                                                     ChangedAt: new Date(),
-                                                                    Table:'UserRoles',
+                                                                    Table: 'UserRoles',
                                                                     ChangedBy: req.user.UserName,
                                                                     Description: changeText
                                                                 }
