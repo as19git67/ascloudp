@@ -272,6 +272,10 @@ var UserRole = bookshelf.Model.extend({
     }
 });
 
+var UserRoles = bookshelf.Collection.extend({
+    model: UserRole
+});
+
 var RolePermission = bookshelf.Model.extend({
     tableName: 'RolePermissions',
     Role: function () {
@@ -314,6 +318,7 @@ module.exports.models = {
     RolePermission: RolePermission,
     RolePermissions: RolePermissions,
     UserRole: UserRole,
+    UserRoles: UserRoles,
     Audit: Audit
 };
 

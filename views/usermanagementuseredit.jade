@@ -53,8 +53,26 @@ block content
                 button(class="btn btn-default cancel", id="cancel", value="cancel", name="cancel")
                     span(class="glyphicon glyphicon-remove")
                     | &nbsp Abbrechen
-            div.form-group
-                hr
-                button(class="btn btn-default btn-danger", id="deleteAccount", value="deleteAccount", name="deleteAccount")
-                    span(class="glyphicon glyphicon-trash")
-                    | &nbsp Benutzer löschen
+
+        div.form-group
+            hr
+            button(class="btn btn-default btn-danger", data-toggle="modal", data-target="#confirmModal")
+                span(class="glyphicon glyphicon-trash")
+                | &nbsp Benutzer löschen
+
+            div(class="modal fade", id="confirmModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+                div(class="modal-dialog")
+                    div(class="modal-content")
+                        div(class="modal-header")
+                            button(type="button", class="close", data-dismiss="modal")
+                                span(aria-hidden="true") &times;
+                                span(class="sr-only") Close
+                            h4(class="modal-title") Benutzer löschen
+                        div(class="modal-body")
+                            p Soll der Benutzer wirklich gelöscht werden?
+                        div(class="modal-footer")
+                            form(action="/admin/userManagementUserEdit", method="post", novalidate="novalidate")
+                                button(type="button", class="btn btn-default", data-dismiss="modal") Abbrechen
+                                input(type="hidden", value="#{csrfToken}" name="_csrf")
+                                input(type="hidden", value="#{userData.User_id}" name="User_id")
+                                input(type="submit", class="btn btn-danger", value="Löschen", name="deleteAccount" id="deleteAccount")
