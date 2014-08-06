@@ -33,6 +33,21 @@ module.exports = function () {
             description: "Usermangement: Benutzer ändern",
             resources: ["/admin/userManagementUserEdit"],
             permissions: ["get", "post"]
+        },
+        rolemanagement_list_read: {
+            description: "Rollenverwaltung: Rollenliste anzeigen",
+            resources: ["/admin/usermanagementroles"],
+            permissions: ["get"]
+        },
+        rolemanagement_user_display: {
+            description: "Rollenverwaltung: Rolle anzeigen",
+            resources: ["/admin/usermanagementroleedit"],
+            permissions: ["get"]
+        },
+        rolemanagement_user_edit: {
+            description: "Rollenverwaltung: Rolle ändern",
+            resources: ["/admin/usermanagementroleedit"],
+            permissions: ["get", "post"]
         }
     };
 

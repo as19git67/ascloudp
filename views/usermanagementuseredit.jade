@@ -40,10 +40,10 @@ block content
                     div(class="col-xs-12 col-md-10 form-control-static", id="roles")
                         for role in userData.roles
                             if role.assignedToUser
-                                input(type="checkbox",value="#{role.id}", checked="checked", name="cb_#{role.id}")
+                                input(type="checkbox",value="#{role.id}", checked="checked", name="cb_role_#{role.id}")
                                 | &nbsp #{role.Name}
                             else
-                                input(type="checkbox",value="#{role.id}", name="cb_#{role.id}")
+                                input(type="checkbox",value="#{role.id}", name="cb_role_#{role.id}")
                                 | &nbsp #{role.Name}
                             br
             div.form-group
