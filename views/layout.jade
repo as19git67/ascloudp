@@ -36,8 +36,9 @@ html
                                                     li(role="presentation")
                                                         a(role="menuitem", tabindex="-1", href="/admin/usermanagementroles") Rollen
                                                     li(role="presentation", class="divider")
-                                                    li(role="presentation")
-                                                        a(role="menuitem", tabindex="-1", href="/admin/databaseManagement") Datenbank
+                                                    if user.menu.admin.databasemanagement
+                                                        li(role="presentation")
+                                                            a(role="menuitem", tabindex="-1", href="/admin/databaseManagement") Datenbank
                                         li
                                             a(href="/loginManageAccount", title="Manage") Hallo #{user.UserName}!
                                         li

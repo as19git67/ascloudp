@@ -7,12 +7,14 @@ module.exports = function () {
         admin_menu: {
             description: "Administrationshauptmenü anzeigen",
             resources: ["/admin"],
-            permissions: ["get"]
+            permissions: ["get"],
+            menus: ["admin"]
         },
         admin_databasemanagement: {
             description: "Datenbankverwaltung",
             resources: ["/admin/databaseManagement"],
-            permissions: ["get", "post"]
+            permissions: ["get", "post"],
+            menus: ["admin.databasemanagement"]
         },
         account_display: {
             description: "Eigene Benutzerdaten anzeigen",
