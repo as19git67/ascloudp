@@ -53,6 +53,12 @@ module.exports = function () {
 
     return _.map(profiles, function (value, key, list) {
         value.id = key;
+        value.resources = _.map(value.resources, function(value){
+            return value.toLowerCase();
+        });
+        value.permissions = _.map(value.permissions, function(value){
+            return value.toLowerCase();
+        });
         return value;
     });
 };

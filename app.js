@@ -13,7 +13,6 @@ var _ = require('underscore');
 
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
-var acl = require('acl');
 
 var routes = require('./routes/index');
 var databaseManagement = require('./routes/databasemanagement');

@@ -5,8 +5,11 @@ var model = require('../model');
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
+var rolePermissions = require('../Roles');
 
-router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
+var rp = new rolePermissions(model.models);
+
+router.get('/', passportStrategies.ensureAuthenticated,  rp.middleware(), function (req, res) {
         var appName = config.get('appName');
         var title = 'User Management - Benutzer';
 
