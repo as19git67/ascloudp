@@ -2,9 +2,11 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 var passportStrategies = require('../passportStrategies');
+var rolePermissions = require('../Roles');
 
-/* GET Admin page. */
-router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
+var rp = new rolePermissions(model.models);
+
+router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res) {
     var appName = config.get('appName');
     res.render('databaseManagement', {
         csrfToken: req.csrfToken(),
@@ -14,7 +16,7 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
     });
 });
 
-router.post('/', passportStrategies.ensureAuthenticated, function (req, res) {
+router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res) {
     var appName = config.get('appName');
 
     if (req.body.dbinit) {

@@ -6,11 +6,11 @@ var Audit = model.models.Audit;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
+var rolePermissions = require('../Roles');
 
+var rp = new rolePermissions(model.models);
 
-// TODO: passwort ändern auch wenn kein passwort gesetzt, da nur via extern eingeloggt
-
-router.get('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
+router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
     if (req.user) {
 
         new User({'id': req.user.id}).fetch({
@@ -35,7 +35,7 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res, next
     }
 });
 
-router.post('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
+router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
     if (req.user) {
         if (req.body.changePassword || req.body.setPassword) {
             console.log('Changing/Setting password for user with id ' + req.user.id);
@@ -219,18 +219,18 @@ function prepareResponseDataFromUser(userModel, req) {
 
             // disable buttons for already associated login providers
             switch (provider) {
-                case 'azure':
-                    canAssociateWithAzure = false;
-                    break;
-                case 'twitter':
-                    canAssociateWithTwitter = false;
-                    break;
-                case 'google':
-                    canAssociateWithGoogle = false;
-                    break;
-                case 'facebook':
-                    canAssociateWithFacebook = false;
-                    break;
+            case 'azure':
+                canAssociateWithAzure = false;
+                break;
+            case 'twitter':
+                canAssociateWithTwitter = false;
+                break;
+            case 'google':
+                canAssociateWithGoogle = false;
+                break;
+            case 'facebook':
+                canAssociateWithFacebook = false;
+                break;
             }
 
         });

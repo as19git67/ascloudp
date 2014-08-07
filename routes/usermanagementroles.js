@@ -7,8 +7,11 @@ var Role = model.models.Role;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
+var rolePermissions = require('../Roles');
 
-router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
+var rp = new rolePermissions(model.models);
+
+router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
         var appName = config.get('appName');
         var title = 'User Management - Rollen';
 
@@ -55,7 +58,7 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res) {
     }
 );
 
-router.post('/', function (req, res, next) {
+router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
     var title = 'User Management - Rollen';
     if (req.user) {
         if (req.body.addNewRole) {

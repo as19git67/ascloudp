@@ -11,6 +11,9 @@ var Role = model.models.Role;
 var UserRole = model.models.UserRole;
 var UserRoles = model.models.UserRoles;
 var passportStrategies = require('../passportStrategies');
+var rolePermissions = require('../Roles');
+
+var rp = new rolePermissions(model.models);
 
 var appName = config.get('appName');
 
@@ -77,7 +80,7 @@ function prepareResponse(userId) {
     });
 }
 
-router.get('/:userId', passportStrategies.ensureAuthenticated, function (req, res, next) {
+router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
         var userId = req.params.userId;
         if (userId) {
             var title = 'User Management - Benutzerdetails';
@@ -124,7 +127,7 @@ function makeRoleNamesFormatted(roles, allRoleNamesById) {
     return roles_formatted;
 }
 
-router.post('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
+router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
     if (req.user) {
         var userId = req.body.User_id;
         if (userId) {

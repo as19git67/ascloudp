@@ -9,6 +9,11 @@ module.exports = function () {
             resources: ["/admin"],
             permissions: ["get"]
         },
+        admin_databasemanagement: {
+            description: "Datenbankverwaltung",
+            resources: ["/admin/databaseManagement"],
+            permissions: ["get", "post"]
+        },
         account_display: {
             description: "Eigene Benutzerdaten anzeigen",
             resources: ["/loginManageAccount"],
