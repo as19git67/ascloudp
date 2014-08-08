@@ -80,7 +80,7 @@ function prepareResponse(userId) {
     });
 }
 
-router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
+router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
         var userId = req.params.userId;
         if (userId) {
             var title = 'User Management - Benutzerdetails';
@@ -127,7 +127,7 @@ function makeRoleNamesFormatted(roles, allRoleNamesById) {
     return roles_formatted;
 }
 
-router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
+router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     if (req.user) {
         var userId = req.body.User_id;
         if (userId) {

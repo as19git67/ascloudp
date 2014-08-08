@@ -22,20 +22,23 @@ html
                             ul(class="nav navbar-nav")
                                 li
                                     a(href='/') Home
-                            if user != null
+                            if user != null && user.menu
                                 form(action="/logoff", class="navbar-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
                                     ul(class="nav navbar-nav navbar-right")
-                                        if user && user.menu && user.menu.admin
+                                        if user.menu.admin
                                             li(id="fat-menu", class="dropdown")
                                                 a(href="#", id="drop3", role="button", class="dropdown-toggle", data-toggle="dropdown") Verwaltung
                                                     span.caret
                                                 ul(class="dropdown-menu", role="menu", aria-labelledby="drop3")
-                                                    li(role="presentation")
-                                                        a(role="menuitem", tabindex="-1", href="/admin/usermanagementuserlist") Benutzer
-                                                    li(role="presentation")
-                                                        a(role="menuitem", tabindex="-1", href="/admin/usermanagementroles") Rollen
-                                                    li(role="presentation", class="divider")
+                                                    if user.menu.admin.users
+                                                        li(role="presentation")
+                                                            a(role="menuitem", tabindex="-1", href="/admin/usermanagementuserlist") Benutzer
+                                                    if user.menu.admin.roles
+                                                        li(role="presentation")
+                                                            a(role="menuitem", tabindex="-1", href="/admin/usermanagementroles") Rollen
+                                                    if user.menu.admin.databasemanagement
+                                                        li(role="presentation", class="divider")
                                                     if user.menu.admin.databasemanagement
                                                         li(role="presentation")
                                                             a(role="menuitem", tabindex="-1", href="/admin/databaseManagement") Datenbank

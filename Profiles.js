@@ -19,42 +19,50 @@ module.exports = function () {
         account_display: {
             description: "Eigene Benutzerdaten anzeigen",
             resources: ["/loginManageAccount"],
-            permissions: ["get"]
+            permissions: ["get"],
+            menus: ["login.manage"]
         },
         account_edit: {
             description: "Eigene Benutzerdaten ändern",
             resources: ["/loginManageAccount"],
-            permissions: ["post"]
+            permissions: ["post"],
+            menus: ["login.manage"]
         },
         usermanagement_list_read: {
             description: "Usermangement: Benutzerliste anzeigen",
             resources: ["/admin/userManagementUserList"],
-            permissions: ["get"]
+            permissions: ["get"],
+            menus: ["admin.users"]
         },
         usermanagement_user_display: {
             description: "Usermangement: Benutzer anzeigen",
             resources: ["/admin/userManagementUserEdit"],
-            permissions: ["get"]
+            permissions: ["get"],
+            menus: ["admin.user"]
         },
         usermanagement_user_edit: {
             description: "Usermangement: Benutzer ändern",
             resources: ["/admin/userManagementUserEdit"],
-            permissions: ["get", "post"]
+            permissions: ["get", "post"],
+            menus: ["admin.user"]
         },
         rolemanagement_list_read: {
             description: "Rollenverwaltung: Rollenliste anzeigen",
             resources: ["/admin/usermanagementroles"],
-            permissions: ["get"]
+            permissions: ["get"],
+            menus: ["admin.roles"]
         },
         rolemanagement_user_display: {
             description: "Rollenverwaltung: Rolle anzeigen",
             resources: ["/admin/usermanagementroleedit"],
-            permissions: ["get"]
+            permissions: ["get"],
+            menus: ["admin.role"]
         },
         rolemanagement_user_edit: {
             description: "Rollenverwaltung: Rolle ändern",
-            resources: ["/admin/usermanagementroleedit"],
-            permissions: ["get", "post"]
+            resources: ["/admin/usermanagementroleedit", "/admin/userManagementRoles"],
+            permissions: ["get", "post"],
+            menus: ["admin.role", "admin.roles"]
         }
     };
 

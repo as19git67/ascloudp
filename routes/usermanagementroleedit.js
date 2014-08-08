@@ -15,7 +15,7 @@ var rolePermissions = require('../Roles');
 
 var rp = new rolePermissions(model.models);
 
-router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
+router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     var appName = config.get('appName');
     var title = 'User Management - Rollendetails';
     var roleId = req.params.roleId;
@@ -81,7 +81,7 @@ router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(), 
         });
 });
 
-router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
+router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     var appName = config.get('appName');
     var title = 'User Management - Rollendetails';
     if (req.user) {
