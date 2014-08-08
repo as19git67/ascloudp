@@ -204,8 +204,9 @@ function prepareResponseDataFromUser(userModel, req) {
     var user = {
         Email: userModel.get('Email') ? userModel.get('Email') : '',
         UserName: userModel.get('UserName') ? userModel.get('UserName') : '',
-        User_id: userModel.get('id'),
-        UserLogins: []
+        id: userModel.get('id'),
+        UserLogins: [],
+        menu: req.user.menu
     };
     var userLogins = userModel.related('UserLogin');
     if (userLogins.length > 0) {

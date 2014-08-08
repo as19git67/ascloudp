@@ -46,7 +46,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                         .then(function (menus) {
                             user.menu = {};
                             _.each(menus, function (menu) {
-                                console.log("Found menu: " + menu.Menu);
+                                //console.log("Found menu: " + menu.Menu);
                                 var menuParts = menu.Menu.split('.');
                                 var currObj = user.menu;
                                 _.each(menuParts, function (menupart) {

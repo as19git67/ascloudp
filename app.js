@@ -3,6 +3,8 @@ var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
 var expressSession = require('express-session');
+var cookieParser = require('cookie-parser')
+var cookieSession = require('cookie-session')
 var bodyParser = require('body-parser');
 var csrf = require('csurf');
 var http = require('http');
@@ -36,12 +38,26 @@ app.use(favicon());
 app.use(logger('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
+var cookieKey = config.get('cookieKey');
+var cookieSecret = config.get('cookieSecret');
+var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
+app.use(cookieParser(cookieSecret));
+app.use(cookieSession({
+    key    : cookieKey,
+    secret : cookieSecret,
+    cookie : {
+        maxAge: sessionTimeout
+    }
+}));
+
 // required for passport
+/*
 app.use(expressSession({
     secret: config.get('sessionSecret'),
     saveUninitialized: true,
     resave: true
 }));
+*/
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(express.static(path.join(__dirname, 'public')));

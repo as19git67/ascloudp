@@ -117,15 +117,19 @@ function handlePassportAuthenticate(next, res, req) {
 }
 
 function handleExternalLoginCallback(req, res, next) {
+    // req.user is always set
+
     // check for user_id set in previous post request to /login
-    if (req.session.loginToLink) {
+    if (req.session.loginToLink && req.user.profile) {
         linkUser(req, res, next);
     } else {
         if (req.user.isNotLocalUser) {
             res.redirect('/loginRegister');
         } else {
-            var username = req.user.UserName;
-            console.log(username + ' is a locally registered user. No need to register again.');
+            if (req.user.UserName) {
+                var username = req.user.UserName;
+                console.log(username + ' is a locally registered user. No need to register again.');
+            }
             if (req.body.nexturl) {
                 res.redirect(req.body.nexturl);
             } else {

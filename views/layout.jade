@@ -37,7 +37,7 @@ html
                                                     if user.menu.admin.roles
                                                         li(role="presentation")
                                                             a(role="menuitem", tabindex="-1", href="/admin/usermanagementroles") Rollen
-                                                    if user.menu.admin.databasemanagement
+                                                    if user.menu.admin.databasemanagement && ( user.menu.admin.roles || user.menu.admin.users )
                                                         li(role="presentation", class="divider")
                                                     if user.menu.admin.databasemanagement
                                                         li(role="presentation")
