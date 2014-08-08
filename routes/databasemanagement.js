@@ -1,6 +1,7 @@
 var express = require('express');
 var router = express.Router();
 var config = require('../config');
+var model = require('../model');
 var passportStrategies = require('../passportStrategies');
 var rolePermissions = require('../Roles');
 

@@ -21,7 +21,7 @@ Roles.prototype.isAllowed = function (userId, resource, permissions, cb) {
     var _this = this;
     permissions = makeArray(permissions);
 
-    // get user's roles
+    // get user's role permissions filtered by user, resource and permissions
     model.bookshelf.knex('UserRoles')
         .join('RolePermissions', 'RolePermissions.Role_id', '=', 'UserRoles.Role_id')
         .where('UserRoles.User_id', userId)

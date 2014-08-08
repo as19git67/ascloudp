@@ -28,7 +28,7 @@ function authenticate() {
 
 exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
-        knex.schema.hasTable('RolePermissions').then(function (exists) {
+        knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
                 knex.schema.hasTable('UserLogins').then(function (exists) {
                     if (exists) {
@@ -78,6 +78,9 @@ exports.createSchema = function () {
                 return  knex.schema.dropTableIfExists('RolePermissions');
             },
             function () {
+                return  knex.schema.dropTableIfExists('RoleMenus');
+            },
+            function () {
                 return  knex.schema.dropTableIfExists('Roles');
             },
             // ### CREATION STARTS HERE
@@ -94,6 +97,14 @@ exports.createSchema = function () {
                     t.string('Resource').notNullable().index();
                     t.string('Permission', 6).notNullable().index();
                     t.unique(['Role_id', 'Resource', 'Permission']);
+                });
+            },
+            function () {
+                return  knex.schema.createTable('RoleMenus', function (t) {
+                    t.increments('id').primary();
+                    t.integer('Role_id').notNullable().references('id').inTable('Roles').index();
+                    t.string('Menu').notNullable().index();
+                    t.unique(['Role_id', 'Menu']);
                 });
             },
             function () {
@@ -199,23 +210,45 @@ exports.createSchema = function () {
                                                 });
                                             });
                                         });
+
+                                        var allRoleMenus = [];
+                                        checkHash = {};
+                                        _.each(profiles, function (profile) {
+                                            _.each(profile.menus, function (menu) {
+                                                if (!checkHash[menu]) {
+                                                    allRoleMenus.push({ Role_id: roleId, Menu: menu });
+                                                    checkHash[menu] = true;
+                                                }
+                                            });
+                                        });
+
+
                                         var rolePermissions = RolePermissions.forge(allRolePermissions);
                                         console.log("Adding role permissions to role " + newRoleModel.get('Name'));
                                         Promise.all(rolePermissions.invoke('save')).then(function () {
                                             console.log("Role permissions added to role " + newRoleModel.get('Name'));
-                                            resolve();
+
+                                            var roleMenus = RoleMenus.forge(allRoleMenus);
+                                            console.log("Adding role menus to role " + newRoleModel.get('Name'));
+                                            Promise.all(roleMenus.invoke('save')).then(function () {
+                                                console.log("Role menus added to role " + newRoleModel.get('Name'));
+                                                resolve();
+                                            }).catch(function (error) {
+                                                console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " + error);
+                                                reject(error);
+                                            });
                                         }).catch(function (error) {
-                                            console.log("Error while saving role permissions for role " + newRoleModel.get('Name'));
+                                            console.log("Error while saving role permissions for role " + newRoleModel.get('Name')+ ": " + error);
                                             reject(error);
                                         });
 
                                     }).catch(function (error) {
-                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName'));
+                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName')+ ": " + error);
                                         reject(error);
                                     });
 
                                 }).catch(function (error) {
-                                    console.log("Error while adding new role " + adminRoleName);
+                                    console.log("Error while adding new role " + adminRoleName+ ": " + error);
                                     reject(error);
                                 });
                             });
@@ -259,6 +292,9 @@ var Role = bookshelf.Model.extend({
     },
     RolePermission: function () {
         return this.hasMany(RolePermission);
+    },
+    RoleMenu: function () {
+        return this.hasMany(RoleMenu);
     }
 });
 
@@ -285,6 +321,17 @@ var RolePermission = bookshelf.Model.extend({
 
 var RolePermissions = bookshelf.Collection.extend({
     model: RolePermission
+});
+
+var RoleMenu = bookshelf.Model.extend({
+    tableName: 'RoleMenus',
+    Role: function () {
+        return this.belongsTo(Role);
+    }
+});
+
+var RoleMenus = bookshelf.Collection.extend({
+    model: RoleMenu
 });
 
 var Audit = bookshelf.Model.extend({
@@ -317,6 +364,8 @@ module.exports.models = {
     Role: Role,
     RolePermission: RolePermission,
     RolePermissions: RolePermissions,
+    RoleMenu: RoleMenu,
+    RoleMenus: RoleMenus,
     UserRole: UserRole,
     UserRoles: UserRoles,
     Audit: Audit

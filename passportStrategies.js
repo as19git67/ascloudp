@@ -1,3 +1,4 @@
+var _ = require('underscore');
 var config = require('./config');
 var LocalStrategy = require('passport-local').Strategy;
 var TwitterStrategy = require('passport-twitter').Strategy;
@@ -32,7 +33,29 @@ module.exports.init = function (passport, bookshelf, callback) {
     });
 
     passport.deserializeUser(function (userSpec, done) {
-        findUser(userSpec, done);
+        findUser(userSpec, function(err, user){
+            if (!err && user && user.id) {
+                var userId = user.id;
+                model.bookshelf.knex('UserRoles')
+                    .join('RoleMenus', 'RoleMenus.Role_id', '=', 'UserRoles.Role_id')
+                    .where('UserRoles.User_id', userId)
+                    .select('RoleMenus.Menu')
+                    .then(function (menus) {
+                        user.menu = {};
+                        _.each(menus,function (menu) {
+                            console.log("Found menu: " + menu);
+                            user.menu[menu.Menu] = true;
+                        });
+                        done(err, user);
+                    }).catch(function (error) {
+                        console.log("ERROR while getting role menus: " + error);
+                        done(error);
+                    });
+
+            } else {
+                done(err, user);
+            }
+        });
     });
 
     if (config.get('authGoogleClientId') && config.get('authGoogleClientSecret') && config.get('authGoogleCallbackURL')) {
