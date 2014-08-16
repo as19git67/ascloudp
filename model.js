@@ -30,7 +30,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('UserLogins').then(function (exists) {
+                knex.schema.hasTable('LeavingReasons').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -59,6 +59,18 @@ exports.createSchemaIfNotExists = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return  knex.schema.dropTableIfExists('Memberships');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('Persons');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('LeavingReasons');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('MembershipFees');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('Audits');
             },
@@ -159,6 +171,53 @@ exports.createSchema = function () {
                 });
             },
             function () {
+                return  knex.schema.createTable('Persons', function (t) {
+                    t.increments('id').primary();
+                    t.string('Salutation');
+                    t.string('Firstname', 20);
+                    t.string('Lastname', 30).notNullable().index();
+                    t.string('Suffix', 10);
+                    t.dateTime('Birthday');
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('MembershipFees', function (t) {
+                    t.increments('id').primary();
+                    t.string('Name').notNullable();
+                    var precision = 6;  // number of possible digits including after comma
+                    var scale = 2;  // 2 digits after comma
+                    t.decimal('Amount', precision, scale).notNullable();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.unique('Name', 'Amount');
+                });
+            },
+            function () {
+                return  knex.schema.createTable('LeavingReasons', function (t) {
+                    t.increments('id').primary();
+                    t.string('Name').unique();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                });
+            },
+            function () {
+                return  knex.schema.createTable('Memberships', function (t) {
+                    t.increments('id').primary();
+                    t.integer('MembershipNumber').notNullable().index();
+                    t.integer('Person_id').notNullable().references('id').inTable('Persons').index();
+                    t.dateTime('EntryDate').notNullable().index();
+                    t.dateTime('LeavingDate').index();
+                    t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
+                    t.dateTime('PassiveSince').index();
+                    t.dateTime('LivingElsewhereSince').index();
+                    t.integer('MembershipFee_id').references('id').inTable('MembershipFees');
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
                 return new Promise(function (resolve, reject) {
                     var username = config.get('adminUser');
                     var password = config.get('initialAdminPassword');
@@ -238,17 +297,17 @@ exports.createSchema = function () {
                                                 reject(error);
                                             });
                                         }).catch(function (error) {
-                                            console.log("Error while saving role permissions for role " + newRoleModel.get('Name')+ ": " + error);
+                                            console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " + error);
                                             reject(error);
                                         });
 
                                     }).catch(function (error) {
-                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName')+ ": " + error);
+                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName') + ": " + error);
                                         reject(error);
                                     });
 
                                 }).catch(function (error) {
-                                    console.log("Error while adding new role " + adminRoleName+ ": " + error);
+                                    console.log("Error while adding new role " + adminRoleName + ": " + error);
                                     reject(error);
                                 });
                             });
@@ -257,6 +316,42 @@ exports.createSchema = function () {
                         console.log("Not adding admin user, because it is not configured.");
                         resolve();
                     }
+                });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var allMembershipFees = [
+                        { Name: 'Aktiv 7€', Amount: 7.00 },
+                        { Name: 'Aktiv Jugendlich 7€', Amount: 7.00 },
+                        { Name: 'Passiv 0€', Amount: 0.00 }
+                    ];
+                    var membershipFees = MembershipFees.forge(allMembershipFees);
+                    console.log("Adding membership fees.");
+                    Promise.all(membershipFees.invoke('save')).then(function () {
+                        console.log("Membership fees added to database.");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving membership fees: " + error);
+                        reject(error);
+                    });
+                });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var allLeavingReasons = [
+                        {Name: "Tod"},
+                        {Name: "Austritt"},
+                        {Name: "Entlassen"}
+                    ];
+                    var leavingReasons = LeavingReasons.forge(allLeavingReasons);
+                    console.log("Adding leaving reasons.");
+                    Promise.all(leavingReasons.invoke('save')).then(function () {
+                        console.log("Leaving reasons added to database.");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving leaving reason: " + error);
+                        reject(error);
+                    });
                 });
             }
         ],
@@ -338,6 +433,48 @@ var Audit = bookshelf.Model.extend({
     tableName: 'Audits'
 });
 
+var Person = bookshelf.Model.extend({
+    tableName: 'Persons',
+    Membership: function () {
+        return this.hasMany(Membership);
+    }
+});
+
+var Membership = bookshelf.Model.extend({
+    tableName: 'Memberships',
+    Person: function () {
+        return this.belongsTo(Person);
+    },
+    LeavingReason: function () {
+        return this.hasOne(LeavingReason);
+    },
+    MembershipFee: function () {
+        return this.belongsTo(MembershipFee);
+    }
+});
+
+var MembershipFee = bookshelf.Model.extend({
+    tableName: 'MembershipFees',
+    Membership: function () {
+        return this.belongsTo(Membership);
+    }
+});
+
+var MembershipFees = bookshelf.Collection.extend({
+    model: MembershipFee
+});
+
+var LeavingReason = bookshelf.Model.extend({
+    tableName: 'LeavingReasons',
+    Membership: function () {
+        return this.belongsTo(Membership);
+    }
+});
+
+var LeavingReasons = bookshelf.Collection.extend({
+    model: LeavingReason
+});
+
 var createSalt = function () {
     var salt = crypto.randomBytes(32).toString('base64');
     return salt;
@@ -368,7 +505,11 @@ module.exports.models = {
     RoleMenus: RoleMenus,
     UserRole: UserRole,
     UserRoles: UserRoles,
-    Audit: Audit
+    Audit: Audit,
+    Person: Person,
+    Membership: Membership,
+    LeavingReason: LeavingReason,
+    LeavingReasons: LeavingReasons
 };
 
 module.exports.bookshelf = bookshelf;
