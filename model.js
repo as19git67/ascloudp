@@ -536,9 +536,39 @@ var checkPassword = function (hashedPassword, password, salt) {
     return encryptPassword(password, salt) === hashedPassword;
 };
 
+var getPagesForUser = function (userId) {
+    return new Promise(function (resolve, reject) {
+        new Page().query(function (qb) {
+            qb.orderBy('Order', 'ASC');
+        }).fetchAll()
+            .then(function (pageList) {
+                var pages = [];
+                pageList.each(function (page) {
+                    var pageObj = {
+                        Page_id: page.get('id'),
+                        Name: page.get('Name'),
+                        EntityNameSingular: page.get('EntityNameSingular'),
+                        EntityNamePlural: page.get('EntityNamePlural'),
+                        Model: page.get('Model'),
+                        View: page.get('View')
+                    };
+                    pages.push(pageObj);
+                });
+                // todo filter pages by roles/profiles
+                // todo get menu filtered by roles and return it together with the pages
+                resolve(pages);
+            }).catch(function (error) {
+                console.log("Retrieving pages from database failed: " + error);
+                reject(error);
+            });
+    });
+};
+
 module.exports.createSalt = createSalt;
 module.exports.encryptPassword = encryptPassword;
 module.exports.checkPassword = checkPassword;
+module.exports.getPagesForUser = getPagesForUser;
+
 module.exports.models = {
     User: User,
     UserLogin: UserLogin,
