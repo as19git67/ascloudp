@@ -20,28 +20,10 @@ html
                             a.navbar-brand(href="#") #{appname}
                         div(class="collapse navbar-collapse")
                             ul(class="nav navbar-nav")
-                                li
-                                    a(href='/') Termine
-                                li
-                                    a(href='/') Einsätze
-                                li
-                                    a(href='/') Fahrzeuge
-                                li
-                                    a(href='/') Mitmachen
-                                li
-                                    a(href='/') Kontakt
-                                li
-                                    a(href='/') Über uns
-                                li
-                                    a(href='/') Links
-                                li
-                                    a(href='/') Kontakte
-                                li
-                                    a(href='/') Mitglieder
-                                li
-                                    a(href='/') Finanzen
-
-
+                                if pages
+                                    each page in pages
+                                        li
+                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
                             if user != null && user.menu
                                 form(action="/logoff", class="navbar-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
@@ -57,6 +39,9 @@ html
                                                     if user.menu.admin.roles
                                                         li(role="presentation")
                                                             a(role="menuitem", tabindex="-1", href="/admin/usermanagementroles") Rollen
+                                                    if user.menu.admin.pages
+                                                        li(role="presentation")
+                                                            a(role="menuitem", tabindex="-1", href="/admin/pagemanagementpagelist") Seiten
                                                     if user.menu.admin.databasemanagement && ( user.menu.admin.roles || user.menu.admin.users )
                                                         li(role="presentation", class="divider")
                                                     if user.menu.admin.databasemanagement

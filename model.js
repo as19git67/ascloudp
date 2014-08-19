@@ -30,7 +30,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('LeavingReasons').then(function (exists) {
+                knex.schema.hasTable('Pages').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -59,6 +59,9 @@ exports.createSchemaIfNotExists = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return  knex.schema.dropTableIfExists('Pages');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('Memberships');
             },
@@ -218,6 +221,17 @@ exports.createSchema = function () {
                 });
             },
             function () {
+                return  knex.schema.createTable('Pages', function (t) {
+                    t.increments('id').primary();
+                    t.integer('Order').notNullable().unique();
+                    t.string('Name', 20).notNullable().index();
+                    t.string('EntityNameSingular').notNullable();
+                    t.string('EntityNamePlural').notNullable();
+                    t.string('Model');
+                    t.string('View').notNullable();
+                });
+            },
+            function () {
                 return new Promise(function (resolve, reject) {
                     var username = config.get('adminUser');
                     var password = config.get('initialAdminPassword');
@@ -281,7 +295,6 @@ exports.createSchema = function () {
                                             });
                                         });
 
-
                                         var rolePermissions = RolePermissions.forge(allRolePermissions);
                                         console.log("Adding role permissions to role " + newRoleModel.get('Name'));
                                         Promise.all(rolePermissions.invoke('save')).then(function () {
@@ -302,7 +315,8 @@ exports.createSchema = function () {
                                         });
 
                                     }).catch(function (error) {
-                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName') + ": " + error);
+                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName') +
+                                                    ": " + error);
                                         reject(error);
                                     });
 
@@ -350,6 +364,24 @@ exports.createSchema = function () {
                         resolve();
                     }).catch(function (error) {
                         console.log("Error while saving leaving reason: " + error);
+                        reject(error);
+                    });
+                });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var allPages = [
+                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Model: "events", View: "genericList"},
+                        {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Model: "memberships", View: "genericList"},
+                        {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Model: "contacts", View: "genericList"}
+                    ];
+                    var pages = Pages.forge(allPages);
+                    console.log("Adding pages.");
+                    Promise.all(pages.invoke('save')).then(function () {
+                        console.log("Pages added to database.");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving pages: " + error);
                         reject(error);
                     });
                 });
@@ -453,6 +485,10 @@ var Membership = bookshelf.Model.extend({
     }
 });
 
+var Memberships = bookshelf.Collection.extend({
+    model: Membership
+});
+
 var MembershipFee = bookshelf.Model.extend({
     tableName: 'MembershipFees',
     Membership: function () {
@@ -473,6 +509,14 @@ var LeavingReason = bookshelf.Model.extend({
 
 var LeavingReasons = bookshelf.Collection.extend({
     model: LeavingReason
+});
+
+var Page = bookshelf.Model.extend({
+    tableName: 'Pages'
+});
+
+var Pages = bookshelf.Collection.extend({
+    model: Page
 });
 
 var createSalt = function () {
@@ -509,7 +553,20 @@ module.exports.models = {
     Person: Person,
     Membership: Membership,
     LeavingReason: LeavingReason,
-    LeavingReasons: LeavingReasons
+    LeavingReasons: LeavingReasons,
+    Page: Page,
+    Pages: Pages
+};
+
+module.exports.pageModels = {
+    members: {
+        name: "Mitglieder",
+        model: Memberships
+    },
+    member: {
+        name: "Mitglied",
+        model: Membership
+    }
 };
 
 module.exports.bookshelf = bookshelf;

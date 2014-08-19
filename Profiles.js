@@ -16,6 +16,24 @@ module.exports = function () {
             permissions: ["get", "post"],
             menus: ["admin.databasemanagement"]
         },
+        pagemanagement_list_read: {
+            description: "Seitenverwaltung: Seiten anzeigen",
+            resources: ["/admin/pageManagementPageList"],
+            permissions: ["get"],
+            menus: ["admin.pages"]
+        },
+        pagemanagement_page_display: {
+            description: "Seitenverwaltung: Seiteneigenschaften anzeigen",
+            resources: ["/admin/pageManagementPageEdit"],
+            permissions: ["get"],
+            menus: ["admin.page"]
+        },
+        pagemanagement_page_edit: {
+            description: "Seitenverwaltung: Seiteneigenschaften ändern",
+            resources: ["/admin/pageManagementPageEdit"],
+            permissions: ["get", "post"],
+            menus: ["admin.page"]
+        },
         account_display: {
             description: "Eigene Benutzerdaten anzeigen",
             resources: ["/loginManageAccount"],

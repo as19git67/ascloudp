@@ -2,9 +2,8 @@ var express = require('express');
 var path = require('path');
 var favicon = require('static-favicon');
 var logger = require('morgan');
-var expressSession = require('express-session');
-var cookieParser = require('cookie-parser')
-var cookieSession = require('cookie-session')
+var cookieParser = require('cookie-parser');
+var cookieSession = require('cookie-session');
 var bodyParser = require('body-parser');
 var csrf = require('csurf');
 var http = require('http');
@@ -22,6 +21,7 @@ var userManagementUserList = require('./routes/usermanagementuserlist');
 var userManagementUserEdit = require('./routes/usermanagementuseredit');
 var userManagementRoles = require('./routes/usermanagementroles');
 var userManagementRoleEdit = require('./routes/usermanagementroleedit');
+var pageManagementPageList = require('./routes/pagemanagementpagelist');
 var login = require('./routes/login');
 var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
@@ -70,6 +70,7 @@ app.use('/admin/userManagementUserList', userManagementUserList);
 app.use('/admin/userManagementUserEdit', userManagementUserEdit);
 app.use('/admin/userManagementRoles', userManagementRoles);
 app.use('/admin/userManagementRoleEdit', userManagementRoleEdit);
+app.use('/admin/pageManagementPageList', pageManagementPageList);
 app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
