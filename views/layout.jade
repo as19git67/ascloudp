@@ -21,7 +21,27 @@ html
                         div(class="collapse navbar-collapse")
                             ul(class="nav navbar-nav")
                                 li
-                                    a(href='/') Home
+                                    a(href='/') Termine
+                                li
+                                    a(href='/') Einsätze
+                                li
+                                    a(href='/') Fahrzeuge
+                                li
+                                    a(href='/') Mitmachen
+                                li
+                                    a(href='/') Kontakt
+                                li
+                                    a(href='/') Über uns
+                                li
+                                    a(href='/') Links
+                                li
+                                    a(href='/') Kontakte
+                                li
+                                    a(href='/') Mitglieder
+                                li
+                                    a(href='/') Finanzen
+
+
                             if user != null && user.menu
                                 form(action="/logoff", class="navbar-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
