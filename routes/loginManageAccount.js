@@ -17,8 +17,10 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res, next
             withRelated: ['UserLogin']
         }).then(function (userModel) {
             if (userModel) {
-                var responseData = prepareResponseDataFromUser(userModel, req);
-                res.render('loginManageAccount', responseData);
+                model.getPagesForUser(req.user).then(function (pages) {
+                    var responseData = prepareResponseDataFromUser(userModel, pages, req);
+                    res.render('loginManageAccount', responseData);
+                });
             } else {
                 console.log("Can't manage user: user not found in database.");
                 res.redirect('/');
@@ -42,78 +44,79 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
             new User({'id': req.user.id}).fetch({
                 withRelated: ['UserLogin']
             }).then(function (userModel) {
-
-                function setPassword(newPassword, responseData) {
-                    var salt = model.createSalt();
-                    userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
-                    userModel.set('PasswordSalt', salt);
-                    userModel.save().then(function () {
-                        new Audit({
-                                ChangedAt: new Date(),
-                                Table: userModel.tableName,
-                                ChangedBy: userModel.get('UserName'),
-                                Description: "Password changed"
-                            }
-                        ).save().then(function () {
-                                if (responseData.setPassword) {
-                                    responseData.info = "Das Passwort wurde gesetzt.";
-                                    responseData.setPassword = false;   // next time allow changing the password
-                                } else {
-                                    responseData.info = "Das Passwort wurde geändert.";
+                model.getPagesForUser(req.user).then(function (pages) {
+                    function setPassword(newPassword, responseData) {
+                        var salt = model.createSalt();
+                        userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
+                        userModel.set('PasswordSalt', salt);
+                        userModel.save().then(function () {
+                            new Audit({
+                                    ChangedAt: new Date(),
+                                    Table: userModel.tableName,
+                                    ChangedBy: userModel.get('UserName'),
+                                    Description: "Password changed"
                                 }
-                                res.render('loginManageAccount', responseData);
-                            }
-                        );
-                    }).catch(function (error) {
-                        console.log("Error while accessing users in the database: " + error);
-                        var err = new Error(error);
-                        err.status = 500;
-                        next(err);
-                    });
-                }
-
-                if (userModel) {
-                    var responseData = prepareResponseDataFromUser(userModel, req);
-                    if (req.body.changePassword) {
-                        var oldPassword = req.body.OldPassword;
-                        var newPassword = req.body.NewPassword;
-                        var confirmPassword = req.body.ConfirmPassword;
-                        var oldSalt = req.user.PasswordSalt;
-                        var hashedPassword = model.encryptPassword(oldPassword, oldSalt);
-                        if (userModel.get('PasswordHash') != hashedPassword) {
-                            responseData.error = "Das Passwort ist falsch.";
-                            res.render('loginManageAccount', responseData);
-                        } else {
-                            if (newPassword != confirmPassword) {
-                                responseData.error = "Die Passwortwiederholung stimmt nicht mit dem neuen Passwort überein.";
-                                res.render('loginManageAccount', responseData);
-                            }
-                            else {
-                                setPassword(newPassword, responseData);
-                            }
-                        }
+                            ).save().then(function () {
+                                    if (responseData.setPassword) {
+                                        responseData.info = "Das Passwort wurde gesetzt.";
+                                        responseData.setPassword = false;   // next time allow changing the password
+                                    } else {
+                                        responseData.info = "Das Passwort wurde geändert.";
+                                    }
+                                    res.render('loginManageAccount', responseData);
+                                }
+                            );
+                        }).catch(function (error) {
+                            console.log("Error while accessing users in the database: " + error);
+                            var err = new Error(error);
+                            err.status = 500;
+                            next(err);
+                        });
                     }
-                    else {
-                        if (req.body.setPassword) {
+
+                    if (userModel) {
+                        var responseData = prepareResponseDataFromUser(userModel, pages, req);
+                        if (req.body.changePassword) {
+                            var oldPassword = req.body.OldPassword;
                             var newPassword = req.body.NewPassword;
                             var confirmPassword = req.body.ConfirmPassword;
-                            if (newPassword != confirmPassword) {
-                                responseData.error = "Die Passwortwiederholung stimmt nicht mit dem Passwort überein.";
+                            var oldSalt = req.user.PasswordSalt;
+                            var hashedPassword = model.encryptPassword(oldPassword, oldSalt);
+                            if (userModel.get('PasswordHash') != hashedPassword) {
+                                responseData.error = "Das Passwort ist falsch.";
                                 res.render('loginManageAccount', responseData);
-                            }
-                            else {
-                                setPassword(newPassword, responseData);
+                            } else {
+                                if (newPassword != confirmPassword) {
+                                    responseData.error = "Die Passwortwiederholung stimmt nicht mit dem neuen Passwort überein.";
+                                    res.render('loginManageAccount', responseData);
+                                }
+                                else {
+                                    setPassword(newPassword, responseData);
+                                }
                             }
                         }
                         else {
-                            // wrong post - parameter not set -> display this page again
-                            res.render('loginManageAccount', responseData);
+                            if (req.body.setPassword) {
+                                var newPassword = req.body.NewPassword;
+                                var confirmPassword = req.body.ConfirmPassword;
+                                if (newPassword != confirmPassword) {
+                                    responseData.error = "Die Passwortwiederholung stimmt nicht mit dem Passwort überein.";
+                                    res.render('loginManageAccount', responseData);
+                                }
+                                else {
+                                    setPassword(newPassword, responseData);
+                                }
+                            }
+                            else {
+                                // wrong post - parameter not set -> display this page again
+                                res.render('loginManageAccount', responseData);
+                            }
                         }
+                    } else {
+                        console.log("Can't change users password: user not found in database.");
+                        res.redirect('/');
                     }
-                } else {
-                    console.log("Can't change users password: user not found in database.");
-                    res.redirect('/');
-                }
+                });
             }).catch(function (error) {
                 console.log("Error while accessing users in the database: " + error);
                 var err = new Error(error);
@@ -134,46 +137,48 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                     User_id: user_id}).fetch({
                         withRelated: ['User']
                     }).then(function (userLogin) {
-                        if (userLogin) {
-                            var userModel = userLogin.related('User');
-                            userLogin.destroy().then(function () {
-                                var userDesc = userModel.get('UserName') + ' (' + user_id + ')';
-                                console.log("UserLogin removed from user " + userDesc + ", Provider: " + provider);
-                                new Audit({
-                                        ChangedAt: new Date(),
-                                        Table: userModel.tableName,
-                                        ChangedBy: userModel.get('UserName'),
-                                        Description: "UserLogin removed from user " + userDesc + ", Provider: " + provider
-                                    }
-                                ).save().then(function () {
+                        model.getPagesForUser(req.user).then(function (pages) {
+                            if (userLogin) {
+                                var userModel = userLogin.related('User');
+                                userLogin.destroy().then(function () {
+                                    var userDesc = userModel.get('UserName') + ' (' + user_id + ')';
+                                    console.log("UserLogin removed from user " + userDesc + ", Provider: " + provider);
+                                    new Audit({
+                                            ChangedAt: new Date(),
+                                            Table: userModel.tableName,
+                                            ChangedBy: userModel.get('UserName'),
+                                            Description: "UserLogin removed from user " + userDesc + ", Provider: " + provider
+                                        }
+                                    ).save().then(function () {
 
-                                        // reload user and render same page again
+                                            // reload user and render same page again
 
-                                        new User({'id': user_id}).fetch({
-                                            withRelated: ['UserLogin']
-                                        }).then(function (userModel) {
-                                            if (userModel) {
-                                                var responseData = prepareResponseDataFromUser(userModel, req);
-                                                responseData.info = "Der " + provider + " Login wurde entfernt.";
-                                                res.render('loginManageAccount', responseData);
-                                            } else {
-                                                console.log("Can't manage user: user not found in database.");
-                                                res.redirect('/');
-                                            }
+                                            new User({'id': user_id}).fetch({
+                                                withRelated: ['UserLogin']
+                                            }).then(function (userModel) {
+                                                if (userModel) {
+                                                    var responseData = prepareResponseDataFromUser(userModel, req);
+                                                    responseData.info = "Der " + provider + " Login wurde entfernt.";
+                                                    res.render('loginManageAccount', responseData);
+                                                } else {
+                                                    console.log("Can't manage user: user not found in database.");
+                                                    res.redirect('/');
+                                                }
 
-                                        }).catch(function (error) {
-                                            console.log("Error while accessing users in the database: " + error);
-                                            var err = new Error(error);
-                                            err.status = 500;
-                                            next(err);
+                                            }).catch(function (error) {
+                                                console.log("Error while accessing users in the database: " + error);
+                                                var err = new Error(error);
+                                                err.status = 500;
+                                                next(err);
+                                            });
                                         });
-                                    });
-                            });
-                        }
-                        else {
-                            console.log("Can't manage unlink external login from user: user not found in database.");
-                            res.redirect('/');
-                        }
+                                });
+                            }
+                            else {
+                                console.log("Can't manage unlink external login from user: user not found in database.");
+                                res.redirect('/');
+                            }
+                        });
                     })
                     .catch(function (error) {
                         console.log("Error while deleting from UserLogin in DB: " + error);
@@ -193,7 +198,7 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
 
 });
 
-function prepareResponseDataFromUser(userModel, req) {
+function prepareResponseDataFromUser(userModel, pages, req) {
     var appName = config.get('appName');
     var strategies = passportStrategies.getEnabledStrategies();
     var canAssociateWithAzure = strategies.azure;
@@ -241,6 +246,7 @@ function prepareResponseDataFromUser(userModel, req) {
         appName: appName,
         title: 'Benutzereinstellungen',
         user: user,
+        pages: pages,
         setPassword: false,
         canAssociateWithAzure: canAssociateWithAzure,
         canAssociateWithTwitter: canAssociateWithTwitter,

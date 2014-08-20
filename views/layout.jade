@@ -23,7 +23,10 @@ html
                                 if pages
                                     each page in pages
                                         li
-                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                            if page.isSingleEntity
+                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                            else
+                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
                             if user != null && user.menu
                                 form(action="/logoff", class="navbar-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")

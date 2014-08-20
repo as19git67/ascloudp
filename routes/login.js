@@ -13,12 +13,15 @@ router.get('/', function (req, res) {
     var appName = config.get('appName');
 
     var strategies = passportStrategies.getEnabledStrategies();
-    res.render('login', {
-        csrfToken: req.csrfToken(),
-        appName: appName,
-        title: 'Login',
-        user: req.user,
-        passportStrategies: strategies
+    model.getPagesForUser(req.user).then(function (pages) {
+        res.render('login', {
+            csrfToken: req.csrfToken(),
+            appName: appName,
+            title: 'Login',
+            user: req.user,
+            pages: pages,
+            passportStrategies: strategies
+        });
     });
 });
 
@@ -36,25 +39,25 @@ router.post('/', function (req, res, next) {
         provider = appName;
     }
     switch (provider) {
-        case 'Google':
-            console.log('calling passport.authenticate for google');
-            passport.authenticate('google', {
-                    failureRedirect: '/login',
-                    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'},
-                handlePassportAuthenticate(next, res, req))(req, res, next);
-            break;
-        case 'Twitter':
-            passport.authenticate('twitter', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
-            break;
-        case 'Facebook':
-            passport.authenticate('facebook', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
-            break;
-        case 'Azure':
-            res.redirect('/login/auth/azure');
-            break;
-        default:
-            console.log('calling passport.authenticate for local');
-            passport.authenticate('local', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
+    case 'Google':
+        console.log('calling passport.authenticate for google');
+        passport.authenticate('google', {
+                failureRedirect: '/login',
+                scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'},
+            handlePassportAuthenticate(next, res, req))(req, res, next);
+        break;
+    case 'Twitter':
+        passport.authenticate('twitter', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
+        break;
+    case 'Facebook':
+        passport.authenticate('facebook', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
+        break;
+    case 'Azure':
+        res.redirect('/login/auth/azure');
+        break;
+    default:
+        console.log('calling passport.authenticate for local');
+        passport.authenticate('local', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
     }
 });
 
@@ -90,7 +93,6 @@ router.get('/auth/facebook/callback', passport.authenticate('facebook', { failur
     }
 });
 
-
 function handlePassportAuthenticate(next, res, req) {
     return function (err, user, info) {
         if (err) {
@@ -98,13 +100,16 @@ function handlePassportAuthenticate(next, res, req) {
         }
         if (!user) {
             console.log('Authentication failed.');
-            res.render('login', {
-                csrfToken: req.csrfToken(),
-                appName: config.get('appName'),
-                title: 'Login failed',
-                user: req.user,
-                passportStrategies: passportStrategies.getEnabledStrategies(),
-                error: "Der eingegebene Benutzername (Email) oder das Passwort ist falsch."
+            model.getPagesForUser(req.user).then(function (pages) {
+                res.render('login', {
+                    csrfToken: req.csrfToken(),
+                    appName: config.get('appName'),
+                    title: 'Login failed',
+                    user: req.user,
+                    pages: pages,
+                    passportStrategies: passportStrategies.getEnabledStrategies(),
+                    error: "Der eingegebene Benutzername (Email) oder das Passwort ist falsch."
+                });
             });
         }
         req.logIn(user, function (err) {
@@ -158,7 +163,7 @@ function linkUser(req, res, next) {
                 .save()
                 .then(function (userLoginModel) {
                     console.log("New UserLogin saved in DB. UserID: " +
-                        userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
+                                userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
 
                     new Audit({
                             ChangedAt: new Date(),

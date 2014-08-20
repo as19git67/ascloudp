@@ -30,7 +30,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('Pagess').then(function (exists) {
+                knex.schema.hasTable('PageContents').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -59,6 +59,9 @@ exports.createSchemaIfNotExists = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return  knex.schema.dropTableIfExists('PageContents');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('Pages');
             },
@@ -223,20 +226,32 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.createTable('Pages', function (t) {
                     t.increments('id').primary();
+                    t.string('Name', 25).notNullable().unique();
                     t.integer('Order').notNullable().unique();
-                    t.string('Name', 20).notNullable().index();
                     t.string('EntityNameSingular').notNullable();
                     t.string('EntityNamePlural').notNullable();
                     t.string('Model');
+                    t.string('Collection');
                     t.string('View').notNullable();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('PageContents', function (t) {
+                    t.increments('id').primary();
+                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('RawHTML');
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
                 });
             },
             function () {
                 return new Promise(function (resolve, reject) {
                     var allPages = [
-                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Model: "Events", View: "genericList"},
-                        {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Model: "Memberships", View: "genericList"},
-                        {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Model: "Contacts", View: "genericList"}
+                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "genericList"},
+                        {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Memberships", View: "genericList"},
+                        {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Contacts", View: "genericList"},
+                        {Order: 4, Name: "mitmachen", EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"}
                     ];
                     var pages = Pages.forge(allPages);
                     console.log("Adding pages.");
@@ -279,56 +294,61 @@ exports.createSchema = function () {
                                         console.log("Role " + newRoleModel.get('Name') + " assigned to " + newUserModel.get('UserName'));
 
                                         // add all profiles to Administrator role
-                                        var profiles = getProfiles();
-                                        var allRolePermissions = [];
-                                        var checkHash = {};
+                                        getProfiles().then(function (profiles) {
+                                            var allRolePermissions = [];
+                                            var checkHash = {};
 
-                                        _.each(profiles, function (profile) {
-                                            _.each(profile.resources, function (resource) {
-                                                _.each(profile.permissions, function (permission) {
-                                                    // use hash map to quickly check for unique resource and permission
-                                                    var checkKey = resource + "_" + permission;
-                                                    if (!checkHash[checkKey]) {
-                                                        allRolePermissions.push(
-                                                            {
-                                                                Role_id: roleId,
-                                                                Resource: resource,
-                                                                Permission: permission
-                                                            }
-                                                        );
-                                                        checkHash[checkKey] = true;
+                                            _.each(profiles, function (profile) {
+                                                _.each(profile.resources, function (resource) {
+                                                    _.each(profile.permissions, function (permission) {
+                                                        // use hash map to quickly check for unique resource and permission
+                                                        var checkKey = resource + "_" + permission;
+                                                        if (!checkHash[checkKey]) {
+                                                            allRolePermissions.push(
+                                                                {
+                                                                    Role_id: roleId,
+                                                                    Resource: resource,
+                                                                    Permission: permission
+                                                                }
+                                                            );
+                                                            checkHash[checkKey] = true;
+                                                        }
+                                                    });
+                                                });
+                                            });
+
+                                            var allRoleMenus = [];
+                                            checkHash = {};
+                                            _.each(profiles, function (profile) {
+                                                _.each(profile.menus, function (menu) {
+                                                    if (!checkHash[menu]) {
+                                                        allRoleMenus.push({ Role_id: roleId, Menu: menu });
+                                                        checkHash[menu] = true;
                                                     }
                                                 });
                                             });
-                                        });
 
-                                        var allRoleMenus = [];
-                                        checkHash = {};
-                                        _.each(profiles, function (profile) {
-                                            _.each(profile.menus, function (menu) {
-                                                if (!checkHash[menu]) {
-                                                    allRoleMenus.push({ Role_id: roleId, Menu: menu });
-                                                    checkHash[menu] = true;
-                                                }
-                                            });
-                                        });
+                                            var rolePermissions = RolePermissions.forge(allRolePermissions);
+                                            console.log("Adding role permissions to role " + newRoleModel.get('Name'));
+                                            Promise.all(rolePermissions.invoke('save')).then(function () {
+                                                console.log("Role permissions added to role " + newRoleModel.get('Name'));
 
-                                        var rolePermissions = RolePermissions.forge(allRolePermissions);
-                                        console.log("Adding role permissions to role " + newRoleModel.get('Name'));
-                                        Promise.all(rolePermissions.invoke('save')).then(function () {
-                                            console.log("Role permissions added to role " + newRoleModel.get('Name'));
-
-                                            var roleMenus = RoleMenus.forge(allRoleMenus);
-                                            console.log("Adding role menus to role " + newRoleModel.get('Name'));
-                                            Promise.all(roleMenus.invoke('save')).then(function () {
-                                                console.log("Role menus added to role " + newRoleModel.get('Name'));
-                                                resolve();
+                                                var roleMenus = RoleMenus.forge(allRoleMenus);
+                                                console.log("Adding role menus to role " + newRoleModel.get('Name'));
+                                                Promise.all(roleMenus.invoke('save')).then(function () {
+                                                    console.log("Role menus added to role " + newRoleModel.get('Name'));
+                                                    resolve();
+                                                }).catch(function (error) {
+                                                    console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " + error);
+                                                    reject(error);
+                                                });
                                             }).catch(function (error) {
-                                                console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " + error);
+                                                console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " + error);
                                                 reject(error);
                                             });
+
                                         }).catch(function (error) {
-                                            console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " + error);
+                                            console.log("Error getting profiles: " + error);
                                             reject(error);
                                         });
 
@@ -512,11 +532,25 @@ var LeavingReasons = bookshelf.Collection.extend({
 });
 
 var Page = bookshelf.Model.extend({
-    tableName: 'Pages'
+    tableName: 'Pages',
+    isSingleEntity: function () {
+        // return true, if this page is configured to display a single entity and no list of it
+        return this.get('Collection') == undefined;
+    }
 });
 
 var Pages = bookshelf.Collection.extend({
-    model: Page
+    model: Page,
+    PageContent: function () {
+        return this.hasOne(PageContent);
+    }
+});
+
+var PageContent = bookshelf.Model.extend({
+    tableName: 'PageContents',
+    Page: function () {
+        return this.belongsTo(Page);
+    }
 });
 
 var createSalt = function () {
@@ -536,28 +570,34 @@ var checkPassword = function (hashedPassword, password, salt) {
     return encryptPassword(password, salt) === hashedPassword;
 };
 
+// Always resolve with pages array, even if an error occurs. Then pages is [].
 var getPages = function () {
     return new Promise(function (resolve, reject) {
+        var pages = [];
         new Page().query(function (qb) {
             qb.orderBy('Order', 'ASC');
         }).fetchAll()
             .then(function (pageList) {
-                var pages = [];
                 pageList.each(function (page) {
                     var pageObj = {
                         Page_id: page.get('id'),
                         Name: page.get('Name'),
                         EntityNameSingular: page.get('EntityNameSingular'),
                         EntityNamePlural: page.get('EntityNamePlural'),
-                        Model: page.get('Model'),
-                        View: page.get('View')
+                        View: page.get('View'),
+                        isSingleEntity: page.isSingleEntity()
                     };
+                    if (pageObj.isSingleEntity) {
+                        pageObj.Model = page.get('Model');
+                    } else {
+                        pageObj.Collection = page.get('Collection');
+                    }
                     pages.push(pageObj);
                 });
                 resolve(pages);
             }).catch(function (error) {
                 console.log("Retrieving pages from database failed: " + error);
-                reject(error);
+                resolve(pages);
             });
     });
 };
@@ -569,7 +609,7 @@ var getPagesForUser = function (userId) {
 module.exports.createSalt = createSalt;
 module.exports.encryptPassword = encryptPassword;
 module.exports.checkPassword = checkPassword;
-module.exports.getPages= getPages;
+module.exports.getPages = getPages;
 module.exports.getPagesForUser = getPagesForUser;
 
 module.exports.models = {
@@ -589,7 +629,8 @@ module.exports.models = {
     LeavingReason: LeavingReason,
     LeavingReasons: LeavingReasons,
     Page: Page,
-    Pages: Pages
+    Pages: Pages,
+    PageContent: PageContent
 };
 
 module.exports.pageModels = {

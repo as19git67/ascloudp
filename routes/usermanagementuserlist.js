@@ -8,13 +8,13 @@ var passportStrategies = require('../passportStrategies');
 var rolePermissions = require('../Roles');
 
 var rp = new rolePermissions(model.models);
+var appName = config.get('appName');
 
-router.get('/', passportStrategies.ensureAuthenticated,  rp.middleware(), function (req, res) {
-        var appName = config.get('appName');
+router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res) {
         var title = 'User Management - Benutzer';
 
-        new User().fetchAll({withRelated: ['UserLogin']})
-            .then(function (userlist) {
+        model.getPagesForUser(req.user).then(function (pages) {
+            new User().fetchAll({withRelated: ['UserLogin']}).then(function (userlist) {
                 var users = [];
                 userlist.each(function (user) {
                     var userObj = {
@@ -44,22 +44,25 @@ router.get('/', passportStrategies.ensureAuthenticated,  rp.middleware(), functi
                     appName: appName,
                     title: title,
                     user: req.user,
+                    pages: pages,
                     error: "",
                     userlist: users
                 });
             })
-            .catch(function (error) {
-                res.render('usermanagementuserlist', {
-                        csrfToken: req.csrfToken(),
-                        appName: appName,
-                        title: title,
-                        user: req.user,
-                        error: 'Error: ' + error,
-                        userlist: []
-                    }
-                );
-            }
-        );
+                .catch(function (error) {
+                    res.render('usermanagementuserlist', {
+                            csrfToken: req.csrfToken(),
+                            appName: appName,
+                            title: title,
+                            user: req.user,
+                            pages: pages,
+                            error: 'Error: ' + error,
+                            userlist: []
+                        }
+                    );
+                }
+            );
+        });
     }
 );
 

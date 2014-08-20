@@ -10,51 +10,55 @@ var passportStrategies = require('../passportStrategies');
 var rolePermissions = require('../Roles');
 
 var rp = new rolePermissions(model.models);
+var appName = config.get('appName');
 
 router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
-        var appName = config.get('appName');
         var title = 'User Management - Rollen';
 
-        new Role().query(function (qb) {
-            qb.orderBy('Name', 'ASC');
-        }).fetchAll({withRelated: ['UserRole']})
-            .then(function (roleList) {
-                var roles = [];
-                roleList.each(function (role) {
-                    var roleObj = {
-                        Role_id: role.get('id'),
-                        Name: role.get('Name'),
-                        UserRoles: []
-                    };
+        model.getPagesForUser(req.user).then(function (pages) {
+            new Role().query(function (qb) {
+                qb.orderBy('Name', 'ASC');
+            }).fetchAll({withRelated: ['UserRole']})
+                .then(function (roleList) {
+                    var roles = [];
+                    roleList.each(function (role) {
+                        var roleObj = {
+                            Role_id: role.get('id'),
+                            Name: role.get('Name'),
+                            UserRoles: []
+                        };
 
-                    var userRoles = role.related('UserRole');
-                    if (userRoles.length > 0) {
-                        userRoles.each(function (userRole) {
-                            roleObj.UserRoles.push(userRole.get('User_id'));
-                        });
-                    }
-                    roles.push(roleObj);
-                });
-                res.render('usermanagementroles', {
-                    csrfToken: req.csrfToken(),
-                    appName: appName,
-                    title: title,
-                    user: req.user,
-                    roles: roles
-                });
-            })
-            .catch(function (error) {
-                res.render('usermanagementroles', {
+                        var userRoles = role.related('UserRole');
+                        if (userRoles.length > 0) {
+                            userRoles.each(function (userRole) {
+                                roleObj.UserRoles.push(userRole.get('User_id'));
+                            });
+                        }
+                        roles.push(roleObj);
+                    });
+                    res.render('usermanagementroles', {
                         csrfToken: req.csrfToken(),
                         appName: appName,
                         title: title,
                         user: req.user,
-                        error: 'Error: ' + error,
-                        roles: []
-                    }
-                );
-            }
-        );
+                        pages: pages,
+                        roles: roles
+                    });
+                })
+                .catch(function (error) {
+                    res.render('usermanagementroles', {
+                            csrfToken: req.csrfToken(),
+                            appName: appName,
+                            title: title,
+                            user: req.user,
+                            pages: pages,
+                            error: 'Error: ' + error,
+                            roles: []
+                        }
+                    );
+                }
+            );
+        });
     }
 );
 
