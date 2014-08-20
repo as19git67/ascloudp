@@ -8,6 +8,17 @@ block content
         div.form-group
             div(class="col-xs-12 col-sm-12 table-responsive")
                 table.table
+                    tbody
+                        tr
+                            td
+                                input(type="text", class="form-control", id="newPageName", name="newPageName", value="",
+                                placeholder="Name (URL) einer neuen Seite")
+                            td
+                                button(class="btn btn-default", id="addNewPage", value="Hinzufügen", name="addNewPage")
+                                    span(class="glyphicon glyphicon-plus")
+                                    | &nbsp Hinzufügen
+                hr
+                table.table
                     thead
                         tr
                             th URL
@@ -17,28 +28,15 @@ block content
                             th View
                             th Aktionen
                     tbody
-                        tr.success
-                            td
-                                input(type="text", class="form-control", id="newPageName", name="newPageName", value="",
-                                placeholder="Name (URL) einer neuen Seite")
-                            td
-                                input(type="text", class="form-control", id="newEntitySingular", name="newEntitySingular", value="")
-                            td
-                                input(type="text", class="form-control", id="newEntityPlural", name="newEntityPlural", value="")
-                            td
-                                input(type="text", class="form-control", id="newModel", name="newModel", value="")
-                            td
-                                input(type="text", class="form-control", id="newView", name="newView", value="")
-                            td
-                                button(class="btn btn-default", id="addNewPage", value="Hinzufügen", name="addNewPage")
-                                    span(class="glyphicon glyphicon-plus")
-                                    | &nbsp Hinzufügen
                         each page in pages
                             tr
                                 td #{page.Name}
                                 td #{page.EntityNameSingular}
                                 td #{page.EntityNamePlural}
-                                td #{page.Model}
+                                if page.isSingleEntity
+                                    td #{page.Model}
+                                else
+                                    td #{page.Collection}
                                 td #{page.View}
                                 td
                                     a(href='/admin/pageManagementPageEdit/#{page.Page_id}') Details

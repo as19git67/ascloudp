@@ -27,6 +27,8 @@ var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
+var model = require('./model');
+var PageContent = model.models.PageContent;
 
 var app = express();
 
@@ -43,21 +45,21 @@ var cookieSecret = config.get('cookieSecret');
 var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
 app.use(cookieParser(cookieSecret));
 app.use(cookieSession({
-    key    : cookieKey,
-    secret : cookieSecret,
-    cookie : {
+    key: cookieKey,
+    secret: cookieSecret,
+    cookie: {
         maxAge: sessionTimeout
     }
 }));
 
 // required for passport
 /*
-app.use(expressSession({
-    secret: config.get('sessionSecret'),
-    saveUninitialized: true,
-    resave: true
-}));
-*/
+ app.use(expressSession({
+ secret: config.get('sessionSecret'),
+ saveUninitialized: true,
+ resave: true
+ }));
+ */
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
 app.use(express.static(path.join(__dirname, 'public')));
@@ -77,13 +79,67 @@ app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
 
-
-/// catch 404 and forward to error handler
 app.use(function (req, res, next) {
-    var err = new Error('Not Found');
-    err.status = 404;
-    next(err);
+    var url = req.originalUrl.toLowerCase();
+    // remove / from start
+    if (url.substr(0, 1) == "/") {
+        url = url.substr(1);
+    }
+
+    model.getPagesForUser(req.user).then(function (pages) {
+        var page = _.findWhere(pages, {Name: url});
+        if (page) {
+            var view = page.View;
+            var m = page.isSingleEntity ? page.Model : page.Collection;
+            if (view) {
+                var rawHTML;
+                console.log("Loading view " + view + " for model " + m);
+                if (page.isSingleEntity) {
+                    new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
+                        if (!pageContent) {
+                            console.log("Warning: rendering page " + page.Name + " without content");
+                        }
+                        res.render(view, {
+                            csrfToken: req.csrfToken(),
+                            appName: config.get('appName'),
+                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                            user: req.user,
+                            pages: pages,
+                            RawHTML: pageContent.get('RawHTML')
+                        });
+                    }).catch(function(error){
+                        var errMsg = "Error while getting content from database for page " + page.Name;
+                        console.log(errMsg + ": " + error);
+                        var err = new Error(errMsg);
+                        err.status = 500;
+                        next(err);
+                    });
+                } else {
+                    // todo: get collection data
+                    res.render(view, {
+                        csrfToken: req.csrfToken(),
+                        appName: config.get('appName'),
+                        title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                        user: req.user,
+                        pages: pages,
+                        RawHTML: rawHTML
+                    });
+                }
+            } else {
+                // no view -> 404
+                var err = new Error('Not Found');
+                err.status = 404;
+                next(err);
+            }
+        } else {
+            /// catch 404 and forward to error handler
+            var err = new Error('Not Found');
+            err.status = 404;
+            next(err);
+        }
+    });
 });
+
 
 /// error handlers
 

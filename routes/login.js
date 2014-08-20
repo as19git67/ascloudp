@@ -8,10 +8,10 @@ var Audit = model.models.Audit;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 
+var appName = config.get('appName');
+
 /* GET login page. */
 router.get('/', function (req, res) {
-    var appName = config.get('appName');
-
     var strategies = passportStrategies.getEnabledStrategies();
     model.getPagesForUser(req.user).then(function (pages) {
         res.render('login', {
@@ -26,8 +26,6 @@ router.get('/', function (req, res) {
 });
 
 router.post('/', function (req, res, next) {
-    var appName = config.get('appName');
-
     if (req.user && req.body.provider && !req.user.isNotLocalUser) {
         req.session.loginToLink = req.user.id;
     } else {

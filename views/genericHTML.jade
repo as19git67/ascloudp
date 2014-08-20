@@ -1,0 +1,6 @@
+extends layout
+block content
+    if error
+        p.text-danger #{error}
+    if RawHTML
+        div.container !{RawHTML}
