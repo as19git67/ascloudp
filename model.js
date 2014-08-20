@@ -30,7 +30,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('Pages').then(function (exists) {
+                knex.schema.hasTable('Pagess').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -233,6 +233,24 @@ exports.createSchema = function () {
             },
             function () {
                 return new Promise(function (resolve, reject) {
+                    var allPages = [
+                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Model: "Events", View: "genericList"},
+                        {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Model: "Memberships", View: "genericList"},
+                        {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Model: "Contacts", View: "genericList"}
+                    ];
+                    var pages = Pages.forge(allPages);
+                    console.log("Adding pages.");
+                    Promise.all(pages.invoke('save')).then(function () {
+                        console.log("Pages added to database.");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving pages: " + error);
+                        reject(error);
+                    });
+                });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
                     var username = config.get('adminUser');
                     var password = config.get('initialAdminPassword');
                     if (username && username.trim().length > 0 && password && password.trim().length > 0) {
@@ -364,24 +382,6 @@ exports.createSchema = function () {
                         resolve();
                     }).catch(function (error) {
                         console.log("Error while saving leaving reason: " + error);
-                        reject(error);
-                    });
-                });
-            },
-            function () {
-                return new Promise(function (resolve, reject) {
-                    var allPages = [
-                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Model: "events", View: "genericList"},
-                        {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Model: "memberships", View: "genericList"},
-                        {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Model: "contacts", View: "genericList"}
-                    ];
-                    var pages = Pages.forge(allPages);
-                    console.log("Adding pages.");
-                    Promise.all(pages.invoke('save')).then(function () {
-                        console.log("Pages added to database.");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving pages: " + error);
                         reject(error);
                     });
                 });
@@ -536,7 +536,7 @@ var checkPassword = function (hashedPassword, password, salt) {
     return encryptPassword(password, salt) === hashedPassword;
 };
 
-var getPagesForUser = function (userId) {
+var getPages = function () {
     return new Promise(function (resolve, reject) {
         new Page().query(function (qb) {
             qb.orderBy('Order', 'ASC');
@@ -554,8 +554,6 @@ var getPagesForUser = function (userId) {
                     };
                     pages.push(pageObj);
                 });
-                // todo filter pages by roles/profiles
-                // todo get menu filtered by roles and return it together with the pages
                 resolve(pages);
             }).catch(function (error) {
                 console.log("Retrieving pages from database failed: " + error);
@@ -564,9 +562,14 @@ var getPagesForUser = function (userId) {
     });
 };
 
+var getPagesForUser = function (userId) {
+    return getPages();
+};
+
 module.exports.createSalt = createSalt;
 module.exports.encryptPassword = encryptPassword;
 module.exports.checkPassword = checkPassword;
+module.exports.getPages= getPages;
 module.exports.getPagesForUser = getPagesForUser;
 
 module.exports.models = {
@@ -582,6 +585,7 @@ module.exports.models = {
     Audit: Audit,
     Person: Person,
     Membership: Membership,
+    Memberships: Memberships,
     LeavingReason: LeavingReason,
     LeavingReasons: LeavingReasons,
     Page: Page,

@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var model = require('./model');
 
 module.exports = function () {
 
@@ -84,16 +85,42 @@ module.exports = function () {
         }
     };
 
-    return _.map(profiles, function (value, key, list) {
-        value.id = key;
-        value.resources = _.map(value.resources, function(value){
-            return value.toLowerCase();
-        });
-        value.permissions = _.map(value.permissions, function(value){
-            return value.toLowerCase();
-        });
-        return value;
-    });
+     model.getPages().then(function(pages){
+         _.each(pages, function (page) {
+             var m = model.models[page.Model];  // get model by name
+             if (m) {
+                 var isColl = false;
+                 if (m instanceof model.bookshelf.Collection) {
+                     isColl = true;
+                 }
+                 var entityName = isColl ? page.EntityNamePlural : page.EntityNameSingular;
+                 profiles[page.Name + '_display'] = {
+                     description: "Seite: anzeigen von " + entityName,
+                     resources: ["/" + page.Name],
+                     permissions: ["get"],
+                     menus: [page.Name]
+                 };
+                 profiles[page.Name + '_edit'] = {
+                     description: "Seite: ändern von " + entityName,
+                     resources: ["/" + page.Name],
+                     permissions: ["get", "post"],
+                     menus: [page.Name]
+                 };
+             }
+         });
+
+         return _.map(profiles, function (value, key, list) {
+             value.id = key;
+             value.resources = _.map(value.resources, function (value) {
+                 return value.toLowerCase();
+             });
+             value.permissions = _.map(value.permissions, function (value) {
+                 return value.toLowerCase();
+             });
+             return value;
+         });
+
+     });
 };
 
 
