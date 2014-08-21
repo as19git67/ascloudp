@@ -4,7 +4,7 @@ block content
     div.col-md-8
         form(class="form-horizontal", role="form", action="/login", method="post")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
-            h4 Verwende einen #{appName}-Benutzer um einzuloggen.
+            h4 Ich habe ein #{appName} Konto.
             hr
             if error
                 p.text-danger #{error}
@@ -37,10 +37,10 @@ block content
                 div(class="col-md-offset-2 col-md-10")
                     input(type="submit", value="Einloggen", name="localLogin" class="btn btn-default")
             p
-                a(href="/loginRegisterNew") Als neuen Benutzer registrieren
+                a(href="/loginRegisterNew") Ich brauche ein #{appName} Konto.
 
     div.col-md-4
-        h4 Verwende einen anderen Dienst um einzuloggen.
+        h4 Ich benutze ein externes Konto um mich bei #{appName} anzumelden.
         hr
         form(action="/login", method="post", novalidate="novalidate")
             input(type="hidden", value="#{csrfToken}" name="_csrf")

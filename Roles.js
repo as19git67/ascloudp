@@ -5,7 +5,6 @@ var _ = require('underscore');
 var Roles = function () {
 };
 
-
 /**
  isAllowed( userId, resource, permissions, function(err, allowed) )
 
@@ -31,7 +30,7 @@ Roles.prototype.isAllowed = function (userId, resource, permissions, cb) {
         .select('UserRoles.User_id', 'RolePermissions.*')
         .then(function (results) {
             _.each(results, function (r) {
-                console.log("Found: " + r);
+                console.log("User has permission " + r.Permission + " for resource " + r.Resource);
             });
             if (results.length > 0) {
                 cb(null, true);
@@ -44,11 +43,9 @@ Roles.prototype.isAllowed = function (userId, resource, permissions, cb) {
         });
 };
 
-
 function makeArray(arr) {
     return Array.isArray(arr) ? arr : [arr];
 }
-
 
 Roles.prototype.canPost = function (req, numPathComponents) {
     var roles = this;
@@ -86,13 +83,11 @@ Roles.prototype.canPost = function (req, numPathComponents) {
     });
 };
 
-
 // Express Middleware
 
 Roles.prototype.middleware = function (numPathComponents, userId, actions) {
 
     var roles = this;
-
 
     var HttpError = function (errorCode, msg) {
         this.status = errorCode;
@@ -101,7 +96,6 @@ Roles.prototype.middleware = function (numPathComponents, userId, actions) {
         Error.captureStackTrace(this, arguments);
         Error.call(this, msg);
     };
-
 
     return function (req, res, next) {
         var _userId = userId,

@@ -11,7 +11,7 @@ var https = require('https');
 var fs = require('fs');
 var config = require('./config');
 var _ = require('underscore');
-
+var rho = require('rho');
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
 
@@ -100,7 +100,12 @@ app.use(function (req, res, next) {
                     console.log("Loading view " + view + " for model " + m);
                     if (page.isSingleEntity) {
                         new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
-                            if (!pageContent) {
+                            var rawRho = "";
+                            var rawHtml = undefined;
+                            if (pageContent) {
+                                rawRho = pageContent.get('Text');
+                                rawHtml = rho.toHtml(rawRho);
+                            } else {
                                 console.log("Warning: rendering page " + page.Name + " without content");
                             }
                             res.render(view, {
@@ -110,7 +115,8 @@ app.use(function (req, res, next) {
                                 user: req.user,
                                 pages: pages,
                                 canEdit: canPost,
-                                RawHTML: pageContent.get('RawHTML')
+                                RawHTML: rawHtml,
+                                RawRHO: rawRho
                             });
                         }).catch(function (error) {
                             var errMsg = "Error while getting content from database for page " + page.Name;
@@ -153,7 +159,6 @@ app.use(function (req, res, next) {
     });
 
 });
-
 
 /// error handlers
 

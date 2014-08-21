@@ -7,6 +7,7 @@ var model = require('../model');
 var Role = model.models.Role;
 var RolePermission = model.models.RolePermission;
 var RolePermissions = model.models.RolePermissions;
+var RoleMenus = model.models.RoleMenus;
 var User = model.models.User;
 var UserLogin = model.models.UserLogin;
 var passportStrategies = require('../passportStrategies');
@@ -99,9 +100,12 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
             }
             else {
                 if (req.body.save) {
+                    var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gespeichert werden.";
 
                     var roleName = req.body.rolename;
                     var roleId = req.body.Role_id;
+
+                    var errMsgDetailed = "Error while retrieving profiles from database";
 
                     // build array of role permissions from selected checkboxes of profiles in UI
                     getProfiles().then(function (allProfiles) {
@@ -129,48 +133,54 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                             }
                         });
 
+                        var allRoleMenus = [];
+                        checkHash = {};
+                        _.each(allProfiles, function (profile) {
+                            _.each(profile.menus, function (menu) {
+                                if (!checkHash[menu]) {
+                                    allRoleMenus.push({ Role_id: roleId, Menu: menu });
+                                    checkHash[menu] = true;
+                                }
+                            });
+                        });
+
+                        errMsgDetailed = "Error while retrieving role from database. RoleId: " + roleId;
                         new Role({id: roleId}).fetch().then(function (roleModel) {
                             // todo transaction
 
                             // delete all role permissions assigned to the role and add those which are selected by the user
+                            errMsgDetailed = "Error deleting role permissions. RoleId: " + roleId;
                             model.bookshelf.knex('RolePermissions').where('Role_id', roleId).del().then(function () {
+                                // delete all role menus assigned to the role and add those which are selected by the user
+                                errMsgDetailed = "Error deleting role menus. RoleId: " + roleId;
+                                model.bookshelf.knex('RoleMenus').where('Role_id', roleId).del().then(function () {
 
-                                var rolePermissions = RolePermissions.forge(selectedRolePermissions);
+                                    var rolePermissions = RolePermissions.forge(selectedRolePermissions);
+                                    errMsgDetailed = "Error saving role permissions for role " + roleId;
 
-                                Promise.all(rolePermissions.invoke('save')).then(function () {
-                                    console.log("All role permissions are saved");
+                                    Promise.all(rolePermissions.invoke('save')).then(function () {
+                                        console.log("All role permissions are saved");
 
-                                    roleModel.set('Name', roleName);
-                                    // todo set further parameter
-                                    roleModel.save().then(function (savedRoleModel) {
-                                        console.log("Role '" + savedRoleModel.get('Name') + "' saved with id " + savedRoleModel.get('id'));
-                                        res.redirect('/admin/userManagementRoles');
-                                    }).catch(function (error) {
-                                        var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gespeichert werden.";
-                                        var errMsgDetailed = "Error while saving role '" + roleName + "' to database. RoleId: " + roleId + ". " + error;
-                                        handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
+                                        var roleMenus = RoleMenus.forge(allRoleMenus);
+
+                                        var oldRoleName = roleModel.get('Name');
+                                        console.log("Adding role menus to role " + oldRoleName);
+                                        errMsgDetailed = "Error saving role menus for role " + roleId;
+                                        Promise.all(roleMenus.invoke('save')).then(function () {
+                                            console.log("Role menus added to role " + oldRoleName);
+                                            roleModel.set('Name', roleName); // set name - it could be changed
+                                            errMsgDetailed = "Error while saving role '" + oldRoleName + "' to database. RoleId: " + roleId;
+                                            roleModel.save().then(function (savedRoleModel) {
+                                                console.log("Role '" + savedRoleModel.get('Name') + "' saved with id " + savedRoleModel.get('id'));
+                                                res.redirect('/admin/userManagementRoles');
+                                            });
+                                        });
                                     });
-                                }).catch(function (error) {
-                                    var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gespeichert werden.";
-                                    var errMsgDetailed = "Error saving role permissions for role " + roleId + ". " + error;
-                                    handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
                                 });
-                            }).catch(function (error) {
-                                var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gespeichert werden.";
-                                var errMsgDetailed = "Error deleting role permissions. RoleId: " + roleId + ". " + error;
-                                handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
                             });
-
-                        }).catch(function (error) {
-                            var errMsg = "Die Rolle konnte wegen eines Fehlers nicht von der Datenbank geladen werden.";
-                            var errMsgDetailed = "Error while retrieving role from database. RoleId: " + roleId + ". " + error;
-                            handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
                         });
-
                     }).catch(function (error) {
-                        var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gespeichert werden.";
-                        var errMsgDetailed = "Error while retrieving profiles from database: " + error;
-                        handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
+                        handleError(errMsg, errMsgDetailed + ". " + error, req, res, {id: roleId, Name: roleName });
                     });
                 }
                 else {
@@ -182,27 +192,33 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                 console.log("Role with id " + roleId + " has name " + roleModel.get('Name') + " and will be deleted.");
                                 // todo db transaction
                                 model.bookshelf.knex('RolePermissions').where('Role_id', roleId).del().then(function () {
+                                    model.bookshelf.knex('RoleMenus').where('Role_id', roleId).del().then(function () {
 
-                                    roleModel.destroy().then(function () {
-                                        console.log("Role with id " + roleId + " was deleted.");
-                                        res.redirect('/admin/userManagementRoles');
-                                    }).catch(function (error) {
-                                        console.log("Error while deleting role with id " + roleId + ". Error: " + error);
-                                        getProfiles().then(function (profiles) {
-                                            res.render('usermanagementroleedit', {
-                                                csrfToken: req.csrfToken(),
-                                                appName: appName,
-                                                title: title,
-                                                user: req.user,
-                                                pages: pages,
-                                                profiles: profiles,
-                                                error: "Die Rolle konnte wegen eines Fehlers nicht gelöscht werden.",
-                                                role: {
-                                                    id: roleId,
-                                                    Name: roleName
-                                                }
+                                        roleModel.destroy().then(function () {
+                                            console.log("Role with id " + roleId + " was deleted.");
+                                            res.redirect('/admin/userManagementRoles');
+                                        }).catch(function (error) {
+                                            console.log("Error while deleting role with id " + roleId + ". Error: " + error);
+                                            getProfiles().then(function (profiles) {
+                                                res.render('usermanagementroleedit', {
+                                                    csrfToken: req.csrfToken(),
+                                                    appName: appName,
+                                                    title: title,
+                                                    user: req.user,
+                                                    pages: pages,
+                                                    profiles: profiles,
+                                                    error: "Die Rolle konnte wegen eines Fehlers nicht gelöscht werden.",
+                                                    role: {
+                                                        id: roleId,
+                                                        Name: roleName
+                                                    }
+                                                });
                                             });
                                         });
+                                    }).catch(function (error) {
+                                        var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gelöscht werden.";
+                                        var errMsgDetailed = "Error deleting role menus. RoleId: " + roleId + ". " + error;
+                                        handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
                                     });
                                 }).catch(function (error) {
                                     var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gelöscht werden.";

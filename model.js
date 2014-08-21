@@ -239,7 +239,7 @@ exports.createSchema = function () {
                 return  knex.schema.createTable('PageContents', function (t) {
                     t.increments('id').primary();
                     t.string('Page_id').references('Name').inTable('Pages');
-                    t.string('RawHTML', 50000);
+                    t.string('Text', 50000);
                     t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();

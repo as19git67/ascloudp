@@ -3,6 +3,19 @@ block content
     if error
         p.text-danger #{error}
     if canEdit
-        h1 EDIT
-    if RawHTML
-        !{RawHTML}
+        form(class="form-horizontal", role="form", method="post")
+            input(type="hidden", value="#{csrfToken}" name="_csrf")
+            div.form-group
+                label(for="rawRho") Seitentext:
+                textarea(class="form-control", placeholder='Seitentext hier eingeben', id="rawRho", name="rawRho", rows=15) #{RawRHO}
+            div.form-group
+                button(class="btn btn-default", id="save", value="save", name="save")
+                    span(class="glyphicon glyphicon-save")
+                    | &nbsp Änderungen speichern
+                button(class="btn btn-default cancel", id="cancel", value="cancel", name="cancel")
+                    span(class="glyphicon glyphicon-remove")
+                    | &nbsp Abbrechen
+
+    else
+        if RawHTML
+            | !{RawHTML}

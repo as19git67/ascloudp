@@ -28,6 +28,7 @@
         "bluebird": "*",
         "knex": "*",
         "bookshelf": "*",
-        "pg": "*"
+        "pg": "*",
+        "rho": "*"
     }
 }
