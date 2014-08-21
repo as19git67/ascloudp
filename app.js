@@ -104,6 +104,21 @@ app.use(function (req, res, next) {
                         if (page.isSingleEntity) {
                                 new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
                                     if (isPost) {
+// TODO check cancel or save
+                                        rawRho = req.body.rawRho
+                                        // todo: save rho
+                                        rawHtml = rho.toHtml(rawRho);
+                                        res.render(view, {
+                                            csrfToken: req.csrfToken(),
+                                            Page_id: page.Name,
+                                            appName: config.get('appName'),
+                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                            user: req.user,
+                                            pages: pages,
+                                            canEdit: canPost,
+                                            RawHTML: rawHtml,
+                                            RawRHO: rawRho
+                                        });
 
                                     } else {
                                         var rawRho = "";
