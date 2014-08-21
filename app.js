@@ -96,45 +96,59 @@ app.use(function (req, res, next) {
                 var view = page.View;
                 var m = page.isSingleEntity ? page.Model : page.Collection;
                 if (view) {
-                    var rawHTML;
-                    console.log("Loading view " + view + " for model " + m);
-                    if (page.isSingleEntity) {
-                        new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
-                            var rawRho = "";
-                            var rawHtml = undefined;
-                            if (pageContent) {
-                                rawRho = pageContent.get('Text');
-                                rawHtml = rho.toHtml(rawRho);
-                            } else {
-                                console.log("Warning: rendering page " + page.Name + " without content");
-                            }
+                    var httpMethod = req.method.toLowerCase();
+                    var isPost = httpMethod == "post";
+                    if ((isPost && canPost) || httpMethod == "get") {
+                        var rawHTML;
+                        console.log("Loading view " + view + " for model " + m);
+                        if (page.isSingleEntity) {
+                                new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
+                                    if (isPost) {
+
+                                    } else {
+                                        var rawRho = "";
+                                        var rawHtml = undefined;
+                                        if (pageContent) {
+                                            rawRho = pageContent.get('Text');
+                                            rawHtml = rho.toHtml(rawRho);
+                                        } else {
+                                            console.log("Warning: rendering page " + page.Name + " without content");
+                                        }
+                                        res.render(view, {
+                                            csrfToken: req.csrfToken(),
+                                            Page_id: page.Name,
+                                            appName: config.get('appName'),
+                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                            user: req.user,
+                                            pages: pages,
+                                            canEdit: canPost,
+                                            RawHTML: rawHtml,
+                                            RawRHO: rawRho
+                                        });
+                                    }
+                                }).catch(function (error) {
+                                    var errMsg = "Error while getting content from database for page " + page.Name;
+                                    console.log(errMsg + ": " + error);
+                                    var err = new Error(errMsg);
+                                    err.status = 500;
+                                    next(err);
+                                });
+                        } else {
+                            // todo: get collection data
                             res.render(view, {
                                 csrfToken: req.csrfToken(),
                                 appName: config.get('appName'),
                                 title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
                                 user: req.user,
                                 pages: pages,
-                                canEdit: canPost,
-                                RawHTML: rawHtml,
-                                RawRHO: rawRho
+                                RawHTML: rawHTML
                             });
-                        }).catch(function (error) {
-                            var errMsg = "Error while getting content from database for page " + page.Name;
-                            console.log(errMsg + ": " + error);
-                            var err = new Error(errMsg);
-                            err.status = 500;
-                            next(err);
-                        });
+                        }
                     } else {
-                        // todo: get collection data
-                        res.render(view, {
-                            csrfToken: req.csrfToken(),
-                            appName: config.get('appName'),
-                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
-                            user: req.user,
-                            pages: pages,
-                            RawHTML: rawHTML
-                        });
+                        // http method is not allowed
+                        var err = new Error('Forbidden');
+                        err.status = 403;
+                        next(err);
                     }
                 } else {
                     // no view -> 404

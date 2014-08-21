@@ -5,6 +5,7 @@ block content
     if canEdit
         form(class="form-horizontal", role="form", method="post")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
+            input(type="hidden", value="#{Page_id}" name="_pageId")
             div.form-group
                 label(for="rawRho") Seitentext:
                 textarea(class="form-control", placeholder='Seitentext hier eingeben', id="rawRho", name="rawRho", rows=15) #{RawRHO}
