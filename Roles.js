@@ -1,3 +1,4 @@
+var Promise = require('bluebird/js/main/promise')();
 var model = require('./model');
 var _ = require('underscore');
 
@@ -29,7 +30,7 @@ Roles.prototype.isAllowed = function (userId, resource, permissions, cb) {
         .whereIn('RolePermissions.Permission', permissions)
         .select('UserRoles.User_id', 'RolePermissions.*')
         .then(function (results) {
-            _.each(results,function (r) {
+            _.each(results, function (r) {
                 console.log("Found: " + r);
             });
             if (results.length > 0) {
@@ -49,11 +50,49 @@ function makeArray(arr) {
 }
 
 
+Roles.prototype.canPost = function (req, numPathComponents) {
+    var roles = this;
+
+    return new Promise(function (resolve, reject) {
+
+        if ((req.user) && (req.user.id)) {
+            var _userId = req.user.id;
+            var url = req.originalUrl.split('?')[0];
+            var resource;
+            if (!numPathComponents) {
+                resource = url;
+            } else {
+                resource = url.split('/').slice(0, numPathComponents + 1).join('/');
+            }
+
+            var actions = ["post"];
+
+            roles.isAllowed(_userId, resource, actions, function (err, allowed) {
+                if (err) {
+                    console.log('Error checking permissions to access resource');
+                    reject(error);
+                } else if (allowed === false) {
+                    console.log('Not allowed ' + actions + ' on ' + resource + ' by user ' + _userId);
+                    resolve(false);
+                } else {
+                    console.log('Allowed ' + actions + ' on ' + resource + ' by user ' + _userId);
+                    resolve(true);
+                }
+            });
+        } else {
+            // not authenticated -> can't post in any case
+            resolve(false);
+        }
+    });
+};
+
+
 // Express Middleware
 
 Roles.prototype.middleware = function (numPathComponents, userId, actions) {
 
     var roles = this;
+
 
     var HttpError = function (errorCode, msg) {
         this.status = errorCode;
@@ -62,6 +101,7 @@ Roles.prototype.middleware = function (numPathComponents, userId, actions) {
         Error.captureStackTrace(this, arguments);
         Error.call(this, msg);
     };
+
 
     return function (req, res, next) {
         var _userId = userId,

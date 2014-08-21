@@ -27,6 +27,7 @@ var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
+var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
 
@@ -86,58 +87,71 @@ app.use(function (req, res, next) {
         url = url.substr(1);
     }
 
-    model.getPagesForUser(req.user).then(function (pages) {
-        var page = _.findWhere(pages, {Name: url});
-        if (page) {
-            var view = page.View;
-            var m = page.isSingleEntity ? page.Model : page.Collection;
-            if (view) {
-                var rawHTML;
-                console.log("Loading view " + view + " for model " + m);
-                if (page.isSingleEntity) {
-                    new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
-                        if (!pageContent) {
-                            console.log("Warning: rendering page " + page.Name + " without content");
-                        }
+    var rp = new rolePermissions(model.models);
+    rp.canPost(req).then(function (canPost) {
+
+        model.getPagesForUser(req.user).then(function (pages) {
+            var page = _.findWhere(pages, {Name: url});
+            if (page) {
+                var view = page.View;
+                var m = page.isSingleEntity ? page.Model : page.Collection;
+                if (view) {
+                    var rawHTML;
+                    console.log("Loading view " + view + " for model " + m);
+                    if (page.isSingleEntity) {
+                        new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
+                            if (!pageContent) {
+                                console.log("Warning: rendering page " + page.Name + " without content");
+                            }
+                            res.render(view, {
+                                csrfToken: req.csrfToken(),
+                                appName: config.get('appName'),
+                                title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                user: req.user,
+                                pages: pages,
+                                canEdit: canPost,
+                                RawHTML: pageContent.get('RawHTML')
+                            });
+                        }).catch(function (error) {
+                            var errMsg = "Error while getting content from database for page " + page.Name;
+                            console.log(errMsg + ": " + error);
+                            var err = new Error(errMsg);
+                            err.status = 500;
+                            next(err);
+                        });
+                    } else {
+                        // todo: get collection data
                         res.render(view, {
                             csrfToken: req.csrfToken(),
                             appName: config.get('appName'),
                             title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
                             user: req.user,
                             pages: pages,
-                            RawHTML: pageContent.get('RawHTML')
+                            RawHTML: rawHTML
                         });
-                    }).catch(function(error){
-                        var errMsg = "Error while getting content from database for page " + page.Name;
-                        console.log(errMsg + ": " + error);
-                        var err = new Error(errMsg);
-                        err.status = 500;
-                        next(err);
-                    });
+                    }
                 } else {
-                    // todo: get collection data
-                    res.render(view, {
-                        csrfToken: req.csrfToken(),
-                        appName: config.get('appName'),
-                        title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
-                        user: req.user,
-                        pages: pages,
-                        RawHTML: rawHTML
-                    });
+                    // no view -> 404
+                    var err = new Error('Not Found');
+                    err.status = 404;
+                    next(err);
                 }
             } else {
-                // no view -> 404
+                /// catch 404 and forward to error handler
                 var err = new Error('Not Found');
                 err.status = 404;
                 next(err);
             }
-        } else {
-            /// catch 404 and forward to error handler
-            var err = new Error('Not Found');
-            err.status = 404;
-            next(err);
-        }
+        });
+
+    }).catch(function (error) {
+        var errMsg = "Error while checking role permissions for url " + url;
+        console.log(errMsg + ": " + error);
+        var err = new Error(errMsg);
+        err.status = 500;
+        next(err);
     });
+
 });
 
 

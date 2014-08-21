@@ -1,5 +1,6 @@
 extends layout
 block content
+    h2= title
     h4 Registrieren eines #{provider} Benutzers
     hr
     form(action="/loginRegisterNew", class="form-horizontal", method="post", role="form", novalidate="novalidate")
@@ -13,19 +14,19 @@ block content
             label(class="col-md-2 control-label", for="Email") Email Adresse:
             div(class="col-md-10")
                 input(class="form-control", data-val="true", data-val-email="Die Email Adresse ist nicht im richtigen Format.",
-                        data-val-required="Die Eingabe einer Email-Adresse ist notwendig.", id="Email", name="Email",
-                        type="text" value="#{email}")
+                data-val-required="Die Eingabe einer Email-Adresse ist notwendig.", id="Email", name="Email",
+                type="text" value="#{email}")
         div.form-group
             label(class="col-md-2 control-label", for="Password") Passwort:
             div(class="col-md-10")
                 input(class="form-control", data-val="true", data-val-length="Das Passwort muss mindestens 8 Zeichen lang sein.",
-                        data-val-length-max="100", data-val-length-min="8", data-val-required="Die Eingabe eines Passworts ist notwendig.",
-                        id="Password" name="Password" type="password")
+                data-val-length-max="100", data-val-length-min="8", data-val-required="Die Eingabe eines Passworts ist notwendig.",
+                id="Password" name="Password" type="password")
         div.form-group
             label(class="col-md-2 control-label", for="ConfirmPassword") Passwort wiederholen:
             div(class="col-md-10")
                 input(class="form-control", data-val="true", data-val-equalto="Das Passwort stimmt nicht mit der Wiederholung überein",
-                        data-val-equalto-other="*.Password" id="ConfirmPassword" name="ConfirmPassword" type="password")
+                data-val-equalto-other="*.Password" id="ConfirmPassword" name="ConfirmPassword" type="password")
         div.form-group
             div(class="col-md-offset-2 col-md-10")
                 input(type="submit", class="btn btn-default", value="Registrieren")

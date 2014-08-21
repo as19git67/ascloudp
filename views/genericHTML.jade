@@ -2,5 +2,7 @@ extends layout
 block content
     if error
         p.text-danger #{error}
+    if canEdit
+        h1 EDIT
     if RawHTML
-        div.container !{RawHTML}
+        !{RawHTML}

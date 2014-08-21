@@ -89,19 +89,26 @@ module.exports = function () {
 
         model.getPages().then(function (pages) {
             _.each(pages, function (page) {
-                var m = model.models[page.Model];  // get model by name
+                var m;
+                if (page.isSingleEntity) {
+                    m = model.models[page.Model];  // get model by name
+                } else {
+                    m = model.models[page.Collection];
+                }
                 if (m) {
-                    var mObj = new m();
-                    var isColl = false;
-                    if (model.bookshelf.Collection.prototype.isPrototypeOf(mObj)) {
-                        isColl = true;
-                    }
+                    /*
+                     var mObj = new m();
+                     var isColl = false;
+                     if (model.bookshelf.Collection.prototype.isPrototypeOf(mObj)) {
+                     isColl = true;
+                     }
+                     */
                     /*
                      if (mObj instanceof model.bookshelf.Collection) {
                      isColl = true;
                      }
                      */
-                    var entityName = isColl ? page.EntityNamePlural : page.EntityNameSingular;
+                    var entityName = page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural;
                     profiles[page.Name + '_display'] = {
                         description: "Seite: anzeigen von " + entityName,
                         resources: ["/" + page.Name],

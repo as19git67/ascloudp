@@ -1,5 +1,6 @@
 extends layout
 block content
+    h2= title
     div.col-md-8
         form(class="form-horizontal", role="form", action="/login", method="post")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
@@ -11,10 +12,10 @@ block content
                 label(for="email",class="col-xs-12 col-md-2 control-label") Email:
                 div(class="col-xs-12 col-md-10")
                     input(class="form-control", data-val="true",
-                            data-val-email="Im Email Eingabefeld steht eine ungültige Email Adresse.",
-                            data-val-required="Das Email Feld muss ausgefüllt werden.",
-                            placeholder='Email Adresse',
-                            id="email", name="email", type="text", value="")
+                    data-val-email="Im Email Eingabefeld steht eine ungültige Email Adresse.",
+                    data-val-required="Das Email Feld muss ausgefüllt werden.",
+                    placeholder='Email Adresse',
+                    id="email", name="email", type="text", value="")
 
                     span(class="field-validation-valid text-danger", data-valmsg-for="email", data-valmsg-replace="true")
             div.form-group
@@ -29,7 +30,7 @@ block content
                 div(class="col-md-offset-2 col-md-10")
                     div.checkbox
                         input(data-val="true", data-val-required="The Remember me? field is required.", id="RememberMe",
-                                name="RememberMe", type="checkbox", value="true")
+                        name="RememberMe", type="checkbox", value="true")
                         input(name="RememberMe",type="hidden",value="false")
                         label(for="RememberMe") Angemeldet bleiben?
             div.form-group
