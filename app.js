@@ -102,33 +102,16 @@ app.use(function (req, res, next) {
                         var rawHTML;
                         console.log("Loading view " + view + " for model " + m);
                         if (page.isSingleEntity) {
-                                new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
-                                    if (isPost) {
-// TODO check cancel or save
-                                        rawRho = req.body.rawRho
-                                        // todo: save rho
-                                        rawHtml = rho.toHtml(rawRho);
-                                        res.render(view, {
-                                            csrfToken: req.csrfToken(),
-                                            Page_id: page.Name,
-                                            appName: config.get('appName'),
-                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
-                                            user: req.user,
-                                            pages: pages,
-                                            canEdit: canPost,
-                                            RawHTML: rawHtml,
-                                            RawRHO: rawRho
-                                        });
+                            new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
 
-                                    } else {
-                                        var rawRho = "";
-                                        var rawHtml = undefined;
-                                        if (pageContent) {
-                                            rawRho = pageContent.get('Text');
-                                            rawHtml = rho.toHtml(rawRho);
-                                        } else {
-                                            console.log("Warning: rendering page " + page.Name + " without content");
-                                        }
+                                if (isPost && req.body.save) {
+                                    if (!pageContent) {
+                                        pageContent = new PageContent({Page_id: page.Name});
+                                    }
+                                    rawRho = req.body.rawRho;
+                                    rawHtml = rho.toHtml(rawRho);
+                                    pageContent.set('Text', rawRho);
+                                    pageContent.save().then(function (savedPageContent) {
                                         res.render(view, {
                                             csrfToken: req.csrfToken(),
                                             Page_id: page.Name,
@@ -140,23 +123,73 @@ app.use(function (req, res, next) {
                                             RawHTML: rawHtml,
                                             RawRHO: rawRho
                                         });
+                                    }).catch(function (error) {
+                                        console.log("Error while saving page content: " + error);
+                                        res.render(view, {
+                                            csrfToken: req.csrfToken(),
+                                            Page_id: page.Name,
+                                            appName: config.get('appName'),
+                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                            user: req.user,
+                                            pages: pages,
+                                            canEdit: canPost,
+                                            RawHTML: rawHtml,
+                                            RawRHO: rawRho,
+                                            error: "Der Seiteninhalt konnte nicht gespeichert werden"
+                                        });
+                                    });
+                                } else {
+                                    var rawRho = "";
+                                    var rawHtml = undefined;
+                                    if (pageContent) {
+                                        rawRho = pageContent.get('Text');
+                                        rawHtml = rho.toHtml(rawRho);
+                                    } else {
+                                        console.log("Warning: rendering page " + page.Name + " without content");
                                     }
-                                }).catch(function (error) {
-                                    var errMsg = "Error while getting content from database for page " + page.Name;
-                                    console.log(errMsg + ": " + error);
-                                    var err = new Error(errMsg);
-                                    err.status = 500;
-                                    next(err);
-                                });
+                                    res.render(view, {
+                                        csrfToken: req.csrfToken(),
+                                        Page_id: page.Name,
+                                        appName: config.get('appName'),
+                                        title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                        user: req.user,
+                                        pages: pages,
+                                        canEdit: canPost,
+                                        RawHTML: rawHtml,
+                                        RawRHO: rawRho
+                                    });
+                                }
+                            }).catch(function (error) {
+                                var errMsg = "Error while getting content from database for page " + page.Name;
+                                console.log(errMsg + ": " + error);
+                                var err = new Error(errMsg);
+                                err.status = 500;
+                                next(err);
+                            });
                         } else {
                             // todo: get collection data
-                            res.render(view, {
-                                csrfToken: req.csrfToken(),
-                                appName: config.get('appName'),
-                                title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
-                                user: req.user,
-                                pages: pages,
-                                RawHTML: rawHTML
+                            var modl = m.model;
+                            new modl().query(function (qb) {
+                                // todo: use order columns from page config
+                                qb.orderBy('id', 'ASC');
+                            }).fetchAll().then(function (collection) {
+
+                                res.render(view, {
+                                    csrfToken: req.csrfToken(),
+                                    appName: config.get('appName'),
+                                    title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                    user: req.user,
+                                    pages: pages,
+                                    canEdit: canPost,
+                                    RecordFields: [
+                                        {Caption: "Nr."},
+                                        {Caption: "Vorname"}
+                                    ],
+                                    Records: [
+                                        {Nr: {Data_formatted: "1"}, Vorname: {Data_formatted: "Anton"}}
+                                    ]
+                                });
+
                             });
                         }
                     } else {

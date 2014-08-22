@@ -2,10 +2,9 @@ extends layout
 block content
     if error
         p.text-danger #{error}
-    if canEdit
+    if !canEdit
         script(type='text/javascript').
             var isEdit = false;
-
             function toggleEdit() {
                 if (isEdit) {
                     $('#editForm').hide();
@@ -36,5 +35,15 @@ block content
             hr
             button(class="btn btn-primary", onclick="toggleEdit();", id="btEdit") Edit
     else
-        if RawHTML
-            | !{RawHTML}
+        if Records
+            table(class="table table-striped")
+                if RecordFields
+                    thead
+                        tr
+                            each field in RecordFields
+                                td #{field.Caption}
+                tbody
+                    each record in Records
+                        tr
+                            each field in record
+                                td #{field.Data_formatted}
