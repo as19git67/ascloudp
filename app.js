@@ -168,12 +168,18 @@ app.use(function (req, res, next) {
                             });
                         } else {
                             // todo: get collection data
-                            var modl = m.model;
+                            var colClass = model.models[m];
+                            var colObj = new colClass();
+                            var modl = colObj.model;
+                            var mTempl = new modl();
+                            //var keys = mTempl.columns;
                             new modl().query(function (qb) {
                                 // todo: use order columns from page config
                                 qb.orderBy('id', 'ASC');
                             }).fetchAll().then(function (collection) {
-
+                                collection.each(function(dataModel){
+                                    var t = JSON.stringify(dataModel);
+                                });
                                 res.render(view, {
                                     csrfToken: req.csrfToken(),
                                     appName: config.get('appName'),
