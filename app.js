@@ -11,6 +11,7 @@ var https = require('https');
 var fs = require('fs');
 var config = require('./config');
 var _ = require('underscore');
+var moment = require('moment');
 var rho = require('rho');
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
@@ -31,6 +32,7 @@ var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
 
+moment.lang("de"); // todo: use language from configuration or browser setting
 var app = express();
 
 // view engine setup
@@ -167,36 +169,92 @@ app.use(function (req, res, next) {
                                 next(err);
                             });
                         } else {
-                            // todo: get collection data
-                            var colClass = model.models[m];
-                            var colObj = new colClass();
-                            var modl = colObj.model;
-                            var mTempl = new modl();
-                            //var keys = mTempl.columns;
-                            new modl().query(function (qb) {
-                                // todo: use order columns from page config
-                                qb.orderBy('id', 'ASC');
-                            }).fetchAll().then(function (collection) {
-                                collection.each(function(dataModel){
-                                    var t = JSON.stringify(dataModel);
+                            var collectionClass = model.models[m];
+                            if (collectionClass) {
+                                var collection = new collectionClass();
+                                var collectionModelClass = collection.model;
+                                var collectionModel = new collectionModelClass();
+                                new model.models.PageCollectionColumn().query(function (qb) {
+                                    qb.where({Page_id: page.Name});
+                                    qb.orderBy('Order', 'ASC');
+                                }).fetchAll().then(function (columnInfos) {
+                                    var recordFields = [];
+                                    columnInfos.forEach(function(columnInfo){
+                                        var fieldInfo = {
+                                            Caption: columnInfo.get('Caption')
+                                        };
+                                        recordFields.push(fieldInfo);
+                                    });
+
+                                    new collectionModelClass().query(function (qb) {
+                                        // todo: use order columns from page config
+                                        qb.orderBy('id', 'ASC');
+                                    }).fetchAll().then(function (dataCollection) {
+                                        var records = [];
+                                        if (dataCollection && dataCollection.length > 0) {
+                                            records = dataCollection.map(function (dataModel) {
+                                                var dataObj = {};
+                                                for (var k in dataModel.attributes) {
+                                                    var value = dataModel.attributes[k];
+                                                    var value_formatted;
+                                                    var value_type = typeof value;
+
+                                                    switch (value_type) {
+                                                        case "boolean":
+                                                            value_formatted = value ? "Ja" : "Nein";
+                                                            break;
+                                                        default:
+                                                            if (value) {
+                                                                if (value instanceof Date) {
+                                                                    value_formatted = moment(value).format('LLLL');
+                                                                } else {
+                                                                    value_formatted = value.toString();
+                                                                }
+                                                            } else {
+                                                                value_formatted = "";
+                                                            }
+                                                            break;
+
+                                                    }
+                                                    dataObj[k] = {
+                                                        name: k,
+                                                        type: typeof (value),
+                                                        value: value,
+                                                        value_formatted: value_formatted
+                                                    };
+                                                }
+                                                return dataObj;
+                                            });
+                                        }
+                                        canPost = false; // todo
+                                        res.render(view, {
+                                            csrfToken: req.csrfToken(),
+                                            appName: config.get('appName'),
+                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                            user: req.user,
+                                            pages: pages,
+                                            canEdit: canPost,
+                                            RecordFields: recordFields,
+                                            Records: records
+                                        });
+
+                                    });
                                 });
+                            }
+                            else {
+                                // Klasse für Collection existiert nicht
                                 res.render(view, {
                                     csrfToken: req.csrfToken(),
                                     appName: config.get('appName'),
                                     title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
                                     user: req.user,
                                     pages: pages,
-                                    canEdit: canPost,
-                                    RecordFields: [
-                                        {Caption: "Nr."},
-                                        {Caption: "Vorname"}
-                                    ],
-                                    Records: [
-                                        {Nr: {Data_formatted: "1"}, Vorname: {Data_formatted: "Anton"}}
-                                    ]
+                                    canEdit: false,
+                                    RecordFields: [],
+                                    Records: [],
+                                    error: "Keine Implementierung für Tabelle " + m + " vorhanden"
                                 });
-
-                            });
+                            }
                         }
                     } else {
                         // http method is not allowed

@@ -30,7 +30,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
             })
             .catch(function (err) {
                 console.log("ERROR when creating the database schema: " + err);
-                var errorText = "Fehler beim erzeugen der Datenbanktabellen. " + err;
+                var errorText = "Fehler beim Erzeugen der Datenbanktabellen. " + err;
                 res.render('databaseManagement', {
                     csrfToken: req.csrfToken(),
                     appName: appName,
@@ -40,7 +40,28 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                 });
             });
     } else {
-        res.redirect('/');
+        if (req.body.dbloadTestFFW) {
+            var model = require('../model');
+            model.importTestDataFFW()
+                .then(function () {
+                    console.log("FFW Testdaten importiert");
+                    req.logout();
+                    res.redirect('/');
+                })
+                .catch(function (err) {
+                    console.log("ERROR when importing test data: " + err);
+                    var errorText = "Fehler beim Importieren der FFW Test Daten. " + err;
+                    res.render('databaseManagement', {
+                        csrfToken: req.csrfToken(),
+                        appName: appName,
+                        title: 'Datenbankverwaltung',
+                        user: req.user,
+                        error: errorText
+                    });
+                });
+        } else {
+            res.redirect('/');
+        }
     }
 });
 

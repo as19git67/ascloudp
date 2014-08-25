@@ -2,7 +2,7 @@ extends layout
 block content
     if error
         p.text-danger #{error}
-    if !canEdit
+    if canEdit
         script(type='text/javascript').
             var isEdit = false;
             function toggleEdit() {
@@ -45,5 +45,7 @@ block content
                 tbody
                     each record in Records
                         tr
-                            each field in record
-                                td #{field.Data_formatted}
+                            - keys = Object.keys(record)
+                            each key in keys
+                                - value = record[key]
+                                td #{value.value_formatted}

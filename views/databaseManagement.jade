@@ -11,20 +11,39 @@ block content
     div(class="form-horizontal", role="form")
         div.form-group
             div(class="col-xs-12 col-md-12 form-contol")
-                button(class="btn", data-toggle="modal", data-target="#confirmModal") Datenbank initialisieren
+                button(class="btn", data-toggle="modal", data-target="#confirmModal1") Datenbank initialisieren
+            div(class="col-xs-12 col-md-12 form-contol")
+            div(class="col-xs-12 col-md-12 form-contol")
+                button(class="btn", data-toggle="modal", data-target="#confirmModal2") FFW Testdaten laden
 
-            div(class="modal fade", id="confirmModal", tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
-                div(class="modal-dialog")
-                    div(class="modal-content")
-                        div(class="modal-header")
-                            button(type="button", class="close", data-dismiss="modal")
-                                span(aria-hidden="true") &times;
-                                span(class="sr-only") Close
-                            h4(class="modal-title") Datenbank initialisieren
-                        div(class="modal-body")
-                            p Datenbanktabellen löschen und neu erzeugen?
-                        div(class="modal-footer")
-                            form(action="/admin/databaseManagement", method="post", novalidate="novalidate")
-                                button(type="button", class="btn btn-default", data-dismiss="modal") Abbrechen
-                                input(type="hidden", value="#{csrfToken}" name="_csrf")
-                                input(type="submit", class="btn btn-danger", value="Ausführen", name="dbinit" id="dbinit")
+    div(class="modal fade", id="confirmModal1", tabindex="-1", role="dialog", aria-labelledby="myModalLabel1", aria-hidden="true")
+        div(class="modal-dialog")
+            div(class="modal-content")
+                div(class="modal-header")
+                    button(type="button", class="close", data-dismiss="modal")
+                        span(aria-hidden="true") &times;
+                        span(class="sr-only") Close
+                    h4(class="modal-title") Datenbank initialisieren
+                div(class="modal-body")
+                    p Datenbanktabellen löschen und neu erzeugen?
+                div(class="modal-footer")
+                    form(action="/admin/databaseManagement", method="post", novalidate="novalidate")
+                        button(type="button", class="btn btn-default", data-dismiss="modal") Abbrechen
+                        input(type="hidden", value="#{csrfToken}" name="_csrf")
+                        input(type="submit", class="btn btn-danger", value="Ausführen", name="dbinit" id="dbinit")
+
+    div(class="modal fade", id="confirmModal2", tabindex="-1", role="dialog", aria-labelledby="myModalLabel2", aria-hidden="true")
+        div(class="modal-dialog")
+            div(class="modal-content")
+                div(class="modal-header")
+                    button(type="button", class="close", data-dismiss="modal")
+                        span(aria-hidden="true") &times;
+                        span(class="sr-only") Close
+                    h4(class="modal-title") Testdaten FFW importieren
+                div(class="modal-body")
+                    p Datenbanktabellen löschen und mit Testdaten laden?
+                div(class="modal-footer")
+                    form(action="/admin/databaseManagement", method="post", novalidate="novalidate")
+                        button(type="button", class="btn btn-default", data-dismiss="modal") Abbrechen
+                        input(type="hidden", value="#{csrfToken}" name="_csrf")
+                        input(type="submit", class="btn btn-danger", value="Ausführen", name="dbloadTestFFW" id="dbloadTestFFW")
