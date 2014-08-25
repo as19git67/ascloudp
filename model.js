@@ -171,12 +171,12 @@ exports.importTestDataFFW = function () {
             function () {
                 return new Promise(function (resolve, reject) {
                     var allPageCollectionColumns = [
-                        {Order: 1, Page_id: "mitglieder", Name: "Membership.MembershipNumber", Caption: "Mitgliedsnummer", Type: "integer", Mandatory: true},
-                        {Order: 2, Page_id: "mitglieder", Name: "Person.Salutation", Caption: "Anrede", Type: "string", Mandatory: false},
-                        {Order: 3, Page_id: "mitglieder", Name: "Person.Firstname", Caption: "Vorname", Type: "string", Mandatory: false},
-                        {Order: 4, Page_id: "mitglieder", Name: "Person.Lastname", Caption: "Nachname", Type: "string", Mandatory: true},
-                        {Order: 5, Page_id: "mitglieder", Name: "Person.Suffix", Caption: "Suffix", Type: "string", Mandatory: false},
-                        {Order: 6, Page_id: "mitglieder", Name: "Person.Birthday", Caption: "Geburtstag", Type: "date", Mandatory: false}
+                        {Order: 1, Page_id: "mitglieder", Name: "Salutation", Caption: "Anrede", Type: "string", Mandatory: false},
+                        {Order: 2, Page_id: "mitglieder", Name: "Firstname", Caption: "Vorname", Type: "string", Mandatory: false},
+                        {Order: 3, Page_id: "mitglieder", Name: "Lastname", Caption: "Nachname", Type: "string", Mandatory: true},
+                        {Order: 4, Page_id: "mitglieder", Name: "Suffix", Caption: "Suffix", Type: "string", Mandatory: false},
+                        {Order: 5, Page_id: "mitglieder", Name: "Birthday", Caption: "Geburtstag", Type: "date", Mandatory: false},
+                        {Order: 6, Page_id: "mitglieder", Name: "Membership.MembershipNumber", Caption: "Mitgliedsnummer", Type: "integer", Mandatory: true}
                     ];
                     var pageCollectionColumns = PageCollectionColumns.forge(allPageCollectionColumns);
                     console.log("Adding PageCollectionColumns.");
