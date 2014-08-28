@@ -29,6 +29,7 @@
         "knex": "*",
         "bookshelf": "*",
         "pg": "*",
-        "rho": "*"
+        "rho": "*",
+        "ical-generator": "*"
     }
 }

@@ -88,6 +88,10 @@ app.use(function (req, res, next) {
     if (url.substr(0, 1) == "/") {
         url = url.substr(1);
     }
+    var idx = url.indexOf('?');
+    if (idx >= 1) {
+        url = url.substring(0, idx);
+    }
 
     var rp = new rolePermissions(model.models);
     rp.canPost(req).then(function (canPost) {
@@ -95,14 +99,13 @@ app.use(function (req, res, next) {
         model.getPagesForUser(req.user).then(function (pages) {
             var page = _.findWhere(pages, {Name: url});
             if (page) {
-                var view = page.View;
+                var viewName = page.View;
                 var m = page.isSingleEntity ? page.Model : page.Collection;
-                if (view) {
+                if (viewName) {
                     var httpMethod = req.method.toLowerCase();
                     var isPost = httpMethod == "post";
                     if ((isPost && canPost) || httpMethod == "get") {
-                        var rawHTML;
-                        console.log("Loading view " + view + " for model " + m);
+                        console.log("Loading view " + viewName + " for model " + m);
                         if (page.isSingleEntity) {
                             new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
 
@@ -114,7 +117,7 @@ app.use(function (req, res, next) {
                                     rawHtml = rho.toHtml(rawRho);
                                     pageContent.set('Text', rawRho);
                                     pageContent.save().then(function (savedPageContent) {
-                                        res.render(view, {
+                                        res.render(viewName, {
                                             csrfToken: req.csrfToken(),
                                             Page_id: page.Name,
                                             appName: config.get('appName'),
@@ -127,7 +130,7 @@ app.use(function (req, res, next) {
                                         });
                                     }).catch(function (error) {
                                         console.log("Error while saving page content: " + error);
-                                        res.render(view, {
+                                        res.render(viewName, {
                                             csrfToken: req.csrfToken(),
                                             Page_id: page.Name,
                                             appName: config.get('appName'),
@@ -149,7 +152,7 @@ app.use(function (req, res, next) {
                                     } else {
                                         console.log("Warning: rendering page " + page.Name + " without content");
                                     }
-                                    res.render(view, {
+                                    res.render(viewName, {
                                         csrfToken: req.csrfToken(),
                                         Page_id: page.Name,
                                         appName: config.get('appName'),
@@ -173,107 +176,33 @@ app.use(function (req, res, next) {
                             if (collectionClass) {
                                 var collection = new collectionClass();
                                 var collectionModelClass = collection.model;
-                                new model.models.PageCollectionColumn().query(function (qb) {
-                                    qb.where({Page_id: page.Name});
-                                    qb.orderBy('Order', 'ASC');
-                                }).fetchAll().then(function (columnInfos) {
-                                    var recordFields = [];
-                                    columnInfos.forEach(function (columnInfo) {
-                                        var fieldInfo = {
-                                            Name: columnInfo.get('Name'),
-                                            Type: columnInfo.get('Type'),
-                                            Mandatory: columnInfo.get('Mandatory'),
-                                            Caption: columnInfo.get('Caption')
-                                        };
-                                        recordFields.push(fieldInfo);
+                                var view = require('./views/' + viewName);
+                                if (view) {
+                                    if (view.getical && req.query && req.query.type && req.query.type == "ical") {
+                                        view.getical(req, res, next, page, pages, collectionModelClass);
+                                    } else {
+                                        view.render(req, res, next, page, pages, collectionModelClass);
+                                    }
+                                } else {
+                                    console.log("Error displaying view " + viewName + ". require('views/'" + viewName + ") failed.");
+                                    res.render('genericList', {
+                                        appName: config.get('appName'),
+                                        title: page.EntityNamePlural,
+                                        user: req.user,
+                                        pages: pages,
+                                        canEdit: false,
+                                        error: "Die Anzeige (" + viewName + ") ist wegen eines internen Fehlers nicht möglich."
                                     });
-
-                                    new collectionModelClass().query(function (qb) {
-                                        // todo: retrieve only columns referenced by columnInfo
-                                        // todo: orderby from page configuration
-                                        // todo: retrieve related when columns from other tables are referenced in columnInfo
-                                        qb.orderBy('id', 'ASC');
-                                    }).fetchAll().then(function (dataCollection) {
-                                        var records = [];
-                                        if (dataCollection && dataCollection.length > 0) {
-                                            records = dataCollection.map(function (dataModel) {
-                                                var dataObj = [];
-                                                // get attribtues by columnInfo
-                                                _.each(recordFields, function (recField) {
-                                                    var attributeFromModel = dataModel.get(recField.Name);
-                                                    var value = attributeFromModel;
-                                                    var value_formatted;
-                                                    var value_type = typeof value;
-                                                    var column_type = recField.Type;
-
-                                                    switch (value_type) {
-                                                    case "boolean":
-                                                        value_formatted = value ? "Ja" : "Nein";
-                                                        break;
-                                                    default:
-                                                        if (value) {
-                                                            if (value instanceof Date) {
-                                                                if (column_type == "date") {
-                                                                    value_formatted = moment(value).format('L');
-                                                                }
-                                                                else {
-                                                                    if (column_type == "datetime") {
-                                                                        value_formatted = moment(value).format('L LT');
-                                                                    } else {
-                                                                        if (column_type == "time") {
-                                                                            value_formatted = moment(value).format('LT');
-                                                                        } else {
-                                                                            value_formatted = moment(value).format();
-                                                                        }
-                                                                    }
-                                                                }
-                                                            } else {
-                                                                value_formatted = value.toString();
-                                                            }
-                                                        } else {
-                                                            value_formatted = "";
-                                                        }
-                                                        break;
-
-                                                    }
-                                                    dataObj.push({ Name: recField.Name,
-                                                        Caption: recField.Caption,
-                                                        Type: recField.Type,
-                                                        Mandatory: recField.Mandatory,
-                                                        value: value,
-                                                        value_formatted: value_formatted
-                                                    });
-
-                                                });
-                                                return dataObj;
-                                            });
-                                        }
-                                        canPost = false; // todo
-                                        res.render(view, {
-                                            csrfToken: req.csrfToken(),
-                                            appName: config.get('appName'),
-                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
-                                            user: req.user,
-                                            pages: pages,
-                                            canEdit: canPost,
-                                            RecordFields: recordFields,
-                                            Records: records
-                                        });
-
-                                    });
-                                });
+                                }
                             }
                             else {
                                 // Klasse für Collection existiert nicht
-                                res.render(view, {
-                                    csrfToken: req.csrfToken(),
+                                res.render("genericList", {
                                     appName: config.get('appName'),
-                                    title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                    title: page.EntityNamePlural,
                                     user: req.user,
                                     pages: pages,
                                     canEdit: false,
-                                    RecordFields: [],
-                                    Records: [],
                                     error: "Keine Implementierung für Tabelle " + m + " vorhanden"
                                 });
                             }

@@ -1,12 +1,14 @@
 var config = require('./config');
 var Promise = require('bluebird/js/main/promise')();
 var _ = require('underscore');
+var moment = require('moment');
+var model = require('./model');
 var getProfiles = require('./Profiles');
 
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
 
-var knex = require('knex')({client: databaseClient, connection: connectionString });
+var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false });
 var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
@@ -30,7 +32,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('PageCollectionColumns').then(function (exists) {
+                knex.schema.hasTable('Events').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -59,6 +61,12 @@ exports.createSchemaIfNotExists = function () {
 
 exports.importTestDataFFW = function () {
     return Promise.reduce([
+            function () {
+                return knex('Articles').del();
+            },
+            function () {
+                return knex('Events').del();
+            },
             function () {
                 return knex('Persons').del();
             },
@@ -136,7 +144,7 @@ exports.importTestDataFFW = function () {
             function () {
                 return new Promise(function (resolve, reject) {
                     var allPages = [
-                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "genericList"},
+                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
                         {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "genericList"},
                         {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Contacts", View: "genericList"},
                         {Order: 4, Name: "mitmachen", EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"}
@@ -188,6 +196,36 @@ exports.importTestDataFFW = function () {
                         reject(error);
                     });
                 });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var allEvents = _.map(ffwEvents, function (value, key, list) {
+                        var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
+                        var publishDateEnd = value.publishDateEnd == null ? value.eventDateEnd : value.publishDateEnd;
+                        var evObj = {
+                            Page_id: "termine",
+                            Title: value.title,
+                            Location: value.locationdescription,
+                            Description: value.description,
+                            event_start: value.eventDateStart,
+                            event_end: value.eventDateEnd,
+                            publish_start: publishDateStart,
+                            publish_end: publishDateEnd,
+                            valid_start: new Date()
+                        };
+                        return evObj;
+                    });
+
+                    var events = Events.forge(allEvents);
+                    console.log("Adding Events.");
+                    Promise.all(events.invoke('save')).then(function () {
+                        console.log("Events added to database.");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving events: " + error);
+                        reject(error);
+                    });
+                });
             }
         ],
         function (total, current, index, arrayLength) {
@@ -199,6 +237,12 @@ exports.importTestDataFFW = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return  knex.schema.dropTableIfExists('Events');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('Articles');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('PageCollectionColumns');
             },
@@ -387,6 +431,7 @@ exports.createSchema = function () {
                     t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
+                    t.unique(['Page_id']);
                 });
             },
             function () {
@@ -400,6 +445,34 @@ exports.createSchema = function () {
                     t.boolean('Mandatory').notNullable();
                     t.unique(['Page_id', 'Order']);
                     t.unique(['Page_id', 'Name']);
+                });
+            },
+            function () {
+                return  knex.schema.createTable('Articles', function (t) {
+                    t.increments('id').primary();
+                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('Text', 50000);
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('publish_start').index();
+                    t.timestamp('publish_end').index();
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('Events', function (t) {
+                    t.increments('id').primary();
+                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('Title', 50).notNullable();
+                    t.string('Location', 200);
+                    t.string('Description', 5000);
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('event_start').notNullable().index();
+                    t.timestamp('event_end').notNullable().index();
+                    t.timestamp('publish_start').index();
+                    t.timestamp('publish_end').index();
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
                 });
             },
             function () {
@@ -681,6 +754,12 @@ var Page = bookshelf.Model.extend({
     PageCollectionColumn: function () {
         return this.hasMany(PageCollectionColumn);
     },
+    Article: function () {
+        return this.hasMany(Article);
+    },
+    Event: function () {
+        return this.hasMany(Event);
+    },
     isSingleEntity: function () {
         // return true, if this page is configured to display a single entity and no list of it
         return this.get('Collection') == undefined;
@@ -709,9 +788,30 @@ var PageCollectionColumn = bookshelf.Model.extend({
     }
 });
 
-
 var PageCollectionColumns = bookshelf.Collection.extend({
     model: PageCollectionColumn
+});
+
+var Event = bookshelf.Model.extend({
+    tableName: 'Events',
+    Event: function () {
+        return this.belongsTo(Page);
+    }
+});
+
+var Events = bookshelf.Collection.extend({
+    model: Event
+});
+
+var Article = bookshelf.Model.extend({
+    tableName: 'Articles',
+    Page: function () {
+        return this.belongsTo(Page);
+    }
+});
+
+var Articles = bookshelf.Collection.extend({
+    model: Article
 });
 
 
@@ -796,7 +896,11 @@ module.exports.models = {
     PageContent: PageContent,
     PageContents: PageContents,
     PageCollectionColumn: PageCollectionColumn,
-    PageCollectionColumns: PageCollectionColumns
+    PageCollectionColumns: PageCollectionColumns,
+    Event: Event,
+    Events: Events,
+    Article: Article,
+    Articles: Articles
 };
 
 module.exports.pageModels = {
@@ -1086,7 +1190,7 @@ var ffwMitglieder = [
     {"ID": 1242, "Anrede": "Herr", "Vorname": "Alexander", "Vorstandsmitglied": false, "Nachname": "Presky", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Lindenweg 1", "Unterdorf": true, "verzogen": false, "Geboren": "1988-12-10T00:00:00", "Telefon": "08233/30124", "Mobiltelefon": null, "Eingetreten": "2003-05-07T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2010-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 6, "Mitgliedsjahre": 10, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 25, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1243, "Anrede": "Herr", "Vorname": "Dominik", "Vorstandsmitglied": true, "Nachname": "Semlinger", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Kolpingstr. 12", "Unterdorf": false, "verzogen": false, "Geboren": "1988-04-21T00:00:00", "Telefon": "08233 32010", "Mobiltelefon": "01626305155", "Eingetreten": "2003-05-20T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 10, "Mitgliedsjahre": 10, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 25, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1244, "Anrede": "Herr", "Vorname": "Martin", "Vorstandsmitglied": false, "Nachname": "Wecker", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Obermühlstr. 1", "Unterdorf": true, "verzogen": false, "Geboren": "1987-02-05T00:00:00", "Telefon": "08233 4707", "Mobiltelefon": "016090217447", "Eingetreten": "2003-08-23T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 10, "Mitgliedsjahre": 10, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 26, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
-    {"ID": 1245, "Anrede": "Herr", "Vorname": "Michael", "Vorstandsmitglied": false, "Nachname": "Casper", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Eichenstr. 28", "Unterdorf": true, "verzogen": false, "Geboren": "1965-07-30T00:00:00", "Telefon": "738867", "Mobiltelefon": "01794140886", "Eingetreten": "2000-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2012-12-10T00:00:00", "verstorben": null, "aktiv": false, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 12, "Mitgliedsjahre": 14, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 48, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
+    {"ID": 1245, "Anrede": "Herr", "Vorname": "Michael", "Vorstandsmitglied": false, "Nachname": "Casper", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Eichenstr. 28", "Unterdorf": true, "verzogen": false, "Geboren": "1965-07-30T00:00:00", "Telefon": "738867", "Mobiltelefon": null, "Eingetreten": "2000-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2012-12-10T00:00:00", "verstorben": "2014-08-11T00:00:00", "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 12, "Mitgliedsjahre": 14, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 48, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1246, "Anrede": "Herr", "Vorname": "Andreas", "Vorstandsmitglied": false, "Nachname": "Jocher", "PLZ": 86931.0, "Ort": "Prittriching", "Straße": "Angerstr. 26", "Unterdorf": false, "verzogen": false, "Geboren": "1970-10-30T00:00:00", "Telefon": "08206 903253", "Mobiltelefon": null, "Eingetreten": "2003-09-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2003-09-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 10, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 43, "Geburtstag60": null, "Beitrag": 0.0000, "verzogenDatum": null},
     {"ID": 1247, "Anrede": "Herr", "Vorname": "Harald", "Vorstandsmitglied": false, "Nachname": "Leyh", "PLZ": null, "Ort": "Königsbrunn", "Straße": null, "Unterdorf": false, "verzogen": true, "Geboren": "1968-07-06T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "2004-04-26T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 1, "Mitgliedsjahre": 1, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 37, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1248, "Anrede": "Herr", "Vorname": "Andreas", "Vorstandsmitglied": false, "Nachname": "Pribil", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Paartalweg 5", "Unterdorf": true, "verzogen": false, "Geboren": "1986-12-01T00:00:00", "Telefon": "08233 4762", "Mobiltelefon": "01733884993", "Eingetreten": "1999-01-06T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2010-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 10, "Mitgliedsjahre": 15, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 27, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
@@ -1202,4 +1306,44 @@ var ffwMitgliederFunktionen = [
     {"IdMitglied": 1251, "IdFunktion": 5, "Beginn": "2013-01-06T00:00:00", "Ende": null},
     {"IdMitglied": 110, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null},
     {"IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null}
+];
+
+var gesternStart = moment().subtract('days', 1).subtract('hours', 3).utc().toDate();
+var gesternEnd = moment().subtract('days', 1).utc().toDate();
+
+var ffwEvents = [
+    { title: "Floriansmesse", description: "Treffpunkt um 9 Uhr am Feuerwehrhaus, wenn möglich in Uniform. Anschließend Frühschoppen.", eventDateStart: new Date("2014-05-11 09:15:00"), eventDateEnd: new Date("2014-05-11 11:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Fahrzeugweihe", description: "Einweihung MZF bei der FF Prittriching", eventDateStart: new Date("2014-06-28 15:30:00"), eventDateEnd: new Date("2014-06-28 21:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Pfarrfest", description: "Bestuhlung für den Gottesdienst beim Pfarrfest aufbauen", eventDateStart: new Date("2014-06-29 07:00:00"), eventDateEnd: new Date("2014-06-29 09:00:00"), street: "Klostergasse", streetnumber: "", postalcode: "86504", city: "Merching", locationdescription: "Kindergarten" },
+    { title: "Grillfest", description: "Grillfest für alle Mitglieder der FF Merching", eventDateStart: new Date("2014-07-19 18:00:00"), eventDateEnd: new Date("2014-07-19 22:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Feuerwehrfest", description: "100 jähriges Gründungsfest in Haunswies", eventDateStart: new Date("2014-05-25 8:00:00"), eventDateEnd: new Date("2014-05-25 17:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Feuerwehrfest", description: "150 jähriges Gründungsfest der FF Friedberg", eventDateStart: new Date("2014-06-15 8:30:00"), eventDateEnd: new Date("2014-06-15 17:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Test 1", description: "Test Gestern", eventDateStart: gesternStart, eventDateEnd: gesternEnd, street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Test 2", description: "Test Heute", eventDateStart: moment().subtract('hours',
+        5).utc().toDate(), eventDateEnd: moment().add('hours',
+        1).utc().toDate(), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Kartenvorverkauf Faschingsball", description: "Ab Montag, 4.2 startet der Kartenvorverkauf für den Faschingsball in der Raiffeisenbank in Merching", eventDateStart: new Date("2014-02-03 09:00:00"), eventDateEnd: new Date("2014-02-14 14:00:00"), street: "", streetnumber: "", postalcode: "", city: "Merching", locationdescription: "Raiffeisenbank" },
+    { title: "Herrichten Faschingsball", description: "Zum Aufbauen und Herrichten für den Faschingsball treffen sich alle Helfer um 18 Uhr in der Mehrzweckhalle", eventDateStart: new Date("2014-02-14 18:00:00"), eventDateEnd: new Date("2014-02-14 21:00:00"), street: "Kirchstraße", streetnumber: "", postalcode: "86504", city: "Merching", locationdescription: "Mehrzweckhalle" },
+    { title: "Faschingsball vom Schützenverein und der Feuerwehr",
+        description: "Der Faschingsball, der traditionell vom Schützenverein und der Feuerwehr veranstaltet wird, beginnt um 20.00 Uhr und findet in der Mehrzweckhalle statt. Für Stimmung sorgt die Diamonds Revival Band und es wird wieder eine Einlage des Feuerwehrballets geben.", eventDateStart: new Date("2014-02-15 20:00:00"), eventDateEnd: new Date("2014-02-16 02:00:00"), street: "Kirchstraße", streetnumber: "", postalcode: "86504", city: "Merching", locationdescription: "Mehrzweckhalle" },
+    { title: "Aufräumen Faschingsball", description: "Zum Aufräumen nach dem Faschingsball treffen sich alle Helfer in der Mehrzweckhalle um 10 Uhr", eventDateStart: new Date("2014-02-16 10:00:00"), eventDateEnd: new Date("2014-02-16 13:00:00"), street: "Kirchstraße", streetnumber: "", postalcode: "86504", city: "Merching", locationdescription: "Mehrzweckhalle" },
+    { title: "Monatsübung", description: "Wärmebildkamera", eventDateStart: new Date("2014-02-21 19:30:00"), eventDateEnd: new Date("2014-02-21 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Erste Hilfe / First Responder", eventDateStart: new Date("2014-03-28 19:30:00"), eventDateEnd: new Date("2014-03-28 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Erste Hilfe / First Responder", eventDateStart: new Date("2014-03-31 19:30:00"), eventDateEnd: new Date("2014-03-31 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Objektlöschübung Wohnhaus", eventDateStart: new Date("2014-04-25 19:30:00"), eventDateEnd: new Date("2014-04-25 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Objektlöschübung Wohnhaus", eventDateStart: new Date("2014-04-28 19:30:00"), eventDateEnd: new Date("2014-04-28 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "THL / LKw-PKw / GGV + UVV", eventDateStart: new Date("2014-05-23 19:30:00"), eventDateEnd: new Date("2014-05-23 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "THL / LKw-PKw / GGV + UVV", eventDateStart: new Date("2014-05-26 19:30:00"), eventDateEnd: new Date("2014-05-26 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Löschübung Landwirtschaft", eventDateStart: new Date("2014-06-27 19:30:00"), eventDateEnd: new Date("2014-06-27 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Löschübung Landwirtschaft", eventDateStart: new Date("2014-06-30 19:30:00"), eventDateEnd: new Date("2014-06-30 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Interne Ölwehrübung", eventDateStart: new Date("2014-07-25 19:30:00"), eventDateEnd: new Date("2014-07-25 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Interne Ölwehrübung", eventDateStart: new Date("2014-07-28 19:30:00"), eventDateEnd: new Date("2014-07-28 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Löschübung mit Schaum", eventDateStart: new Date("2014-08-29 19:30:00"), eventDateEnd: new Date("2014-08-29 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Löschübung mit Schaum", eventDateStart: new Date("2014-09-01 19:30:00"), eventDateEnd: new Date("2014-09-01 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Fahrzeugkunde HLF 20/16 + LF 8/6", eventDateStart: new Date("2014-09-26 19:30:00"), eventDateEnd: new Date("2014-09-26 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Fahrzeugkunde HLF 20/16 + LF 8/6", eventDateStart: new Date("2014-09-29 19:30:00"), eventDateEnd: new Date("2014-09-29 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "THL / Greifzug / Abs. der Einsatzstelle", eventDateStart: new Date("2014-10-24 19:30:00"), eventDateEnd: new Date("2014-10-24 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "THL / Greifzug / Abs. der Einsatzstelle", eventDateStart: new Date("2014-10-27 19:30:00"), eventDateEnd: new Date("2014-10-27 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Lima  /Notstromaggregat / Motorsäge", eventDateStart: new Date("2014-11-21 19:30:00"), eventDateEnd: new Date("2014-11-21 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Monatsübung", description: "Lima  /Notstromaggregat / Motorsäge", eventDateStart: new Date("2014-11-24 19:30:00"), eventDateEnd: new Date("2014-11-24 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" }
 ];
