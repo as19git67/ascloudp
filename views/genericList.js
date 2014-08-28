@@ -81,6 +81,7 @@ module.exports.render = function(req, res, next, page, pages, collectionModelCla
             }
             canPost = false; // todo
             res.render("genericList", {
+                csrfToken: req.csrfToken(),
                 appName: config.get('appName'),
                 title: page.EntityNamePlural,
                 user: req.user,

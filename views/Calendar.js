@@ -87,6 +87,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                 return dataObj;
             });
             res.render(page.View, {
+                csrfToken: req.csrfToken(),
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,
@@ -97,6 +98,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             });
         } else {
             res.render(page.View, {
+                csrfToken: req.csrfToken(),
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,

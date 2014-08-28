@@ -144,10 +144,10 @@ exports.importTestDataFFW = function () {
             function () {
                 return new Promise(function (resolve, reject) {
                     var allPages = [
-                        {Order: 1, Name: "termine", EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
-                        {Order: 2, Name: "mitglieder", EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "genericList"},
-                        {Order: 3, Name: "kontakte", EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Contacts", View: "genericList"},
-                        {Order: 4, Name: "mitmachen", EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"}
+                        {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
+                        {Order: 2, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
+                        {Order: 3, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Contacts", View: "genericList"},
+                        {Order: 4, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "genericList"}
                     ];
                     var pages = Pages.forge(allPages);
                     console.log("Adding pages.");
@@ -415,6 +415,7 @@ exports.createSchema = function () {
                     t.increments('id').primary();
                     t.string('Name', 25).notNullable().unique();
                     t.integer('Order').notNullable().unique();
+                    t.boolean('AnonymousAccess').notNullable().defaultTo(false);
                     t.string('EntityNameSingular').notNullable();
                     t.string('EntityNamePlural').notNullable();
                     t.string('Model');
@@ -843,6 +844,7 @@ var getPages = function () {
                 pageList.each(function (page) {
                     var pageObj = {
                         Page_id: page.get('id'),
+                        AnonymousAccess: page.get('AnonymousAccess'),
                         Name: page.get('Name'),
                         EntityNameSingular: page.get('EntityNameSingular'),
                         EntityNamePlural: page.get('EntityNamePlural'),
@@ -864,8 +866,46 @@ var getPages = function () {
     });
 };
 
-var getPagesForUser = function (userId) {
-    return getPages();
+var getPagesForUser = function (user) {
+    return new Promise(function (resolve, reject) {
+        getPages().then(function (pages) {
+            var pagesForUser = [];
+            if (user && user.id) {
+                var permissions = ['get'];
+                // get user's role permissions filtered by user, resource and permissions
+                model.bookshelf.knex('UserRoles')
+                    .join('RolePermissions', 'RolePermissions.Role_id', '=', 'UserRoles.Role_id')
+                    .where('UserRoles.User_id', user.id)
+                    .whereIn('RolePermissions.Permission', permissions)
+                    .select('UserRoles.User_id', 'RolePermissions.*')
+                    .then(function (results) {
+                        _.each(pages, function (page) {
+                            if (page.AnonymousAccess) {
+                                pagesForUser.push(page);
+                            } else {
+                                var resourceToCheck = "/" + page.Name;
+                                var res = _.findWhere(results, {Resource: resourceToCheck});
+                                if (res) {
+                                    console.log("User has permission " + res.Permission + " for resource " + res.Resource);
+                                    pagesForUser.push(page);
+                                }
+                            }
+                        });
+                        resolve(pagesForUser);
+                    }).catch(function (error) {
+                        console.log("ERROR while checking role permissions in getPagesForUser: " + error);
+                        reject(error);
+                    });
+            } else {
+                pages.forEach(function (page) {
+                    if (page.AnonymousAccess) {
+                        pagesForUser.push(page);
+                    }
+                });
+                resolve(pagesForUser);
+            }
+        });
+    });
 };
 
 module.exports.createSalt = createSalt;
