@@ -68,6 +68,9 @@ exports.importTestDataFFW = function () {
                 return knex('Events').del();
             },
             function () {
+                return knex('Memberships').del();
+            },
+            function () {
                 return knex('Persons').del();
             },
             function () {
@@ -81,8 +84,59 @@ exports.importTestDataFFW = function () {
             },
             function () {
                 return new Promise(function (resolve, reject) {
-                    var allPersons = _.map(ffwMitglieder, function (value, key, list) {
 
+                    /*
+                     var allPersons = _.map(ffwMitglieder, function (value, key, list) {
+
+                     var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
+                     var streetRegexResult = regexp.exec(value.Straße);
+                     var street = "";
+                     var streetNumber = "";
+                     if (streetRegexResult == null || streetRegexResult.length < 3) {
+                     street = value.Straße;
+                     } else {
+                     street = streetRegexResult[1];
+                     streetNumber = streetRegexResult[2];
+                     }
+
+                     regexp = /([a-z|A-Z|ä|ö|ü|ß|Ä|Ö|Ü]+)(,\s?)?(jun\.|sen\.|Jun|Sen|Jun\.|Sen\.)?/;
+                     var nameRegexResult = regexp.exec(value.Nachname);
+                     var lastname = "";
+                     var suffix = "";
+                     if (nameRegexResult == null || nameRegexResult.length < 4) {
+                     lastname = value.Nachname;
+                     } else {
+                     if (nameRegexResult[2] == null || nameRegexResult[2] == null) {
+                     lastname = value.Nachname;
+                     } else {
+                     lastname = nameRegexResult[1];
+                     suffix = nameRegexResult[3];
+                     if (suffix == 'Jun' || suffix == 'Jun.') {
+                     suffix = 'jun.';
+                     } else {
+                     if (suffix == 'Sen' || suffix == 'Sen.') {
+                     suffix = 'sen.';
+                     }
+                     }
+                     }
+                     }
+
+                     var pObj = {
+                     Salutation: value.Anrede,
+                     Firstname: value.Vorname,
+                     Lastname: lastname,
+                     Birthday: value.Geboren,
+                     valid_start: new Date()
+
+                     };
+                     if (suffix && suffix.length > 0) {
+                     pObj.Suffix = suffix;
+                     }
+                     return pObj;
+                     });
+                     */
+
+                    Promise.map(ffwMitglieder, function (value) {
                         var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
                         var streetRegexResult = regexp.exec(value.Straße);
                         var street = "";
@@ -127,18 +181,45 @@ exports.importTestDataFFW = function () {
                         if (suffix && suffix.length > 0) {
                             pObj.Suffix = suffix;
                         }
-                        return pObj;
-                    });
 
-                    var persons = Persons.forge(allPersons);
-                    console.log("Adding Persons.");
-                    Promise.all(persons.invoke('save')).then(function () {
+                         new Person(pObj).save().then(function (newPerson) {
+                            var lr;
+                            var ld;
+                            if (value.verstorben) {
+                                lr = 'Tod';
+                                ld = value.verstorben;
+                            } else if (value.Ausgetreten) {
+                                lr = 'Austritt';
+                                ld = value.Ausgetreten;
+                            }
+                            var ed = value.Eingetreten;
+                            if (!ed && !value.verzogenDatum) {
+                                ed = "1900-01-01T00:00:00";
+                            }
+
+                           return new Membership({
+                                Person_id: newPerson.get('id'),
+                                MembershipNumber: value.ID,
+                                EntryDate: ed,
+                                LeavingDate: ld,
+                                //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
+                                PassiveSince: value.Übergang_Passiv,
+                                LivingElsewhereSince: value.verzogenDatum
+                            }).save().then(function (newMember) {
+                                    console.log("Member added: " + newMember.get('MembershipNumber'));
+                                });
+
+//                            {"ID": 1, "Anrede": "", "Vorname": "", "Vorstandsmitglied": false, "Nachname": "", "PLZ": 86504.0, "Ort": "", "Straße": "", "Unterdorf": false, "verzogen": false, "Geboren": "1937-06-10T00:00:00", "Telefon": "9674", "Mobiltelefon": null, "Eingetreten": "1979-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 18, "Mitgliedsjahre": 35, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 76, "Geburtstag60": "1997-06-10T00:00:00", "Beitrag": 0.0000, "verzogenDatum": null},
+                        });
+
+                    }).then(function (savedPersons) {
                         console.log("Persons added to database.");
                         resolve();
                     }).catch(function (error) {
                         console.log("Error while saving persons: " + error);
                         reject(error);
                     });
+
                 });
             },
             function () {
@@ -146,8 +227,8 @@ exports.importTestDataFFW = function () {
                     var allPages = [
                         {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
                         {Order: 2, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
-                        {Order: 3, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Contacts", View: "genericList"},
-                        {Order: 4, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "genericList"}
+                        {Order: 3, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
+                        {Order: 4, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members"}
                     ];
                     var pages = Pages.forge(allPages);
                     console.log("Adding pages.");
@@ -870,7 +951,7 @@ var getPagesForUser = function (user) {
     return new Promise(function (resolve, reject) {
         getPages().then(function (pages) {
             var pagesForUser = [];
-            if (user && user.id) {
+            if (user && !user.isNotLocalUser && user.id) {
                 var permissions = ['get'];
                 // get user's role permissions filtered by user, resource and permissions
                 model.bookshelf.knex('UserRoles')
