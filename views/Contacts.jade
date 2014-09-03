@@ -6,9 +6,13 @@ block content
         div.container-fluid
             each record in Records
                 div(class="col-md-12 col-xs-12")
-                    div(style="padding-left: 3px;margin-top:2px;margin-bottom:2px;background-color:#fafafa;")
-                        strong(style="padding-bottom:2px;padding-top:1px;font-size: 1.1em") #{record.Firstname}&nbsp#{record.Lastname}
-                        if record.Suffix
-                            | ,#{record.Suffix}
+                    if record.Suffix
+                        h5 #{record.Firstname}&nbsp#{record.Lastname},&nbsp#{record.Suffix}
+                    else
+                        h5 #{record.Firstname}&nbsp#{record.Lastname}
+
+                div(class="col-md-6 col-xs-6") Telefon: +92396297917
+                div(class="col-md-6 col-xs-6") email: c@kajhgka.de
+                hr
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

@@ -32,7 +32,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('Events').then(function (exists) {
+                knex.schema.hasTable('Contacts').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -61,6 +61,9 @@ exports.createSchemaIfNotExists = function () {
 
 exports.importTestDataFFW = function () {
     return Promise.reduce([
+            function () {
+                return knex('Contacts').del();
+            },
             function () {
                 return knex('Articles').del();
             },
@@ -182,41 +185,53 @@ exports.importTestDataFFW = function () {
                             pObj.Suffix = suffix;
                         }
 
-                         new Person(pObj).save().then(function (newPerson) {
-                            var lr;
-                            var ld;
-                            if (value.verstorben) {
-                                lr = 'Tod';
-                                ld = value.verstorben;
-                            } else if (value.Ausgetreten) {
-                                lr = 'Austritt';
-                                ld = value.Ausgetreten;
-                            }
-                            var ed = value.Eingetreten;
-                            if (!ed && !value.verzogenDatum) {
-                                ed = "1900-01-01T00:00:00";
-                            }
+                        return new Promise(function (resolvePerson, rejectPerson) {
+                            new Person(pObj).save().then(function (newPerson) {
+                                var lr;
+                                var ld;
+                                if (value.verstorben) {
+                                    lr = 'Tod';
+                                    ld = value.verstorben;
+                                } else if (value.Ausgetreten) {
+                                    lr = 'Austritt';
+                                    ld = value.Ausgetreten;
+                                }
+                                var ed = value.Eingetreten;
+                                if (!ed && !value.verzogenDatum) {
+                                    ed = "1900-01-01T00:00:00";
+                                }
 
-                           return new Membership({
-                                Person_id: newPerson.get('id'),
-                                MembershipNumber: value.ID,
-                                EntryDate: ed,
-                                LeavingDate: ld,
-                                //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
-                                PassiveSince: value.Übergang_Passiv,
-                                LivingElsewhereSince: value.verzogenDatum
-                            }).save().then(function (newMember) {
-                                    console.log("Member added: " + newMember.get('MembershipNumber'));
-                                });
+                                new Membership({
+                                    Person_id: newPerson.get('id'),
+                                    MembershipNumber: value.ID,
+                                    EntryDate: ed,
+                                    LeavingDate: ld,
+                                    //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
+                                    PassiveSince: value.Übergang_Passiv,
+                                    LivingElsewhereSince: value.verzogenDatum
+                                }).save()
+                                    .then(function (newMember) {
+                                        //console.log("Member added: " + newMember.get('MembershipNumber'));
+                                        resolvePerson({ person: newPerson, membership: newMember});
+                                    })
+                                    .catch(function (error) {
+                                        console.log("Error while saving Membership: " + error);
+                                        rejectPerson(error);
+                                    }
+                                );
 
 //                            {"ID": 1, "Anrede": "", "Vorname": "", "Vorstandsmitglied": false, "Nachname": "", "PLZ": 86504.0, "Ort": "", "Straße": "", "Unterdorf": false, "verzogen": false, "Geboren": "1937-06-10T00:00:00", "Telefon": "9674", "Mobiltelefon": null, "Eingetreten": "1979-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 18, "Mitgliedsjahre": 35, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 76, "Geburtstag60": "1997-06-10T00:00:00", "Beitrag": 0.0000, "verzogenDatum": null},
+                            }).catch(function (error) {
+                                console.log("Error while saving Person: " + error);
+                                rejectPerson(error);
+                            });
                         });
 
-                    }).then(function (savedPersons) {
-                        console.log("Persons added to database.");
+                    }).then(function (savedObj) {
+                        console.log("Persons and Memberships added to database.");
                         resolve();
                     }).catch(function (error) {
-                        console.log("Error while saving persons: " + error);
+                        console.log("Error while saving persons and memberships: " + error);
                         reject(error);
                     });
 
@@ -307,6 +322,37 @@ exports.importTestDataFFW = function () {
                         reject(error);
                     });
                 });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var memberships = _.where(ffwMitglieder, {'Vorstandsmitglied': true});
+                    var membershipIds = _.map(memberships, function (membershipObj) {
+                        return membershipObj.ID;
+                    });
+                    var allContacts = [];
+                    model.bookshelf.knex('Memberships')
+                        .whereIn('MembershipNumber', membershipIds)
+                        .select('Person_id')
+                        .then(function (results) {
+                            var now = new Date();
+                            results.forEach(function (m) {
+                                allContacts.push({
+                                    Page_id: "kontakte",
+                                    Person_id: m.Person_id,
+                                    valid_start: now
+                                });
+                            });
+                            var contacts = Contacts.forge(allContacts);
+                            console.log("Adding Contacts.");
+                            Promise.all(contacts.invoke('save')).then(function () {
+                                console.log("Contacts added to database.");
+                                resolve();
+                            }).catch(function (error) {
+                                console.log("Error while saving Contacts: " + error);
+                                reject(error);
+                            });
+                        });
+                });
             }
         ],
         function (total, current, index, arrayLength) {
@@ -318,6 +364,9 @@ exports.importTestDataFFW = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return  knex.schema.dropTableIfExists('Contacts');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('Events');
             },
@@ -553,6 +602,16 @@ exports.createSchema = function () {
                     t.timestamp('event_end').notNullable().index();
                     t.timestamp('publish_start').index();
                     t.timestamp('publish_end').index();
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('Contacts', function (t) {
+                    t.increments('id').primary();
+                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.integer('Person_id').notNullable().references('id').inTable('Persons').index();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -842,6 +901,9 @@ var Page = bookshelf.Model.extend({
     Event: function () {
         return this.hasMany(Event);
     },
+    Contact: function () {
+        return this.hasMany(Contact);
+    },
     isSingleEntity: function () {
         // return true, if this page is configured to display a single entity and no list of it
         return this.get('Collection') == undefined;
@@ -894,6 +956,17 @@ var Article = bookshelf.Model.extend({
 
 var Articles = bookshelf.Collection.extend({
     model: Article
+});
+
+var Contact = bookshelf.Model.extend({
+    tableName: 'Contacts',
+    Page: function () {
+        return this.belongsTo(Page);
+    }
+});
+
+var Contacts = bookshelf.Collection.extend({
+    model: Contact
 });
 
 
@@ -1021,7 +1094,9 @@ module.exports.models = {
     Event: Event,
     Events: Events,
     Article: Article,
-    Articles: Articles
+    Articles: Articles,
+    Contact: Contact,
+    Contacts: Contacts
 };
 
 module.exports.pageModels = {
