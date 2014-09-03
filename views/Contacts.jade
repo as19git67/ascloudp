@@ -6,13 +6,19 @@ block content
         div.container-fluid
             each record in Records
                 div(class="col-md-12 col-xs-12")
-                    if record.Suffix
-                        h5 #{record.Firstname}&nbsp#{record.Lastname},&nbsp#{record.Suffix}
-                    else
-                        h5 #{record.Firstname}&nbsp#{record.Lastname}
-
-                div(class="col-md-6 col-xs-6") Telefon: +92396297917
-                div(class="col-md-6 col-xs-6") email: c@kajhgka.de
-                hr
+                    address
+                        if record.Suffix
+                            strong #{record.Firstname}&nbsp#{record.Lastname},&nbsp#{record.Suffix}
+                        else
+                            strong #{record.Firstname}&nbsp#{record.Lastname}
+                        br
+                        | 795 Folsom Ave, Suite 600
+                        br
+                        | San Francisco, CA 94107
+                        br
+                        | Telefon: 08233 123456
+                        br
+                        a(href="mailto:name@example.com") name@example.com
+                        br
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

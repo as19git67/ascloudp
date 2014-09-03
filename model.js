@@ -241,9 +241,15 @@ exports.importTestDataFFW = function () {
                 return new Promise(function (resolve, reject) {
                     var allPages = [
                         {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
-                        {Order: 2, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
-                        {Order: 3, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
-                        {Order: 4, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members"}
+                        {Order: 2, Name: "ausbildung", AnonymousAccess: true, EntityNameSingular: "Ausbildung", EntityNamePlural: "Ausbildungsmöglichkeiten", Model: "PageContent", View: "genericHTML"},
+                        {Order: 3, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles"},
+                        {Order: 4, Name: "fahrzeuge", AnonymousAccess: true, EntityNameSingular: "Fahrzeug", EntityNamePlural: "Fahrzeuge", Model: "PageContent", View: "genericHTML"},
+                        {Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
+                        {Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links"},
+                        {Order: 7, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
+                        {Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Über Uns", EntityNamePlural: "Über Uns", Collection: "Articles", View: "Articles"},
+                        {Order: 9, Name: "vorstand", AnonymousAccess: true, EntityNameSingular: "Vorstandsmitglied", EntityNamePlural: "Vorstand", Collection: "Contacts", View: "Contacts"},
+                        {Order: 10, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members"}
                     ];
                     var pages = Pages.forge(allPages);
                     console.log("Adding pages.");
@@ -259,7 +265,9 @@ exports.importTestDataFFW = function () {
             function () {
                 return new Promise(function (resolve, reject) {
                     var allPageContents = [
-                        {Page_id: "mitmachen", Text: "## Mitglied bei der Freiwilligen Feuerwehr Merching werden\r\n\r### Wer kann beitreten?\r\n\r\Die Freiwillige Feuerwehr Merching freut sich immer über neue Mitglieder. Ab dem Alter von 14 Jahren kann man beitreten. Mit 16 Jahren kann man dann beschränkt bei Einsätzen dabei sein und ab dem 18. Lebenjahr ist man voll einsatzfähig.\r\n\r"}
+                        {Page_id: "ausbildung", Text: "## Ausbildungsmaterial\r\n\r### Feuerwehr Dienstvorschriften:\r\n\rErklärungen und weiterführende Links zu den Feuerwehr Dienstvorschriften können in der Wikipedia nachgeschlagen werden: http://de.wikipedia.org/wiki/Feuerwehr-Dienstvorschrift\r\n\r### Lehrmittel:\r\n\Die Staatliche Feuerwehrschule in Würzburg stellt Lehrmaterial bereit: Lehr- und Lernmittel\r\n\r"},
+                        {Page_id: "mitmachen", Text: "## Mitglied bei der Freiwilligen Feuerwehr Merching werden\r\n\r### Wer kann beitreten?\r\n\rDie Freiwillige Feuerwehr Merching freut sich immer über neue Mitglieder. Ab dem Alter von 14 Jahren kann man beitreten. Mit 16 Jahren kann man dann beschränkt bei Einsätzen dabei sein und ab dem 18. Lebenjahr ist man voll einsatzfähig.\r\n\r"},
+                        {Page_id: "fahrzeuge", Text: "## HLF 20/16\r\n\rHier wird das Bild erscheinen\r\n\r## LF 16\r\n\rHier wird das Bild erscheinen\r\n\r"}
                     ];
                     var pageContents = PageContents.forge(allPageContents);
                     console.log("Adding PageContents.");
@@ -337,7 +345,7 @@ exports.importTestDataFFW = function () {
                             var now = new Date();
                             results.forEach(function (m) {
                                 allContacts.push({
-                                    Page_id: "kontakte",
+                                    Page_id: "vorstand",
                                     Person_id: m.Person_id,
                                     valid_start: now
                                 });
