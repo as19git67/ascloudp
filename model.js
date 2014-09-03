@@ -32,7 +32,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('Contacts').then(function (exists) {
+                knex.schema.hasTable('PersonContactDatas').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -74,6 +74,9 @@ exports.importTestDataFFW = function () {
                 return knex('Memberships').del();
             },
             function () {
+                return knex('PersonContactDatas').del();
+            },
+            function () {
                 return knex('Persons').del();
             },
             function () {
@@ -86,6 +89,7 @@ exports.importTestDataFFW = function () {
                 return knex('Pages').del();
             },
             function () {
+                // MITGLIEDER
                 return new Promise(function (resolve, reject) {
 
                     /*
@@ -212,7 +216,33 @@ exports.importTestDataFFW = function () {
                                 }).save()
                                     .then(function (newMember) {
                                         //console.log("Member added: " + newMember.get('MembershipNumber'));
-                                        resolvePerson({ person: newPerson, membership: newMember});
+                                        var contactTypeName = 'address';
+                                        new PersonContactType({Name: contactTypeName}).fetch().then(function (personContactType) {
+                                            if (personContactType) {
+                                                new PersonContactData({
+                                                    Person_id: newPerson.get('id'),
+                                                    PersonContactType_id: personContactType.get('id'),
+                                                    Usage: 'Privat'
+                                                }).save().then(function (newPersonContactData) {
+
+                                                        resolvePerson({ person: newPerson, membership: newMember});
+                                                    }).catch(function (error) {
+                                                        console.log("Error while saving PersonContactData: " + error);
+                                                        rejectPerson(error);
+
+                                                    }
+                                                );
+                                            }
+                                            else {
+                                                var errMsg = "PersonContactType " + contactTypeName + " does not exist in the database.";
+                                                console.log(errMsg);
+                                                rejectPerson(errMsg);
+                                            }
+                                        }).catch(function (error) {
+                                            console.log("Error while fetching PersonContactType: " + error);
+                                            rejectPerson(error);
+                                        });
+
                                     })
                                     .catch(function (error) {
                                         console.log("Error while saving Membership: " + error);
@@ -238,6 +268,7 @@ exports.importTestDataFFW = function () {
                 });
             },
             function () {
+                // SEITEN
                 return new Promise(function (resolve, reject) {
                     var allPages = [
                         {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
@@ -263,6 +294,7 @@ exports.importTestDataFFW = function () {
                 });
             },
             function () {
+                // SEITEN MIT GENERICHTML
                 return new Promise(function (resolve, reject) {
                     var allPageContents = [
                         {Page_id: "ausbildung", Text: "## Ausbildungsmaterial\r\n\r### Feuerwehr Dienstvorschriften:\r\n\rErklärungen und weiterführende Links zu den Feuerwehr Dienstvorschriften können in der Wikipedia nachgeschlagen werden: http://de.wikipedia.org/wiki/Feuerwehr-Dienstvorschrift\r\n\r### Lehrmittel:\r\n\Die Staatliche Feuerwehrschule in Würzburg stellt Lehrmaterial bereit: Lehr- und Lernmittel\r\n\r"},
@@ -302,6 +334,7 @@ exports.importTestDataFFW = function () {
                 });
             },
             function () {
+                // TERMINE
                 return new Promise(function (resolve, reject) {
                     var allEvents = _.map(ffwEvents, function (value, key, list) {
                         var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
@@ -392,6 +425,12 @@ exports.createSchema = function () {
             },
             function () {
                 return  knex.schema.dropTableIfExists('Memberships');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('PersonContactTypes');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('PersonContactDatas');
             },
             function () {
                 return  knex.schema.dropTableIfExists('Persons');
@@ -512,6 +551,46 @@ exports.createSchema = function () {
                     t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('PersonContactTypes', function (t) {
+                    t.increments('id').primary();
+                    t.string('Name', 10).unique();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var allContactTypes = [
+                        {Name: "address"},
+                        {Name: "email"},
+                        {Name: "phone"},
+                        {Name: "twitter"},
+                        {Name: "facebook"},
+                        {Name: "applepush"},
+                        {Name: "googlepush"},
+                        {Name: "mspush"}
+                    ];
+                    var contactTypes = PersonContactTypes.forge(allContactTypes);
+                    console.log("Adding contact types.");
+                    Promise.all(contactTypes.invoke('save')).then(function () {
+                        console.log("Contact types added to database.");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving contact types: " + error);
+                        reject(error);
+                    });
+                });
+            },
+            function () {
+                return  knex.schema.createTable('PersonContactDatas', function (t) {
+                    t.increments('id').primary();
+                    t.integer('Person_id').notNullable().references('id').inTable('Persons').index();
+                    t.integer('PersonContactType_id').notNullable().references('id').inTable('PersonContactTypes').index();
+                    t.string('Usage', 15).notNullable();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.unique('Person_id', 'PersonContactType_id', 'Usage');
                 });
             },
             function () {
@@ -849,11 +928,39 @@ var Person = bookshelf.Model.extend({
     tableName: 'Persons',
     Membership: function () {
         return this.hasMany(Membership);
+    },
+    PersonContactData: function () {
+        return this.hasMany(PersonContactData);
     }
 });
 
 var Persons = bookshelf.Collection.extend({
     model: Person
+});
+
+var PersonContactData = bookshelf.Model.extend({
+    tableName: 'PersonContactDatas',
+    Person: function () {
+        return this.belongsTo(Person);
+    },
+    Person: function () {
+        return this.hasOne(PersonContactType);
+    }
+});
+
+var PersonContactDatas = bookshelf.Collection.extend({
+    model: PersonContactData
+});
+
+var PersonContactType = bookshelf.Model.extend({
+    tableName: 'PersonContactTypes',
+    PersonContactData: function () {
+        return this.belongsTo(PersonContactData);
+    }
+});
+
+var PersonContactTypes = bookshelf.Collection.extend({
+    model: PersonContactType
 });
 
 var Membership = bookshelf.Model.extend({
@@ -1089,6 +1196,10 @@ module.exports.models = {
     Audit: Audit,
     Person: Person,
     Persons: Persons,
+    PersonContactType: PersonContactType,
+    PersonContactTypes: PersonContactTypes,
+    PersonContactData: PersonContactData,
+    PersonContactDatas: PersonContactDatas,
     Membership: Membership,
     Memberships: Memberships,
     LeavingReason: LeavingReason,
