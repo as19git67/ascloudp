@@ -1,27 +1,22 @@
 var _ = require('underscore');
 var config = require('../config');
 var model = require('../model');
-var Person = model.models.Person;
-var Membership = model.models.Membership;
+var Link = model.models.Link;
 
 var appName = config.get('appName');
 
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
 
-    new Person().query(function (qb) {
-        qb.leftJoin('Memberships', 'Persons.id', 'Memberships.Person_id');
-        qb.leftJoin('Contacts', 'Persons.id', 'Contacts.Person_id');
-        qb.orderBy('Lastname', 'ASC');
-        qb.where({ 'Contacts.Page_id': page.Name, 'Persons.Deleted': false, 'Contacts.Deleted': false, 'Memberships.Deleted': false, 'Persons.valid_end': null, 'Contacts.valid_end': null, 'Memberships.valid_end': null, 'Memberships.LeavingDate': null});
+    new Link().query(function (qb) {
+        qb.orderBy('linkText', 'ASC');
+        qb.where({ 'Links.Page_id': page.Name, 'Links.Deleted': false, 'Linkss.valid_end': null});
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
-               // var membership = dataModel.related('Membership');
                 var dataObj = {
-                    Firstname: dataModel.get('Firstname'),
-                    Lastname: dataModel.get('Lastname'),
-                    Suffix: dataModel.get('Suffix')
+                    href: dataModel.get('Href'),
+                    linkText: dataModel.get('LinkText')
                 };
                 return dataObj;
             });
@@ -45,7 +40,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             });
         }
     }).catch(function (error) {
-        console.log("Error while retrieving Persons from the database: " + error);
+        console.log("Error while retrieving Links from the database: " + error);
         var err = new Error(error);
         err.status = 500;
         next(err);

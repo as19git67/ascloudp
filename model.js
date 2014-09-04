@@ -32,7 +32,7 @@ exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
-                knex.schema.hasTable('PersonContactDatas').then(function (exists) {
+                knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
                     if (exists) {
                         console.log('DB schema exists.');
                         resolve();
@@ -91,57 +91,6 @@ exports.importTestDataFFW = function () {
             function () {
                 // MITGLIEDER
                 return new Promise(function (resolve, reject) {
-
-                    /*
-                     var allPersons = _.map(ffwMitglieder, function (value, key, list) {
-
-                     var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
-                     var streetRegexResult = regexp.exec(value.Straße);
-                     var street = "";
-                     var streetNumber = "";
-                     if (streetRegexResult == null || streetRegexResult.length < 3) {
-                     street = value.Straße;
-                     } else {
-                     street = streetRegexResult[1];
-                     streetNumber = streetRegexResult[2];
-                     }
-
-                     regexp = /([a-z|A-Z|ä|ö|ü|ß|Ä|Ö|Ü]+)(,\s?)?(jun\.|sen\.|Jun|Sen|Jun\.|Sen\.)?/;
-                     var nameRegexResult = regexp.exec(value.Nachname);
-                     var lastname = "";
-                     var suffix = "";
-                     if (nameRegexResult == null || nameRegexResult.length < 4) {
-                     lastname = value.Nachname;
-                     } else {
-                     if (nameRegexResult[2] == null || nameRegexResult[2] == null) {
-                     lastname = value.Nachname;
-                     } else {
-                     lastname = nameRegexResult[1];
-                     suffix = nameRegexResult[3];
-                     if (suffix == 'Jun' || suffix == 'Jun.') {
-                     suffix = 'jun.';
-                     } else {
-                     if (suffix == 'Sen' || suffix == 'Sen.') {
-                     suffix = 'sen.';
-                     }
-                     }
-                     }
-                     }
-
-                     var pObj = {
-                     Salutation: value.Anrede,
-                     Firstname: value.Vorname,
-                     Lastname: lastname,
-                     Birthday: value.Geboren,
-                     valid_start: new Date()
-
-                     };
-                     if (suffix && suffix.length > 0) {
-                     pObj.Suffix = suffix;
-                     }
-                     return pObj;
-                     });
-                     */
 
                     Promise.map(ffwMitglieder, function (value) {
                         var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
@@ -216,96 +165,91 @@ exports.importTestDataFFW = function () {
                                 }).save()
                                     .then(function (newMember) {
                                         //console.log("Member added: " + newMember.get('MembershipNumber'));
-                                        var contactTypeName = 'address';
-                                        new PersonContactType({Name: contactTypeName}).fetch().then(function (personContactType) {
-                                            if (personContactType) {
+                                        new PersonContactType().fetchAll().then(function (personContactTypes) {
+                                            var personContactTypesByName = {};
+                                            personContactTypes.forEach(function (personContactType) {
+                                                personContactTypesByName[personContactType.get('Name')] = personContactType.get('id');
+                                            });
+                                            var personContactTypeAddress = personContactTypesByName['address'];
+                                            var personContactTypePhone = personContactTypesByName['phone'];
+                                            if (personContactTypeAddress && personContactTypePhone) {
                                                 new PersonContactData({
                                                     Person_id: newPerson.get('id'),
-                                                    PersonContactType_id: personContactType.get('id'),
+                                                    PersonContactType_id: personContactTypeAddress.get('id'),
                                                     Usage: 'Privat'
-                                                }).save().then(function (newPersonContactData) {
-
-
-
+                                                }).save().then(function (newPersonContactDataAddress) {
 
                                                         function addMorePart1() {
-                                                            //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
-                                                            var awards = createAwardsArray(element, newPerson);
-                                                            if (awards.length > 0) {
-                                                                MemberAward.bulkCreate(awards).success(function () {
-                                                                    console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
-                                                                        " (id: " + newMembership.person_id + ")");
-                                                                    callback();
+                                                            resolvePerson({ person: newPerson, membership: newMember});
 
-                                                                }).error(function (error) {
-                                                                    console.log('MemberAward.bulkCreate had ERRORS');
-                                                                    console.log(error);
-                                                                    callback(error);
-                                                                });
-                                                            } else {
-                                                                callback();
-                                                            }
+                                                            //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
+                                                            /*
+                                                             var awards = createAwardsArray(element, newPerson);
+                                                             if (awards.length > 0) {
+                                                             MemberAward.bulkCreate(awards).success(function () {
+                                                             console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
+                                                             " (id: " + newMembership.person_id + ")");
+                                                             callback();
+
+                                                             }).error(function (error) {
+                                                             console.log('MemberAward.bulkCreate had ERRORS');
+                                                             console.log(error);
+                                                             callback(error);
+                                                             });
+                                                             } else {
+                                                             callback();
+                                                             }
+                                                             */
                                                         }
 
-                                                        PersonContactDataAddress.create({
-                                                                person_contact_data_id: newPersonContactData.id,
-                                                                street: street,
-                                                                street_number: streetNumber,
-                                                                postalcode: element.PLZ,
-                                                                city: element.Ort
-                                                            }
-                                                        ).success(function (newPersonContactDataAddress) {
+                                                        new PersonContactDataAddress({
+                                                            PersonContactData_id: newPersonContactDataAddress.get('id'),
+                                                            Street: street,
+                                                            StreetNumber: streetNumber,
+                                                            Postalcode: value.PLZ,
+                                                            City: value.Ort
+                                                        }).save().then(function (newPersonContactDataAddress) {
                                                                 console.log('PersonContactDataAddress added');
-                                                                if (element.Mobiltelefon && element.Mobiltelefon != '') {
-                                                                    PersonContactData.create({
-                                                                        person_id: newPerson.id,
-                                                                        contact_type: 'phone',
-                                                                        contact_usage: 'Mobil'
-                                                                    }).success(function (newPersonContactData) {
+                                                                if (value.Mobiltelefon && value.Mobiltelefon != '') {
+                                                                    new PersonContactData({
+                                                                        Person_id: newPerson.get('id'),
+                                                                        PersonContactType_id: personContactTypePhone.get('id'),
+                                                                        Usage: 'Mobil'
+                                                                    }).save().then(function (newPersonContactDataPhone) {
                                                                             console.log('New PersonContactData for mobile phone added');
-                                                                            var number = element.Mobiltelefon;
-                                                                            if (number.length > 1 && number.charAt(0) == '0'){
+                                                                            var number = value.Mobiltelefon;
+                                                                            if (number.length > 1 && number.charAt(0) == '0') {
                                                                                 number = '+49' + number.substr(1);
                                                                             } else {
                                                                                 console.log('WARNING: wrong phone number format: ' + number);
                                                                             }
-                                                                            PersonContactDataPhone.create({
-                                                                                    person_contact_data_id: newPersonContactData.id,
-                                                                                    number: number
-                                                                                }
-                                                                            ).success(function (newPersonContactDataPhone) {
-                                                                                    console.log('newPersonContactDataPhone added: ' + newPersonContactDataPhone.number);
+                                                                            new PersonContactDataPhone({
+                                                                                PersonContactData_id: newPersonContactDataPhone.get('id'),
+                                                                                Number: number
+                                                                            }).save().then(function (newPersonContactDataPhone) {
+                                                                                    console.log('newPersonContactDataPhone added: ' +
+                                                                                                newPersonContactDataPhone.get('Number'));
                                                                                     addMorePart1();
-                                                                                }
-                                                                            ).error(function (error) {
+                                                                                }).catch(function (error) {
                                                                                     console.log('PersonContactDataAddress.create had ERRORS');
                                                                                     console.log(error);
-                                                                                    callback(error);
+                                                                                    rejectPerson(error);
                                                                                 }
                                                                             );
-                                                                        }
-                                                                    ).error(function (error) {
+                                                                        }).catch(function (error) {
                                                                             console.log('PersonContactData.create had ERRORS');
                                                                             console.log(error);
-                                                                            callback(error);
-                                                                        }
-                                                                    );
+                                                                            rejectPerson(error);
+                                                                        });
                                                                 } else {
                                                                     addMorePart1();
                                                                 }
-                                                            }
-                                                        ).error(function (error) {
+                                                            }).catch(function (error) {
                                                                 console.log('PersonContactDataAddress.create had ERRORS');
                                                                 console.log(error);
-                                                                callback(error);
-                                                            }
-                                                        );
+                                                                rejectPerson(error);
+                                                            });
 
-
-
-
-
-                                                        resolvePerson({ person: newPerson, membership: newMember});
                                                     }).catch(function (error) {
                                                         console.log("Error while saving PersonContactData: " + error);
                                                         rejectPerson(error);
@@ -314,7 +258,7 @@ exports.importTestDataFFW = function () {
                                                 );
                                             }
                                             else {
-                                                var errMsg = "PersonContactType " + contactTypeName + " does not exist in the database.";
+                                                var errMsg = "PersonContactType address or phone does not exist in the database.";
                                                 console.log(errMsg);
                                                 rejectPerson(errMsg);
                                             }
@@ -322,15 +266,11 @@ exports.importTestDataFFW = function () {
                                             console.log("Error while fetching PersonContactType: " + error);
                                             rejectPerson(error);
                                         });
-
                                     })
                                     .catch(function (error) {
                                         console.log("Error while saving Membership: " + error);
                                         rejectPerson(error);
-                                    }
-                                );
-
-//                            {"ID": 1, "Anrede": "", "Vorname": "", "Vorstandsmitglied": false, "Nachname": "", "PLZ": 86504.0, "Ort": "", "Straße": "", "Unterdorf": false, "verzogen": false, "Geboren": "1937-06-10T00:00:00", "Telefon": "9674", "Mobiltelefon": null, "Eingetreten": "1979-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 18, "Mitgliedsjahre": 35, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 76, "Geburtstag60": "1997-06-10T00:00:00", "Beitrag": 0.0000, "verzogenDatum": null},
+                                    });
                             }).catch(function (error) {
                                 console.log("Error while saving Person: " + error);
                                 rejectPerson(error);
@@ -344,7 +284,6 @@ exports.importTestDataFFW = function () {
                         console.log("Error while saving persons and memberships: " + error);
                         reject(error);
                     });
-
                 });
             },
             function () {
@@ -506,13 +445,13 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.dropTableIfExists('Memberships');
             },
-            function() {
+            function () {
                 return knex.schema.dropTableIfExists('PersonContactDataAccounts');
             },
-            function() {
+            function () {
                 return knex.schema.dropTableIfExists('PersonContactDataPhonenumbers');
             },
-            function() {
+            function () {
                 return knex.schema.dropTableIfExists('PersonContactDataAddresses');
             },
             function () {
@@ -682,7 +621,7 @@ exports.createSchema = function () {
                     t.unique('Person_id', 'PersonContactType_id', 'Usage');
                 });
             },
-            function(){
+            function () {
                 return  knex.schema.createTable('PersonContactDataAddresses', function (t) {
                     t.increments('id').primary();
                     t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
@@ -695,7 +634,7 @@ exports.createSchema = function () {
                     t.timestamp('valid_end').index();
                 });
             },
-            function(){
+            function () {
                 return  knex.schema.createTable('PersonContactDataPhonenumbers', function (t) {
                     t.increments('id').primary();
                     t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
@@ -705,7 +644,7 @@ exports.createSchema = function () {
                     t.timestamp('valid_end').index();
                 });
             },
-            function(){
+            function () {
                 return  knex.schema.createTable('PersonContactDataAccounts', function (t) {
                     t.increments('id').primary();
                     t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
@@ -915,7 +854,7 @@ exports.createSchema = function () {
 
                                     }).catch(function (error) {
                                         console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName') +
-                                            ": " + error);
+                                                    ": " + error);
                                         reject(error);
                                     });
 
@@ -1065,8 +1004,17 @@ var PersonContactData = bookshelf.Model.extend({
     Person: function () {
         return this.belongsTo(Person);
     },
-    Person: function () {
+    PersonContactType: function () {
         return this.hasOne(PersonContactType);
+    },
+    PersonContactDataAddress: function () {
+        return this.hasOne(PersonContactDataAddress);
+    },
+    PersonContactDataPhone: function () {
+        return this.hasOne(PersonContactDataPhone);
+    },
+    PersonContactDataAccount: function () {
+        return this.hasOne(PersonContactDataAccount);
     }
 });
 
@@ -1086,11 +1034,36 @@ var PersonContactTypes = bookshelf.Collection.extend({
 });
 
 var PersonContactDataAddress = bookshelf.Model.extend({
-    tableName: 'PersonContactDataAddresses'
+    tableName: 'PersonContactDataAddresses',
+    PersonContactData: function () {
+        return this.belongsTo(PersonContactData);
+    }
 });
 
 var PersonContactDataAddresses = bookshelf.Collection.extend({
     model: PersonContactDataAddress
+});
+
+var PersonContactDataPhone = bookshelf.Model.extend({
+    tableName: 'PersonContactDataPhonenumbers',
+    PersonContactData: function () {
+        return this.belongsTo(PersonContactData);
+    }
+});
+
+var PersonContactDataPhonenumbers = bookshelf.Collection.extend({
+    model: PersonContactDataPhone
+});
+
+var PersonContactDataAccount = bookshelf.Model.extend({
+    tableName: 'PersonContactDataAccounts',
+    PersonContactData: function () {
+        return this.belongsTo(PersonContactData);
+    }
+});
+
+var PersonContactDataAccounts = bookshelf.Collection.extend({
+    model: PersonContactDataAccount
 });
 
 var Membership = bookshelf.Model.extend({
@@ -1214,7 +1187,6 @@ var Contacts = bookshelf.Collection.extend({
     model: Contact
 });
 
-
 var createSalt = function () {
     var salt = crypto.randomBytes(32).toString('base64');
     return salt;
@@ -1330,6 +1302,12 @@ module.exports.models = {
     PersonContactTypes: PersonContactTypes,
     PersonContactData: PersonContactData,
     PersonContactDatas: PersonContactDatas,
+    PersonContactDataAddress: PersonContactDataAddress,
+    PersonContactDataAddresses: PersonContactDataAddresses,
+    PersonContactDataPhone: PersonContactDataPhone,
+    PersonContactDataPhonenumbers: PersonContactDataPhonenumbers,
+    PersonContactDataAccount: PersonContactDataAccount,
+    PersonContactDataAccounts: PersonContactDataAccounts,
     Membership: Membership,
     Memberships: Memberships,
     LeavingReason: LeavingReason,

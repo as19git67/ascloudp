@@ -17,7 +17,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
-               // var membership = dataModel.related('Membership');
+                // var membership = dataModel.related('Membership');
                 var dataObj = {
                     Firstname: dataModel.get('Firstname'),
                     Lastname: dataModel.get('Lastname'),

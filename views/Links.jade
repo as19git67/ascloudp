@@ -1,0 +1,12 @@
+extends layout
+block content
+    if error
+        p.text-danger #{error}
+    if Records && Records.length > 0
+        div.container-fluid
+            h3 #{page.EntityNamePlural}
+            each record in Records
+                div(class="col-md-12 col-xs-12")
+                    a(href='#{record.href}') #{record.linkText}
+    else
+        p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
