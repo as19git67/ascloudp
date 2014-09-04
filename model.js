@@ -426,6 +426,15 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.dropTableIfExists('Memberships');
             },
+            function() {
+                return knex.schema.dropTableIfExists('PersonContactDataAccounts');
+            },
+            function() {
+                return knex.schema.dropTableIfExists('PersonContactDataPhonenumbers');
+            },
+            function() {
+                return knex.schema.dropTableIfExists('PersonContactDataAddresses');
+            },
             function () {
                 return  knex.schema.dropTableIfExists('PersonContactTypes');
             },
@@ -591,6 +600,39 @@ exports.createSchema = function () {
                     t.string('Usage', 15).notNullable();
                     t.boolean('Deleted').notNullable().defaultTo(false);
                     t.unique('Person_id', 'PersonContactType_id', 'Usage');
+                });
+            },
+            function(){
+                return  knex.schema.createTable('PersonContactDataAddresses', function (t) {
+                    t.increments('id').primary();
+                    t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
+                    t.string('Street', 30).index();
+                    t.string('StreetNumber', 5);
+                    t.integer('Postalcode').index();
+                    t.string('City').index();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function(){
+                return  knex.schema.createTable('PersonContactDataPhonenumbers', function (t) {
+                    t.increments('id').primary();
+                    t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
+                    t.string('Number', 30).notNullable();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function(){
+                return  knex.schema.createTable('PersonContactDataAccounts', function (t) {
+                    t.increments('id').primary();
+                    t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
+                    t.string('Account', 50).notNullable();
+                    t.boolean('Deleted').notNullable().defaultTo(false);
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
                 });
             },
             function () {
@@ -961,6 +1003,14 @@ var PersonContactType = bookshelf.Model.extend({
 
 var PersonContactTypes = bookshelf.Collection.extend({
     model: PersonContactType
+});
+
+var PersonContactDataAddress = bookshelf.Model.extend({
+    tableName: 'PersonContactDataAddresses'
+});
+
+var PersonContactDataAddresses = bookshelf.Collection.extend({
+    model: PersonContactDataAddress
 });
 
 var Membership = bookshelf.Model.extend({
