@@ -225,6 +225,86 @@ exports.importTestDataFFW = function () {
                                                     Usage: 'Privat'
                                                 }).save().then(function (newPersonContactData) {
 
+
+
+
+                                                        function addMorePart1() {
+                                                            //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
+                                                            var awards = createAwardsArray(element, newPerson);
+                                                            if (awards.length > 0) {
+                                                                MemberAward.bulkCreate(awards).success(function () {
+                                                                    console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
+                                                                        " (id: " + newMembership.person_id + ")");
+                                                                    callback();
+
+                                                                }).error(function (error) {
+                                                                    console.log('MemberAward.bulkCreate had ERRORS');
+                                                                    console.log(error);
+                                                                    callback(error);
+                                                                });
+                                                            } else {
+                                                                callback();
+                                                            }
+                                                        }
+
+                                                        PersonContactDataAddress.create({
+                                                                person_contact_data_id: newPersonContactData.id,
+                                                                street: street,
+                                                                street_number: streetNumber,
+                                                                postalcode: element.PLZ,
+                                                                city: element.Ort
+                                                            }
+                                                        ).success(function (newPersonContactDataAddress) {
+                                                                console.log('PersonContactDataAddress added');
+                                                                if (element.Mobiltelefon && element.Mobiltelefon != '') {
+                                                                    PersonContactData.create({
+                                                                        person_id: newPerson.id,
+                                                                        contact_type: 'phone',
+                                                                        contact_usage: 'Mobil'
+                                                                    }).success(function (newPersonContactData) {
+                                                                            console.log('New PersonContactData for mobile phone added');
+                                                                            var number = element.Mobiltelefon;
+                                                                            if (number.length > 1 && number.charAt(0) == '0'){
+                                                                                number = '+49' + number.substr(1);
+                                                                            } else {
+                                                                                console.log('WARNING: wrong phone number format: ' + number);
+                                                                            }
+                                                                            PersonContactDataPhone.create({
+                                                                                    person_contact_data_id: newPersonContactData.id,
+                                                                                    number: number
+                                                                                }
+                                                                            ).success(function (newPersonContactDataPhone) {
+                                                                                    console.log('newPersonContactDataPhone added: ' + newPersonContactDataPhone.number);
+                                                                                    addMorePart1();
+                                                                                }
+                                                                            ).error(function (error) {
+                                                                                    console.log('PersonContactDataAddress.create had ERRORS');
+                                                                                    console.log(error);
+                                                                                    callback(error);
+                                                                                }
+                                                                            );
+                                                                        }
+                                                                    ).error(function (error) {
+                                                                            console.log('PersonContactData.create had ERRORS');
+                                                                            console.log(error);
+                                                                            callback(error);
+                                                                        }
+                                                                    );
+                                                                } else {
+                                                                    addMorePart1();
+                                                                }
+                                                            }
+                                                        ).error(function (error) {
+                                                                console.log('PersonContactDataAddress.create had ERRORS');
+                                                                console.log(error);
+                                                                callback(error);
+                                                            }
+                                                        );
+
+
+
+
+
                                                         resolvePerson({ person: newPerson, membership: newMember});
                                                     }).catch(function (error) {
                                                         console.log("Error while saving PersonContactData: " + error);
