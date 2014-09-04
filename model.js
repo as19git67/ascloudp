@@ -730,9 +730,13 @@ exports.createSchema = function () {
                 return  knex.schema.createTable('Articles', function (t) {
                     t.increments('id').primary();
                     t.string('Page_id').references('Name').inTable('Pages');
+                    t.datetime('Date').notNullable().index();
+                    t.string('Title').notNullable();
+                    t.string('Subtitle');
+                    t.string('Author');
                     t.string('Text', 50000);
                     t.boolean('Deleted').notNullable().defaultTo(false);
-                    t.timestamp('publish_start').index();
+                    t.timestamp('publish_start').notNullable().index();
                     t.timestamp('publish_end').index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();

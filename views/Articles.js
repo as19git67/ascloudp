@@ -1,27 +1,40 @@
 var _ = require('underscore');
 var config = require('../config');
 var model = require('../model');
-var Person = model.models.Person;
-var Membership = model.models.Membership;
+var moment = require('moment');
+var Article = model.models.Article;
 
 var appName = config.get('appName');
 
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
+    var now = new Date();
+    new Article().query(function (qb) {
+        qb.orderBy('publish_start', 'DESC');
+        qb.where({ 'Articles.Page_id': page.Name, 'Articles.Deleted': false, 'Articles.valid_end': null})
+            .andWhere('publish_start', '<=', now)
+            .andWhere('publish_end', '>=', now);
 
-    new Person().query(function (qb) {
-        qb.leftJoin('Memberships', 'Persons.id', 'Memberships.Person_id');
-        qb.leftJoin('Contacts', 'Persons.id', 'Contacts.Person_id');
-        qb.orderBy('Lastname', 'ASC');
-        qb.where({ 'Contacts.Page_id': page.Name, 'Persons.Deleted': false, 'Contacts.Deleted': false, 'Memberships.Deleted': false, 'Persons.valid_end': null, 'Contacts.valid_end': null, 'Memberships.valid_end': null, 'Memberships.LeavingDate': null});
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
-                // var membership = dataModel.related('Membership');
+                var rawRho = "";
+                var rawHtml = undefined;
+                var text = dataModel.get('Text');
+                if (text) {
+                    rawRho = dataModel.get('Text');
+                    rawHtml = rho.toHtml(rawRho);
+                } else {
+                    console.log("Warning: rendering page " + page.Name + " without content");
+                }
                 var dataObj = {
-                    Firstname: dataModel.get('Firstname'),
-                    Lastname: dataModel.get('Lastname'),
-                    Suffix: dataModel.get('Suffix')
+                    date: dataModel.get('Date'),
+                    date_formatted: moment(dataModel.get('Date')).format('dddd, D. MMMM'),
+                    title: dataModel.get('Title'),
+                    subtitle: dataModel.get('Subtitle'),
+                    author: dataModel.get('Author'),
+                    // todo dynamically make section array
+                    sections: [{rawHtml: rawHtml}]
                 };
                 return dataObj;
             });
@@ -45,7 +58,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             });
         }
     }).catch(function (error) {
-        console.log("Error while retrieving Persons from the database: " + error);
+        console.log("Error while retrieving Articles from the database: " + error);
         var err = new Error(error);
         err.status = 500;
         next(err);
