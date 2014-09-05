@@ -8,7 +8,7 @@ var getProfiles = require('./Profiles');
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
 
-var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false });
+var knex = require('knex')({client: databaseClient, connection: connectionString, debug: true });
 var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
@@ -431,7 +431,12 @@ exports.importTestDataFFW = function () {
                                     publish_end: publishDateEnd,
                                     valid_start: new Date()
                                 };
-                                resolveEvent();
+                                new EventItem(evObj).save().then(function(newEventItem){
+                                    resolveEvent();
+                                }).catch(function(error){
+                                    console.log("Error while saving EventItem: " + error);
+                                    rejectEvent(error);
+                                });
                             }).catch(function (error) {
                                 console.log("Error while saving Event: " + error);
                                 rejectEvent(error);
@@ -446,8 +451,9 @@ exports.importTestDataFFW = function () {
                 });
             },
             function () {
-                // VORSTANDSCHAFT
+                // VORSTANDSCHAFT (Contacts)
                 return new Promise(function (resolve, reject) {
+                    var pageName = "vorstand";
                     var memberships = _.where(ffwMitglieder, {'Vorstandsmitglied': true});
                     var membershipIds = _.map(memberships, function (membershipObj) {
                         return membershipObj.ID;
@@ -460,18 +466,30 @@ exports.importTestDataFFW = function () {
                             var now = new Date();
                             results.forEach(function (m) {
                                 allContacts.push({
-                                    Page_id: "vorstand",
                                     Person_id: m.Person_id,
                                     valid_start: now
                                 });
                             });
-                            var contacts = Contacts.forge(allContacts);
-                            console.log("Adding Contacts.");
-                            Promise.all(contacts.invoke('save')).then(function () {
-                                console.log("Contacts added to database.");
+                            Promise.map(allContacts, function (contactItem) {
+                                return new Promise(function (resolveContact, rejectContact) {
+                                    new Contact({Page_id: pageName}).save().then(function (newContact) {
+                                        contactItem.Contact_id = newContact.get('id');
+                                        new ContactItem(contactItem).save().then(function (newContactItem) {
+                                            resolveContact(newContact);
+                                        }).catch(function (error) {
+                                            console.log("Error while adding contact item for page " + pageName + ": " + error);
+                                            rejectContact(error);
+                                        });
+                                    }).catch(function (error) {
+                                        console.log("Error while adding contact for page " + pageName + ": " + error);
+                                        rejectContact(error);
+                                    });
+                                });
+                            }).then(function (allSavedContacts) {
+                                console.log(" contacts for page " + pageName + " saved in database.");
                                 resolve();
                             }).catch(function (error) {
-                                console.log("Error while saving Contacts: " + error);
+                                console.log("Error while saving contacts for page " + pageName + ": " + error);
                                 reject(error);
                             });
                         });
@@ -482,37 +500,58 @@ exports.importTestDataFFW = function () {
                     var now = new Date();
                     var end = new Date();
                     end.setFullYear(end.getFullYear() + 1);
-                    new Article({
-                        "Page_id": "wir",
-                        "Date": now,
-                        "Title": "Rettungseinsatz Merching",
-                        "Subtitle": "Ich dachte ein Flugzeug stürzt ab",
-                        "Author": "Anton Schegg",
-                        "publish_start": now,
-                        "publish_end": end,
-                        "valid_start": now
-                    }).save().then(function (newArticle) {
-                            new ArticleSection({
-                                "Article_id": newArticle.get('id'),
-                                "Title": undefined,
-                                "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
-                                "ImageUrl": "images/presse/FA1.jpg",
-                                "ImageDescription": "Eingestürztes Haus",
-                                "valid_start": now
-                            }).save().then(function (newArticleSection) {
-                                    new ArticleReference({
+                    new Article({"Page_id": "wir"}).save().then(function (newArticle) {
+                        new ArticleItem({
+                            "Article_id": newArticle.get('id'),
+                            "Date": now,
+                            "Title": "Rettungseinsatz Merching",
+                            "Subtitle": "Ich dachte ein Flugzeug stürzt ab",
+                            "Author": "Anton Schegg",
+                            "publish_start": now,
+                            "publish_end": end,
+                            "valid_start": now
+                        }).save().then(function (newArticle) {
+                                new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
+                                    new ArticleSectionItem({
                                         "ArticleSection_id": newArticleSection.get('id'),
-                                        "Text": "",
+                                        "Title": undefined,
+                                        "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
+                                        "ImageUrl": "images/presse/FA1.jpg",
+                                        "ImageDescription": "Eingestürztes Haus",
                                         "valid_start": now
-                                    }).save().then(function (newArticleReference) {
-                                            console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                            resolve();
+                                    }).save().then(function (newArticleSectionItem) {
+                                            new ArticleReference({ArticleSection_id: newArticleSection.get('id')}).save().then(function (newArticleReference) {
+                                                new ArticleReferenceItem({
+                                                    "ArticleReference_id": newArticleReference.get('id'),
+                                                    "Text": "",
+                                                    "valid_start": now
+                                                }).save().then(function (newArticleReferenceItem) {
+                                                        console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                        resolve();
+                                                    }).catch(function (error) {
+                                                        console.log("Error while creating ArticleReferenceItem for page 'wir': " + error);
+                                                        reject(error);
+                                                    });
+                                            }).catch(function (error) {
+                                                console.log("Error while creating ArticleReference for page 'wir': " + error);
+                                                reject(error);
+                                            });
+                                        }).catch(function (error) {
+                                            console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                            reject(error);
                                         });
+                                }).catch(function (error) {
+                                    console.log("Error while creating ArticleSection for page 'wir': " + error);
+                                    reject(error);
                                 });
-                        }).catch(function (error) {
-                            console.log("Error while creating Article for page 'wir': " + error);
-                            reject(error);
-                        });
+                            }).catch(function (error) {
+                                console.log("Error while creating Article for page 'wir': " + error);
+                                reject(error);
+                            });
+                    }).catch(function (error) {
+                        console.log("Error while creating Article for page 'wir': " + error);
+                        reject(error);
+                    });
                 });
             }
         ],

@@ -10,9 +10,11 @@ var appName = config.get('appName');
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
     var now = new Date();
     new Article().query(function (qb) {
-        qb.leftJoin('ArticleSections', 'Articles.id', 'ArticleSections.Article_id');
+        qb.innerJoin('ArticleItems', 'Articles.id', 'ArticleItems.Article_id');
+        qb.leftJoin('ArticleSections', 'Articles.id', 'ArticleSections.Article_id')
+            .innerJoin('ArticleSectionItems', 'ArticleSections.id','ArticleSectionItems.ArticleSection_id');
         qb.orderBy('publish_start', 'DESC');
-        qb.where({ 'Page_id': page.Name, 'valid_end': null})
+        qb.where({ 'Page_id': page.Name, 'ArticleItems.valid_end': null})
             .andWhere('publish_start', '<=', now)
             .andWhere('publish_end', '>=', now);
     }).fetchAll({withRelated: ['ArticleSection', 'ArticleReference']}).then(function (dataCollection) {

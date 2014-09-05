@@ -15,11 +15,14 @@ module.exports.getical = function (req, res, next, page, pages, collectionModelC
 
     var now = new Date();
     new Event().query(function (qb) {
+        qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
-        qb.where({Page_id: page.Name, valid_end: null})
-            .andWhere('event_end', '>=', now)
-            .andWhere('publish_start', '<=', now)
-            .andWhere('publish_end', '>=', now);
+        qb.select(['EventItems.*']);
+        qb.where({Page_id: page.Name})
+            .andWhere('EventItems.valid_end', null)
+            .andWhere('EventItems.event_end', '>=', now)
+            .andWhere('EventItems.publish_start', '<=', now)
+            .andWhere('EventItems.publish_end', '>=', now);
     }).fetchAll().then(function (dataCollection) {
         if (dataCollection && dataCollection.length > 0) {
             dataCollection.forEach(function (dataModel) {
@@ -50,18 +53,20 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
     if (idx >= 1) {
         icalUrl = icalUrl + "&type=ical";
     }
-    else
-    {
+    else {
         icalUrl = icalUrl + "?type=ical";
     }
 
     var now = new Date();
     new Event().query(function (qb) {
+        qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
-        qb.where({Page_id: page.Name, valid_end: null})
-            .andWhere('event_end', '>=', now)
-            .andWhere('publish_start', '<=', now)
-            .andWhere('publish_end', '>=', now);
+        qb.select(['EventItems.*']);
+        qb.where({Page_id: page.Name})
+            .andWhere('EventItems.valid_end', null)
+            .andWhere('EventItems.event_end', '>=', now)
+            .andWhere('EventItems.publish_start', '<=', now)
+            .andWhere('EventItems.publish_end', '>=', now);
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
@@ -76,7 +81,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                     publish_end: dataModel.get('publish_end'),
                     event_start_time_formatted: moment(dataModel.get('event_start')).format('HH:mm'),
                     event_end_time_formatted: moment(dataModel.get('event_end')).format('HH:mm'),
-//                    event_start_date_formatted: moment(dataModel.get('event_start')).format('dd., D. MMM'),
+                    //                    event_start_date_formatted: moment(dataModel.get('event_start')).format('dd., D. MMM'),
                     event_start_date_formatted: moment(dataModel.get('event_start')).format('dddd, D. MMMM'),
                     event_end_date_formatted: moment(dataModel.get('event_end')).format('dd., D. MMM'),
                     event_start_formatted: moment(dataModel.get('event_start')).format('L HH:mm'),
