@@ -10,31 +10,32 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
     var now = new Date();
     new Article().query(function (qb) {
         qb.orderBy('publish_start', 'DESC');
-        qb.where({ 'Articles.Page_id': page.Name, 'Articles.Deleted': false, 'Articles.valid_end': null})
+        qb.where({ 'Articles.Page_id': page.Name, 'Articles.valid_end': null})
             .andWhere('publish_start', '<=', now)
             .andWhere('publish_end', '>=', now);
 
-    }).fetchAll().then(function (dataCollection) {
+    }).fetchAll({withRelated: ['ArticleSection']}).then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
-                var rawRho = "";
-                var rawHtml = undefined;
-                var text = dataModel.get('Text');
-                if (text) {
-                    rawRho = dataModel.get('Text');
-                    rawHtml = rho.toHtml(rawRho);
-                } else {
-                    console.log("Warning: rendering page " + page.Name + " without content");
-                }
+                var articleSections = dataCollection.related('ArticleSection');
+                var sections = articleSections.map(function (sectionData) {
+                    var section = {
+                        title: sectionData.get('Title'),
+                        imageUrl: sectionData.get('ImageUrl'),
+                        imageDescription: sectionData.get('ImageDescription')
+                    };
+                    var text = sectionData.get('Text');
+                    section.rawHtml = rho.toHtml(text);
+                    return section;
+                });
                 var dataObj = {
                     date: dataModel.get('Date'),
                     date_formatted: moment(dataModel.get('Date')).format('dddd, D. MMMM'),
                     title: dataModel.get('Title'),
                     subtitle: dataModel.get('Subtitle'),
                     author: dataModel.get('Author'),
-                    // todo dynamically make section array
-                    sections: [{rawHtml: rawHtml}]
+                    sections: sections
                 };
                 return dataObj;
             });

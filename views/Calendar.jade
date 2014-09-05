@@ -3,27 +3,25 @@ block content
     if error
         p.text-danger #{error}
     if Records && Records.length > 0
-        div.container-fluid
-            each record in Records
-                div(class="col-md-12 col-xs-12")
-                    div(style="padding-left: 3px;margin-top:2px;margin-bottom:2px;background-color:#fafafa;")
-                        strong(style="padding-bottom:2px;padding-top:1px;font-size: 1.1em") #{record.event_start_date_formatted}
-                div(class="col-md-1 col-xs-2", style="text-align: right;border-right-width:1px;border-right-color:lightgray;border-right-style:solid")
-                    | #{record.event_start_time_formatted}
-                    br
-                    span(style="color: gray") #{record.event_end_time_formatted}
-                div(class="col-md-11 col-xs-10")
-                    | #{record.Title}:&nbsp
-                    if record.Description
-                        | #{record.Description}
-                    if record.Location
-                        br
-                        span(style="color: gray") #{record.Location}
-     if icalUrl
-        div.container-fluid
+        each record in Records
             div(class="col-md-12 col-xs-12")
-                hr
-                a(href="#{icalUrl}") Diesen Kalender als iCal importieren
+                div(style="padding-left: 3px;margin-top:2px;margin-bottom:2px;background-color:#fafafa;")
+                    strong(style="padding-bottom:2px;padding-top:1px;font-size: 1.1em") #{record.event_start_date_formatted}
+            div(class="col-md-1 col-xs-2", style="text-align: right;border-right-width:1px;border-right-color:lightgray;border-right-style:solid")
+                | #{record.event_start_time_formatted}
+                br
+                span(style="color: gray") #{record.event_end_time_formatted}
+            div(class="col-md-11 col-xs-10")
+                | #{record.Title}:&nbsp
+                if record.Description
+                    | #{record.Description}
+                if record.Location
+                    br
+                    span(style="color: gray") #{record.Location}
+     if icalUrl
+        div(class="col-md-12 col-xs-12")
+            hr
+            a(href="#{icalUrl}") Diesen Kalender als iCal importieren
 
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

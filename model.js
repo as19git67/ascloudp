@@ -65,6 +65,12 @@ exports.importTestDataFFW = function () {
                 return knex('Contacts').del();
             },
             function () {
+                return knex('ArticleReferences').del();
+            },
+            function () {
+                return knex('ArticleSections').del();
+            },
+            function () {
                 return knex('Articles').del();
             },
             function () {
@@ -175,7 +181,7 @@ exports.importTestDataFFW = function () {
                                             if (personContactTypeAddress && personContactTypePhone) {
                                                 new PersonContactData({
                                                     Person_id: newPerson.get('id'),
-                                                    PersonContactType_id: personContactTypeAddress.get('id'),
+                                                    PersonContactType_id: personContactTypeAddress,
                                                     Usage: 'Privat'
                                                 }).save().then(function (newPersonContactDataAddress) {
 
@@ -213,7 +219,7 @@ exports.importTestDataFFW = function () {
                                                                 if (value.Mobiltelefon && value.Mobiltelefon != '') {
                                                                     new PersonContactData({
                                                                         Person_id: newPerson.get('id'),
-                                                                        PersonContactType_id: personContactTypePhone.get('id'),
+                                                                        PersonContactType_id: personContactTypePhone,
                                                                         Usage: 'Mobil'
                                                                     }).save().then(function (newPersonContactDataPhone) {
                                                                             console.log('New PersonContactData for mobile phone added');
@@ -316,7 +322,7 @@ exports.importTestDataFFW = function () {
                 // SEITEN MIT GENERICHTML
                 return new Promise(function (resolve, reject) {
                     var allPageContents = [
-                        {Page_id: "ausbildung", Text: "## Ausbildungsmaterial\r\n\r### Feuerwehr Dienstvorschriften:\r\n\rErklärungen und weiterführende Links zu den Feuerwehr Dienstvorschriften können in der Wikipedia nachgeschlagen werden: http://de.wikipedia.org/wiki/Feuerwehr-Dienstvorschrift\r\n\r### Lehrmittel:\r\n\Die Staatliche Feuerwehrschule in Würzburg stellt Lehrmaterial bereit: Lehr- und Lernmittel\r\n\r"},
+                        {Page_id: "ausbildung", Text: "## Ausbildungsmaterial\r\n\r### Feuerwehr Dienstvorschriften:\r\n\rErklärungen und weiterführende Links zu den Feuerwehr Dienstvorschriften können in der Wikipedia nachgeschlagen werden: http://de.wikipedia.org/wiki/Feuerwehr-Dienstvorschrift\r\n\r### Lehrmittel:\r\n\rDie Staatliche Feuerwehrschule in Würzburg stellt Lehrmaterial bereit: Lehr- und Lernmittel\r\n\r"},
                         {Page_id: "mitmachen", Text: "## Mitglied bei der Freiwilligen Feuerwehr Merching werden\r\n\r### Wer kann beitreten?\r\n\rDie Freiwillige Feuerwehr Merching freut sich immer über neue Mitglieder. Ab dem Alter von 14 Jahren kann man beitreten. Mit 16 Jahren kann man dann beschränkt bei Einsätzen dabei sein und ab dem 18. Lebenjahr ist man voll einsatzfähig.\r\n\r"},
                         {Page_id: "fahrzeuge", Text: "## HLF 20/16\r\n\rHier wird das Bild erscheinen\r\n\r## LF 16\r\n\rHier wird das Bild erscheinen\r\n\r"}
                     ];
@@ -384,6 +390,7 @@ exports.importTestDataFFW = function () {
                 });
             },
             function () {
+                // VORSTANDSCHAFT
                 return new Promise(function (resolve, reject) {
                     var memberships = _.where(ffwMitglieder, {'Vorstandsmitglied': true});
                     var membershipIds = _.map(memberships, function (membershipObj) {
@@ -431,6 +438,12 @@ exports.createSchema = function () {
                 return  knex.schema.dropTableIfExists('Events');
             },
             function () {
+                return  knex.schema.dropTableIfExists('ArticleReferences');
+            },
+            function () {
+                return  knex.schema.dropTableIfExists('ArticleSections');
+            },
+            function () {
                 return  knex.schema.dropTableIfExists('Articles');
             },
             function () {
@@ -455,10 +468,10 @@ exports.createSchema = function () {
                 return knex.schema.dropTableIfExists('PersonContactDataAddresses');
             },
             function () {
-                return  knex.schema.dropTableIfExists('PersonContactTypes');
+                return  knex.schema.dropTableIfExists('PersonContactDatas');
             },
             function () {
-                return  knex.schema.dropTableIfExists('PersonContactDatas');
+                return  knex.schema.dropTableIfExists('PersonContactTypes');
             },
             function () {
                 return  knex.schema.dropTableIfExists('Persons');
@@ -576,7 +589,6 @@ exports.createSchema = function () {
                     t.string('Lastname', 30).notNullable().index();
                     t.string('Suffix', 10);
                     t.dateTime('Birthday');
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -618,7 +630,7 @@ exports.createSchema = function () {
                     t.integer('PersonContactType_id').notNullable().references('id').inTable('PersonContactTypes').index();
                     t.string('Usage', 15).notNullable();
                     t.boolean('Deleted').notNullable().defaultTo(false);
-                    t.unique('Person_id', 'PersonContactType_id', 'Usage');
+                    t.unique(['Person_id', 'PersonContactType_id', 'Usage']);
                 });
             },
             function () {
@@ -629,7 +641,6 @@ exports.createSchema = function () {
                     t.string('StreetNumber', 5);
                     t.integer('Postalcode').index();
                     t.string('City').index();
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -639,7 +650,6 @@ exports.createSchema = function () {
                     t.increments('id').primary();
                     t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
                     t.string('Number', 30).notNullable();
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -647,9 +657,8 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.createTable('PersonContactDataAccounts', function (t) {
                     t.increments('id').primary();
-                    t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
+                    t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas');
                     t.string('Account', 50).notNullable();
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -662,7 +671,7 @@ exports.createSchema = function () {
                     var scale = 2;  // 2 digits after comma
                     t.decimal('Amount', precision, scale).notNullable();
                     t.boolean('Deleted').notNullable().defaultTo(false);
-                    t.unique('Name', 'Amount');
+                    t.unique(['Name', 'Amount']);
                 });
             },
             function () {
@@ -676,14 +685,13 @@ exports.createSchema = function () {
                 return  knex.schema.createTable('Memberships', function (t) {
                     t.increments('id').primary();
                     t.integer('MembershipNumber').notNullable().index();
-                    t.integer('Person_id').notNullable().references('id').inTable('Persons').index();
+                    t.integer('Person_id').notNullable().references('id').inTable('Persons');
                     t.dateTime('EntryDate').notNullable().index();
                     t.dateTime('LeavingDate').index();
                     t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
                     t.dateTime('PassiveSince').index();
                     t.dateTime('LivingElsewhereSince').index();
                     t.integer('MembershipFee_id').references('id').inTable('MembershipFees');
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -705,9 +713,8 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.createTable('PageContents', function (t) {
                     t.increments('id').primary();
-                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('Page_id').references('Name').inTable('Pages').notNullable();
                     t.string('Text', 50000);
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                     t.unique(['Page_id']);
@@ -716,7 +723,7 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.createTable('PageCollectionColumns', function (t) {
                     t.increments('id').primary();
-                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('Page_id').references('Name').inTable('Pages').notNullable();
                     t.integer('Order').notNullable().unique();
                     t.string('Name').notNullable();
                     t.string('Caption');
@@ -734,8 +741,6 @@ exports.createSchema = function () {
                     t.string('Title').notNullable();
                     t.string('Subtitle');
                     t.string('Author');
-                    t.string('Text', 50000);
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('publish_start').notNullable().index();
                     t.timestamp('publish_end').index();
                     t.timestamp('valid_start').index();
@@ -743,13 +748,33 @@ exports.createSchema = function () {
                 });
             },
             function () {
+                return  knex.schema.createTable('ArticleSections', function (t) {
+                    t.increments('id').primary();
+                    t.integer('Article_id').references('id').inTable('Articles').notNullable();
+                    t.string('Title');
+                    t.string('Text', 50000).notNullable();
+                    t.string('ImageUrl');
+                    t.string('ImageDescription');
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return  knex.schema.createTable('ArticleReferences', function (t) {
+                    t.increments('id').primary();
+                    t.integer('ArticleSection_id').references('id').inTable('ArticleSections').notNullable();
+                    t.string('Text').notNullable();
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
                 return  knex.schema.createTable('Events', function (t) {
                     t.increments('id').primary();
-                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('Page_id').references('Name').inTable('Pages').notNullable();
                     t.string('Title', 50).notNullable();
                     t.string('Location', 200);
                     t.string('Description', 5000);
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('event_start').notNullable().index();
                     t.timestamp('event_end').notNullable().index();
                     t.timestamp('publish_start').index();
@@ -761,9 +786,8 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.createTable('Contacts', function (t) {
                     t.increments('id').primary();
-                    t.string('Page_id').references('Name').inTable('Pages');
+                    t.string('Page_id').references('Name').inTable('Pages').notNullable();
                     t.integer('Person_id').notNullable().references('id').inTable('Persons').index();
-                    t.boolean('Deleted').notNullable().defaultTo(false);
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });

@@ -3,32 +3,31 @@ block content
     if error
         p.text-danger #{error}
     if Records && Records.length > 0
-        div.container-fluid
-            h3 #{page.EntityNamePlural}
-            each record in Records
-                div(class="col-md-12 col-xs-12")
-                    if record.title
-                        h3 #{record.title}
-                    if record.author
-                        p #{record.author}
-                    if record.subtitle
-                        h4 #{record.title}
-                    if record.sections
-                        each section in record.sections
-                            if section.title
-                                h5 section.title
-                            if section.rawHtml
-                            | !{section.rawHtml}
-                            if section.imageUrl
-                                if section.imageDescription
-                                    img(src='#{section.imageUrl}', alternate='#{section.imageDescription}')
-                                    br
-                                    div #{section.imageDescription}
-                                else
-                                    img(src='#{section.imageUrl}')
-                    if record.references
-                        strong Quellenangaben:
-                        each reference in record.references
-                            p #{reference.text}
+        h3 #{page.EntityNamePlural}
+        each record in Records
+            div(class="col-md-12 col-xs-12")
+                if record.title
+                    h3 #{record.title}
+                if record.author
+                    p #{record.author}
+                if record.subtitle
+                    h4 #{record.title}
+                if record.sections
+                    each section in record.sections
+                        if section.title
+                            h5 section.title
+                        if section.rawHtml
+                        | !{section.rawHtml}
+                        if section.imageUrl
+                            if section.imageDescription
+                                img(src='#{section.imageUrl}', alternate='#{section.imageDescription}')
+                                br
+                                div #{section.imageDescription}
+                            else
+                                img(src='#{section.imageUrl}')
+                if record.references
+                    strong Quellenangaben:
+                    each reference in record.references
+                        p #{reference.text}
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

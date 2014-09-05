@@ -3,22 +3,21 @@ block content
     if error
         p.text-danger #{error}
     if Records && Records.length > 0
-        div.container-fluid
-            each record in Records
-                div(class="col-md-12 col-xs-12")
-                    address
-                        if record.Suffix
-                            strong #{record.Firstname}&nbsp#{record.Lastname},&nbsp#{record.Suffix}
-                        else
-                            strong #{record.Firstname}&nbsp#{record.Lastname}
-                        br
-                        | 795 Folsom Ave, Suite 600
-                        br
-                        | San Francisco, CA 94107
-                        br
-                        | Telefon: 08233 123456
-                        br
-                        a(href="mailto:name@example.com") name@example.com
-                        br
+        each record in Records
+            div(class="col-md-12 col-xs-12")
+                address
+                    if record.Suffix
+                        strong #{record.Firstname}&nbsp#{record.Lastname},&nbsp#{record.Suffix}
+                    else
+                        strong #{record.Firstname}&nbsp#{record.Lastname}
+                    br
+                    | 795 Folsom Ave, Suite 600
+                    br
+                    | San Francisco, CA 94107
+                    br
+                    | Telefon: 08233 123456
+                    br
+                    a(href="mailto:name@example.com") name@example.com
+                    br
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
