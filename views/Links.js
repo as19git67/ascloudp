@@ -9,7 +9,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
 
     new Link().query(function (qb) {
         qb.orderBy('linkText', 'ASC');
-        qb.where({ 'Links.Page_id': page.Name, 'Links.Deleted': false, 'Linkss.valid_end': null});
+        qb.where({ 'Page_id': page.Name,  'valid_end': null});
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {

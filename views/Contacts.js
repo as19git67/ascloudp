@@ -12,7 +12,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         qb.leftJoin('Memberships', 'Persons.id', 'Memberships.Person_id');
         qb.leftJoin('Contacts', 'Persons.id', 'Contacts.Person_id');
         qb.orderBy('Lastname', 'ASC');
-        qb.where({ 'Contacts.Page_id': page.Name, 'Persons.Deleted': false, 'Contacts.Deleted': false, 'Memberships.Deleted': false, 'Persons.valid_end': null, 'Contacts.valid_end': null, 'Memberships.valid_end': null, 'Memberships.LeavingDate': null});
+        qb.where({ 'Contacts.Page_id': page.Name, 'Persons.valid_end': null, 'Contacts.valid_end': null, 'Memberships.valid_end': null, 'Memberships.LeavingDate': null});
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {

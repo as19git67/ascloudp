@@ -2,6 +2,7 @@ var _ = require('underscore');
 var config = require('../config');
 var model = require('../model');
 var moment = require('moment');
+var rho = require('rho');
 var Article = model.models.Article;
 
 var appName = config.get('appName');
@@ -9,16 +10,16 @@ var appName = config.get('appName');
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
     var now = new Date();
     new Article().query(function (qb) {
+        qb.leftJoin('ArticleSections', 'Articles.id', 'ArticleSections.Article_id');
         qb.orderBy('publish_start', 'DESC');
-        qb.where({ 'Articles.Page_id': page.Name, 'Articles.valid_end': null})
+        qb.where({ 'Page_id': page.Name, 'valid_end': null})
             .andWhere('publish_start', '<=', now)
             .andWhere('publish_end', '>=', now);
-
-    }).fetchAll({withRelated: ['ArticleSection']}).then(function (dataCollection) {
+    }).fetchAll({withRelated: ['ArticleSection', 'ArticleReference']}).then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
-                var articleSections = dataCollection.related('ArticleSection');
+                var articleSections = dataModel.related('ArticleSection');
                 var sections = articleSections.map(function (sectionData) {
                     var section = {
                         title: sectionData.get('Title'),
@@ -29,13 +30,21 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                     section.rawHtml = rho.toHtml(text);
                     return section;
                 });
+                var articleReferences = dataModel.related('ArticleReference');
+                var references = articleReferences.map(function (referenceData) {
+                    var reference = {
+                        text: referenceData.get('Text')
+                    };
+                    return reference;
+                });
                 var dataObj = {
                     date: dataModel.get('Date'),
                     date_formatted: moment(dataModel.get('Date')).format('dddd, D. MMMM'),
                     title: dataModel.get('Title'),
                     subtitle: dataModel.get('Subtitle'),
                     author: dataModel.get('Author'),
-                    sections: sections
+                    sections: sections,
+                    references: references
                 };
                 return dataObj;
             });

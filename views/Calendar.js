@@ -16,7 +16,7 @@ module.exports.getical = function (req, res, next, page, pages, collectionModelC
     var now = new Date();
     new Event().query(function (qb) {
         qb.orderBy('event_start', 'ASC');
-        qb.where({Page_id: page.Name, Deleted: false, valid_end: null})
+        qb.where({Page_id: page.Name, valid_end: null})
             .andWhere('event_end', '>=', now)
             .andWhere('publish_start', '<=', now)
             .andWhere('publish_end', '>=', now);

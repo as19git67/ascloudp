@@ -11,7 +11,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
 
     new Person().query(function (qb) {
         qb.orderBy('Lastname', 'ASC');
-        qb.where({ Deleted: false, valid_end: null, 'Membership.LeavingDate': null});
+        qb.where({ valid_end: null, 'Membership.LeavingDate': null});
     }).fetchAll({withRelated: 'Membership'}).then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
