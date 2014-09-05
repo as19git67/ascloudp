@@ -13,11 +13,15 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         qb.innerJoin('ArticleItems', 'Articles.id', 'ArticleItems.Article_id');
         qb.leftJoin('ArticleSections', 'Articles.id', 'ArticleSections.Article_id')
             .innerJoin('ArticleSectionItems', 'ArticleSections.id','ArticleSectionItems.ArticleSection_id');
+        qb.leftJoin('ArticleReferences', 'ArticleSections.id', 'ArticleReferences.ArticleSection_id')
+            .innerJoin('ArticleReferenceItems', 'ArticleReferences.id','ArticleReferenceItems.ArticleReference_id');
         qb.orderBy('publish_start', 'DESC');
-        qb.where({ 'Page_id': page.Name, 'ArticleItems.valid_end': null})
+        qb.orderBy('ArticleItems.Article_id', 'ASC');
+        qb.where({ 'Page_id': page.Name, 'ArticleItems.valid_end': null, 'ArticleSectionItems.valid_end': null, 'ArticleItems.valid_end': null})
             .andWhere('publish_start', '<=', now)
             .andWhere('publish_end', '>=', now);
-    }).fetchAll({withRelated: ['ArticleSection', 'ArticleReference']}).then(function (dataCollection) {
+        qb.select('*');
+    }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
