@@ -415,31 +415,33 @@ exports.importTestDataFFW = function () {
             function () {
                 // TERMINE
                 return new Promise(function (resolve, reject) {
-                    var allEvents = _.map(ffwEvents, function (value, key, list) {
-                        var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
-                        var publishDateEnd = value.publishDateEnd == null ? value.eventDateEnd : value.publishDateEnd;
-                        var evObj = {
-                            Page_id: "termine",
-                            Title: value.title,
-                            Location: value.locationdescription,
-                            Description: value.description,
-                            event_start: value.eventDateStart,
-                            event_end: value.eventDateEnd,
-                            publish_start: publishDateStart,
-                            publish_end: publishDateEnd,
-                            valid_start: new Date()
-                        };
-                        return evObj;
-                    });
-
-                    var events = Events.forge(allEvents);
-                    console.log("Adding Events.");
-                    Promise.all(events.invoke('save')).then(function () {
-                        console.log("Events added to database.");
+                    Promise.map(ffwEvents, function (value) {
+                        return new Promise(function (resolveEvent, rejectEvent) {
+                            new Event({ Page_id: "termine"}).save().then(function (newEvent) {
+                                var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
+                                var publishDateEnd = value.publishDateEnd == null ? value.eventDateEnd : value.publishDateEnd;
+                                var evObj = {
+                                    Event_id: newEvent.get('id'),
+                                    Title: value.title,
+                                    Location: value.locationdescription,
+                                    Description: value.description,
+                                    event_start: value.eventDateStart,
+                                    event_end: value.eventDateEnd,
+                                    publish_start: publishDateStart,
+                                    publish_end: publishDateEnd,
+                                    valid_start: new Date()
+                                };
+                                resolveEvent();
+                            }).catch(function (error) {
+                                console.log("Error while saving Event: " + error);
+                                rejectEvent(error);
+                            });
+                        });
+                    }).then(function (savedEvents) {
+                        console.log(savedEvents.length + " events added to database");
                         resolve();
                     }).catch(function (error) {
                         console.log("Error while saving events: " + error);
-                        reject(error);
                     });
                 });
             },
@@ -516,8 +518,7 @@ exports.importTestDataFFW = function () {
         ],
         function (total, current, index, arrayLength) {
             console.log("importTestDataFFW step " + (index + 1) + " von " + arrayLength);
-            return current().then(function () {
-            }).return(total + 1);
+            return current().then(function () {}).return(total + 1);
         }, 0);
 };
 
@@ -1043,11 +1044,13 @@ exports.createSchema = function () {
                                                     console.log("Role menus added to role " + newRoleModel.get('Name'));
                                                     resolve();
                                                 }).catch(function (error) {
-                                                    console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " + error);
+                                                    console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " +
+                                                                error);
                                                     reject(error);
                                                 });
                                             }).catch(function (error) {
-                                                console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " + error);
+                                                console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " +
+                                                            error);
                                                 reject(error);
                                             });
 
@@ -1057,7 +1060,8 @@ exports.createSchema = function () {
                                         });
 
                                     }).catch(function (error) {
-                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " + newUserModel.get('UserName') +
+                                        console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " +
+                                                    newUserModel.get('UserName') +
                                                     ": " + error);
                                         reject(error);
                                     });
