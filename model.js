@@ -431,9 +431,9 @@ exports.importTestDataFFW = function () {
                                     publish_end: publishDateEnd,
                                     valid_start: new Date()
                                 };
-                                new EventItem(evObj).save().then(function(newEventItem){
+                                new EventItem(evObj).save().then(function (newEventItem) {
                                     resolveEvent();
-                                }).catch(function(error){
+                                }).catch(function (error) {
                                     console.log("Error while saving EventItem: " + error);
                                     rejectEvent(error);
                                 });
@@ -514,6 +514,7 @@ exports.importTestDataFFW = function () {
                                 new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
                                     new ArticleSectionItem({
                                         "ArticleSection_id": newArticleSection.get('id'),
+                                        "Order": 2,
                                         "Title": undefined,
                                         "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
                                         "ImageUrl": "images/presse/FA1.jpg",
@@ -523,17 +524,112 @@ exports.importTestDataFFW = function () {
                                             new ArticleReference({ArticleSection_id: newArticleSection.get('id')}).save().then(function (newArticleReference) {
                                                 new ArticleReferenceItem({
                                                     "ArticleReference_id": newArticleReference.get('id'),
-                                                    "Text": "",
+                                                    "Text": "Friedberger Allgemeine, 3.6.2014",
                                                     "valid_start": now
                                                 }).save().then(function (newArticleReferenceItem) {
-                                                        console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                        resolve();
+                                                        new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
+                                                            new ArticleSectionItem({
+                                                                "ArticleSection_id": newArticleSection2.get('id'),
+                                                                "Order": 1,
+                                                                "Title": "Kommentar",
+                                                                "Text": "Die Feuerwehr wurde hinzugeholt, da ein Einstürzen des Giebels nicht auszuschließen war.",
+                                                                "valid_start": now
+                                                            }).save().then(function (newArticleSectionItem2) {
+                                                                    new ArticleReference({ArticleSection_id: newArticleSection2.get('id')}).save().then(function (newArticleReference2) {
+                                                                        new ArticleReferenceItem({
+                                                                            "ArticleReference_id": newArticleReference2.get('id'),
+                                                                            "Text": "FF Merching, 14.9.2014",
+                                                                            "valid_start": now
+                                                                        }).save().then(function (newArticleReferenceItem2) {
+                                                                                console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                                                resolve();
+                                                                            }).catch(function (error) {
+                                                                                console.log("Error while creating ArticleReferenceItem for page 'wir': " +
+                                                                                            error);
+                                                                                reject(error);
+                                                                            });
+                                                                    }).catch(function (error) {
+                                                                        console.log("Error while creating ArticleReference for page 'wir': " + error);
+                                                                        reject(error);
+                                                                    });
+                                                                }).catch(function (error) {
+                                                                    console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                                                    reject(error);
+                                                                });
+                                                        }).catch(function (error) {
+                                                            console.log("Error while creating ArticleSection for page 'wir': " + error);
+                                                            reject(error);
+                                                        });
                                                     }).catch(function (error) {
                                                         console.log("Error while creating ArticleReferenceItem for page 'wir': " + error);
                                                         reject(error);
                                                     });
                                             }).catch(function (error) {
                                                 console.log("Error while creating ArticleReference for page 'wir': " + error);
+                                                reject(error);
+                                            });
+                                        }).catch(function (error) {
+                                            console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                            reject(error);
+                                        });
+                                }).catch(function (error) {
+                                    console.log("Error while creating ArticleSection for page 'wir': " + error);
+                                    reject(error);
+                                });
+                            }).catch(function (error) {
+                                console.log("Error while creating Article for page 'wir': " + error);
+                                reject(error);
+                            });
+                    }).catch(function (error) {
+                        console.log("Error while creating Article for page 'wir': " + error);
+                        reject(error);
+                    });
+                });
+            },
+            function () {
+                return new Promise(function (resolve, reject) {
+                    var now = new Date();
+                    var end = new Date();
+                    var now1 = new Date();
+                    now1.setFullYear(end.getFullYear() - 1);
+                    end.setFullYear(end.getFullYear() + 1);
+                    new Article({"Page_id": "wir"}).save().then(function (newArticle) {
+                        new ArticleItem({
+                            "Article_id": newArticle.get('id'),
+                            "Date": now,
+                            "Title": "Generationenwechsel bei der Merchinger Feuerwehr",
+                            "Subtitle": "Neuwahlen bei der Freiwilligen Feuerwehr",
+                            "Author": "Anton Schegg",
+                            "publish_start": now1,
+                            "publish_end": end,
+                            "valid_start": now
+                        }).save().then(function (newArticle) {
+                                new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
+                                    new ArticleSectionItem({
+                                        "ArticleSection_id": newArticleSection.get('id'),
+                                        "Order": 1,
+                                        "Title": "Bericht des Ausschusses",
+                                        "Text": "Alles Bestens im vergangenen Jahr.\r\n\rBei den Neuwahlen der Freiwilligen Feuerwehr Merching wurde das alte Team entlastet und die Neuwahlen bestätigten die Wahlvorschläge. Somit wurde der Ausschuss ziemlich verjüngt.",
+                                        "ImageUrl": "images/presse/Jahreshauptversammlung2014.jpg",
+                                        "ImageDescription": "Bild der neu gewählten Vorstandschaft",
+                                        "valid_start": now
+                                    }).save().then(function (newArticleSectionItem) {
+                                            new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
+                                                new ArticleSectionItem({
+                                                    "ArticleSection_id": newArticleSection2.get('id'),
+                                                    "Order": 2,
+                                                    "Title": "Ergebnisse der Neuwahl",
+                                                    "Text": "Gewählt wurden:\r\n\r* Vorsitzender: Markus Storch\r\n\r* Kommandant: Andreas Escher",
+                                                    "valid_start": now
+                                                }).save().then(function (newArticleSectionItem2) {
+                                                        console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                        resolve();
+                                                    }).catch(function (error) {
+                                                        console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                                        reject(error);
+                                                    });
+                                            }).catch(function (error) {
+                                                console.log("Error while creating ArticleSection for page 'wir': " + error);
                                                 reject(error);
                                             });
                                         }).catch(function (error) {
@@ -894,7 +990,7 @@ exports.createSchema = function () {
                 return  knex.schema.createTable('PageCollectionColumns', function (t) {
                     t.increments('id').primary();
                     t.string('Page_id').references('Name').inTable('Pages').notNullable();
-                    t.integer('Order').notNullable().unique();
+                    t.integer('Order').notNullable().index();
                     t.string('Name').notNullable();
                     t.string('Caption');
                     t.string('Type').notNullable();
@@ -932,6 +1028,7 @@ exports.createSchema = function () {
             function () {
                 return  knex.schema.createTable('ArticleSectionItems', function (t) {
                     t.increments('id').primary();
+                    t.integer('Order').notNullable().index();
                     t.integer('ArticleSection_id').references('id').inTable('ArticleSections').notNullable();
                     t.string('Title');
                     t.string('Text', 50000).notNullable();
@@ -1695,6 +1792,10 @@ module.exports.models = {
     Article: Article,
     ArticleItem: ArticleItem,
     Articles: Articles,
+    ArticleSection: ArticleSection,
+    ArticleSectionItem: ArticleSectionItem,
+    ArticleReference: ArticleReference,
+    ArticleReferenceItem: ArticleReferenceItem,
     Contact: Contact,
     ContactItem: ContactItem,
     Contacts: Contacts,
