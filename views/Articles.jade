@@ -9,10 +9,10 @@ block content
                 if record.title
                     h3 #{record.title}
                 if record.author
-                    p #{record.author}
+                    p.small Von: #{record.author}, #{record.date_formatted}
                 if record.subtitle
                     h4 #{record.subtitle}
-                if record.sections
+                if record.sections && record.sections.length > 0
                     each section in record.sections
                         if section.title
                             h5 #{section.title}
@@ -25,7 +25,7 @@ block content
                                 div #{section.imageDescription}
                             else
                                 img(src='#{section.imageUrl}')
-                if record.references
+                if record.references && record.references.length > 0
                     strong Quellenangaben:
                     each reference in record.references
                         p #{reference.text}
