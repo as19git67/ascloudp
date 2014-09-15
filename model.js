@@ -8,7 +8,7 @@ var getProfiles = require('./Profiles');
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
 
-var knex = require('knex')({client: databaseClient, connection: connectionString, debug: true });
+var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false });
 var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
@@ -281,7 +281,7 @@ exports.importTestDataFFW = function () {
                                                                                             valid_start: now
                                                                                         }).save().then(function (newPersonContactDataPhone) {
                                                                                                 console.log('newPersonContactDataPhone added: ' +
-                                                                                                            newPersonContactDataPhone.get('Number'));
+                                                                                                    newPersonContactDataPhone.get('Number'));
                                                                                                 addMorePart1();
                                                                                             }).catch(function (error) {
                                                                                                 console.log('PersonContactDataAddress.create had ERRORS');
@@ -357,7 +357,7 @@ exports.importTestDataFFW = function () {
                         {Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
                         {Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links"},
                         {Order: 7, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
-                        {Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Über Uns", EntityNamePlural: "Über Uns", Collection: "Articles", View: "Articles"},
+                        {Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Bericht", EntityNamePlural: "Berichte", Collection: "Articles", View: "Articles"},
                         {Order: 9, Name: "vorstand", AnonymousAccess: true, EntityNameSingular: "Vorstandsmitglied", EntityNamePlural: "Vorstand", Collection: "Contacts", View: "Contacts"},
                         {Order: 10, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members"}
                     ];
@@ -503,10 +503,10 @@ exports.importTestDataFFW = function () {
                     new Article({"Page_id": "wir"}).save().then(function (newArticle) {
                         new ArticleItem({
                             "Article_id": newArticle.get('id'),
-                            "Date": now,
-                            "Title": "Rettungseinsatz Merching",
-                            "Subtitle": "Ich dachte ein Flugzeug stürzt ab",
-                            "Author": "Anton Schegg",
+                            "Date": new Date(2014, 6, 3),
+                            "Title": "RETTUNGSEINSATZ MERCHING: Ich dachte ein Flugzeug stürzt ab",
+                            "Subtitle": "Stadel auf landwirtschaftlichem Anwesen in Merching stürzt ein. Das Wohnhaus ist momentan für die fünfköpfige Familie nicht mehr zu betreten",
+                            "Author": "Eva Weizenegger",
                             "publish_start": now,
                             "publish_end": end,
                             "valid_start": now
@@ -517,8 +517,8 @@ exports.importTestDataFFW = function () {
                                         "Order": 2,
                                         "Title": undefined,
                                         "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
-                                        "ImageUrl": "images/presse/FA1.jpg",
-                                        "ImageDescription": "Eingestürztes Haus",
+                                        "ImageUrl": "http://bilder.augsburger-allgemeine.de/img/aichach/origs25490156/6280418233-w900-h960/MCH-Stadeleinsturz-009.jpg",
+                                        "ImageDescription": "Ein Stadel eines landwirtschaftlichen Anwesens in Merching in der Bahnhofstraße stürzte gestern ein. Das angrenzende Wohnhaus ist zurzeit für die Familie nicht bewohnbar. Zunächst muss ein Statiker klären, wann die Familie das Haus wieder betreten darf.",
                                         "valid_start": now
                                     }).save().then(function (newArticleSectionItem) {
                                             new ArticleReference({ArticleSection_id: newArticleSection.get('id')}).save().then(function (newArticleReference) {
@@ -531,21 +531,26 @@ exports.importTestDataFFW = function () {
                                                             new ArticleSectionItem({
                                                                 "ArticleSection_id": newArticleSection2.get('id'),
                                                                 "Order": 1,
-                                                                "Title": "Kommentar",
-                                                                "Text": "Die Feuerwehr wurde hinzugeholt, da ein Einstürzen des Giebels nicht auszuschließen war.",
+                                                                "Title": null,
+                                                                "Text": "Noch völlig unter Schock steht die fünfkopfige Familie in Merching, als sie auf die Trümmer ihres Stadels schaut. " +
+                                                                    "„Es hat einen wahnsinnigen Schlag getan und dann dachte ich, eine Lawine geht ab“, schildert eine Betroffene die Ereignisse vom Montagmorgen. " +
+                                                                    "Wie Polizeikommissar Michael Daschner informiert, wurden die Retter gegen 8.20 Uhr verständigt, um zu dem eingestürzten Stadel in der Bahnhofstraße, der direkt an das Wohnhaus angebaut ist, zu fahren und erste Sicherungsmaßnahmen vorzunehmen. " +
+                                                                    "„Momentan darf die Familie ihr Wohnhaus nicht betreten, erst wenn der Statiker keine weitere Einsturzgefahr bescheinigt, kann das Haus wieder betreten werden.“ " +
+                                                                    "Bürgermeister Martin Walch telefoniert bereits mit dem Landratsamt und versucht, einen Bausachverständigen zu organisieren. " + "Er läuft zwischen Baucontainern, alten Landwirtschaftsgeräten hin und her, beantwortet Fragen von Polizei und Abbruchunternehmen und redet gleichzeitig mit dem Hausbesitzer, der fassungslos auf die Trümmer des Stadels blickt. " +
+                                                                    " „Was denn noch alles?“, sagt der Mann nur noch. Tiere waren in dem ehemaligen Kuhstall nicht. Einen Hund, der sich noch im Wohnhaus befindet, kann Martin Walch rauslocken.",
                                                                 "valid_start": now
                                                             }).save().then(function (newArticleSectionItem2) {
                                                                     new ArticleReference({ArticleSection_id: newArticleSection2.get('id')}).save().then(function (newArticleReference2) {
                                                                         new ArticleReferenceItem({
                                                                             "ArticleReference_id": newArticleReference2.get('id'),
-                                                                            "Text": "FF Merching, 14.9.2014",
+                                                                            "Text": "Feuerwehr Merching, 2.6.2014",
                                                                             "valid_start": now
                                                                         }).save().then(function (newArticleReferenceItem2) {
                                                                                 console.log("Article '" + newArticle.get('Title') + "' saved.");
                                                                                 resolve();
                                                                             }).catch(function (error) {
                                                                                 console.log("Error while creating ArticleReferenceItem for page 'wir': " +
-                                                                                            error);
+                                                                                    error);
                                                                                 reject(error);
                                                                             });
                                                                     }).catch(function (error) {
@@ -608,22 +613,40 @@ exports.importTestDataFFW = function () {
                                     new ArticleSectionItem({
                                         "ArticleSection_id": newArticleSection.get('id'),
                                         "Order": 1,
-                                        "Title": "Bericht des Ausschusses",
+                                        "Title": "Artikel aus der Friedberger Allgemeinen",
                                         "Text": "Alles Bestens im vergangenen Jahr.\r\n\rBei den Neuwahlen der Freiwilligen Feuerwehr Merching wurde das alte Team entlastet und die Neuwahlen bestätigten die Wahlvorschläge. Somit wurde der Ausschuss ziemlich verjüngt.",
-                                        "ImageUrl": "images/presse/Jahreshauptversammlung2014.jpg",
-                                        "ImageDescription": "Bild der neu gewählten Vorstandschaft",
+                                        "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_1.jpg",
+                                        "ImageDescription": null,
                                         "valid_start": now
                                     }).save().then(function (newArticleSectionItem) {
                                             new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
                                                 new ArticleSectionItem({
                                                     "ArticleSection_id": newArticleSection2.get('id'),
-                                                    "Order": 2,
+                                                    "Order": 3,
                                                     "Title": "Ergebnisse der Neuwahl",
                                                     "Text": "Gewählt wurden:\r\n\r* Vorsitzender: Markus Storch\r\n\r* Kommandant: Andreas Escher",
                                                     "valid_start": now
                                                 }).save().then(function (newArticleSectionItem2) {
-                                                        console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                        resolve();
+                                                        new ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
+                                                            new ArticleSectionItem({
+                                                                "ArticleSection_id": newArticleSection.get('id'),
+                                                                "Order": 2,
+                                                                "Title": null,
+                                                                "Text": "",
+                                                                "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_2.jpg",
+                                                                "ImageDescription": null,
+                                                                "valid_start": now
+                                                            }).save().then(function (newArticleSectionItem) {
+                                                                    console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                                    resolve();
+                                                                }).catch(function (error) {
+                                                                    console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                                                    reject(error);
+                                                                });
+                                                        }).catch(function (error) {
+                                                            console.log("Error while creating ArticleSection for page 'wir': " + error);
+                                                            reject(error);
+                                                        });
                                                     }).catch(function (error) {
                                                         console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
                                                         reject(error);
@@ -653,7 +676,8 @@ exports.importTestDataFFW = function () {
         ],
         function (total, current, index, arrayLength) {
             console.log("importTestDataFFW step " + (index + 1) + " von " + arrayLength);
-            return current().then(function () {}).return(total + 1);
+            return current().then(function () {
+            }).return(total + 1);
         }, 0);
 };
 
@@ -1181,12 +1205,12 @@ exports.createSchema = function () {
                                                     resolve();
                                                 }).catch(function (error) {
                                                     console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " +
-                                                                error);
+                                                        error);
                                                     reject(error);
                                                 });
                                             }).catch(function (error) {
                                                 console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " +
-                                                            error);
+                                                    error);
                                                 reject(error);
                                             });
 
@@ -1197,8 +1221,8 @@ exports.createSchema = function () {
 
                                     }).catch(function (error) {
                                         console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " +
-                                                    newUserModel.get('UserName') +
-                                                    ": " + error);
+                                            newUserModel.get('UserName') +
+                                            ": " + error);
                                         reject(error);
                                     });
 

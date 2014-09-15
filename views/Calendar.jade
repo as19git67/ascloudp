@@ -3,6 +3,8 @@ block content
     if error
         p.text-danger #{error}
     if Records && Records.length > 0
+        h1
+            u #{page.EntityNamePlural}
         each record in Records
             div(class="col-md-12 col-xs-12")
                 div(style="padding-left: 3px;margin-top:2px;margin-bottom:2px;background-color:#fafafa;")
