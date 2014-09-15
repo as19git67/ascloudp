@@ -24,15 +24,19 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             console.log("Number of ArticleItems: " + dataCollection.length);
+            dataCollection.forEach(function(article){
+                console.log("Article.id: " + article.get('id'));
+            });
             Promise.map(dataCollection.models, function (article) {
                 var sectionReferenceObjs = [];
                 var articleSectionObjs = [];
                 return new Promise(function (resolveArticle, rejectArticle) {
 
                     console.log("Select ArticleReferenceItem for article " + article.get('id'));
-                    new ArticleSectionItem({'ArticleSections.Article_id': article.get('id'), 'valid_end': null}).query(function (qb) {
+                    new ArticleSectionItem().query(function (qb) {
                         qb.innerJoin('ArticleSections', 'ArticleSections.id', 'ArticleSectionItems.ArticleSection_id');
                         qb.innerJoin('Articles', 'Articles.id', 'ArticleSections.Article_id');
+                        qb.where('ArticleSections.Article_id', article.get('id')).andWhere('valid_end',null);
                         qb.orderBy('Order', 'ASC');
                     }).fetchAll().then(function (articleSections) {
                         console.log("Number of ArticleSectionItems: " + articleSections.length);
@@ -49,9 +53,10 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                             // get section references
                             return new Promise(function (resolveArticleSection, rejectArticleSection) {
                                 console.log("Select ArticleReferenceItem for articleSection " + articleSection.get('id'));
-                                new ArticleReferenceItem({'ArticleReferences.ArticleSection_id': articleSection.get('id'), 'valid_end': null}).query(function (qb) {
+                                new ArticleReferenceItem().query(function (qb) {
                                     qb.innerJoin('ArticleReferences', 'ArticleReferences.id', 'ArticleReferenceItems.ArticleReference_id');
                                     qb.innerJoin('ArticleSections', 'ArticleSections.id', 'ArticleReferences.ArticleSection_id');
+                                    qb.where('ArticleReferences.ArticleSection_id', articleSection.get('id')).andWhere('valid_end',null);
                                 }).fetchAll().then(function (sectionReferences) {
                                     console.log("Number of ArticleReferenceItems: " + sectionReferences.length);
                                     sectionReferences.forEach(function (sectionReference) {
