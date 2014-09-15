@@ -11,11 +11,11 @@ block content
                 if record.author
                     p #{record.author}
                 if record.subtitle
-                    h4 #{record.title}
+                    h4 #{record.subtitle}
                 if record.sections
                     each section in record.sections
                         if section.title
-                            h5 section.title
+                            h5 #{section.title}
                         if section.rawHtml
                         | !{section.rawHtml}
                         if section.imageUrl
