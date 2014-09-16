@@ -223,7 +223,8 @@ exports.importTestDataFFW = function () {
                                                         });
                                                         var personContactTypeAddress = personContactTypesByName['address'];
                                                         var personContactTypePhone = personContactTypesByName['phone'];
-                                                        if (personContactTypeAddress && personContactTypePhone) {
+                                                        var personContactTypeEmail = personContactTypesByName['email'];
+                                                        if (personContactTypeAddress && personContactTypePhone && personContactTypeEmail) {
                                                             new PersonContactData({
                                                                 Person_id: newPerson.get('id'),
                                                                 PersonContactType_id: personContactTypeAddress,
@@ -231,8 +232,28 @@ exports.importTestDataFFW = function () {
                                                             }).save().then(function (newPersonContactDataAddress) {
 
                                                                     function addMorePart1() {
-                                                                        resolvePerson({ person: newPerson, membership: newMember});
-
+                                                                        if (value.Email && value.Email != '') {
+                                                                            new PersonContactData({
+                                                                                Person_id: newPerson.get('id'),
+                                                                                PersonContactType_id: personContactTypeEmail,
+                                                                                Usage: 'Privat'
+                                                                            }).save()
+                                                                                .then(function (newPersonContactDataForEmail) {
+                                                                                    new PersonContactDataAccount({
+                                                                                        PersonContactData_id: newPersonContactDataForEmail.get('id'),
+                                                                                        Account: value.Email,
+                                                                                        valid_start: now
+                                                                                    }).save()
+                                                                                        .then(function (newPersonContactDataEmail) {
+                                                                                            console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
+                                                                                            resolvePerson({ person: newPerson, membership: newMember});
+                                                                                        }
+                                                                                    );
+                                                                                }
+                                                                            );
+                                                                        } else {
+                                                                            resolvePerson({ person: newPerson, membership: newMember});
+                                                                        }
                                                                         //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
                                                                         /*
                                                                          var awards = createAwardsArray(element, newPerson);
@@ -267,7 +288,7 @@ exports.importTestDataFFW = function () {
                                                                                     Person_id: newPerson.get('id'),
                                                                                     PersonContactType_id: personContactTypePhone,
                                                                                     Usage: 'Mobil'
-                                                                                }).save().then(function (newPersonContactDataPhone) {
+                                                                                }).save().then(function (newPersonContactDataPhonenumber) {
                                                                                         console.log('New PersonContactData for mobile phone added');
                                                                                         var number = value.Mobiltelefon;
                                                                                         if (number.length > 1 && number.charAt(0) == '0') {
@@ -275,13 +296,13 @@ exports.importTestDataFFW = function () {
                                                                                         } else {
                                                                                             console.log('WARNING: wrong phone number format: ' + number);
                                                                                         }
-                                                                                        new PersonContactDataPhone({
-                                                                                            PersonContactData_id: newPersonContactDataPhone.get('id'),
+                                                                                        new PersonContactDataPhonenumber({
+                                                                                            PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
                                                                                             Number: number,
                                                                                             valid_start: now
-                                                                                        }).save().then(function (newPersonContactDataPhone) {
-                                                                                                console.log('newPersonContactDataPhone added: ' +
-                                                                                                    newPersonContactDataPhone.get('Number'));
+                                                                                        }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                                console.log('newPersonContactDataPhonenumber added: ' +
+                                                                                                    newPersonContactDataPhonenumber.get('Number'));
                                                                                                 addMorePart1();
                                                                                             }).catch(function (error) {
                                                                                                 console.log('PersonContactDataAddress.create had ERRORS');
@@ -882,20 +903,21 @@ exports.createSchema = function () {
                 return  knex.schema.createTable('PersonContactTypes', function (t) {
                     t.increments('id').primary();
                     t.string('Name', 10).unique();
+                    t.string('Description', 20).notNullable();
                     t.boolean('Deleted').notNullable().defaultTo(false);
                 });
             },
             function () {
                 return new Promise(function (resolve, reject) {
                     var allContactTypes = [
-                        {Name: "address"},
-                        {Name: "email"},
-                        {Name: "phone"},
-                        {Name: "twitter"},
-                        {Name: "facebook"},
-                        {Name: "applepush"},
-                        {Name: "googlepush"},
-                        {Name: "mspush"}
+                        {Name: "address", Description: "Adresse"},
+                        {Name: "email", Description: "Email"},
+                        {Name: "phone", Description: "Telefon"},
+                        {Name: "twitter", Description: "Twitter"},
+                        {Name: "facebook", Description: "Facebook"},
+                        {Name: "applepush", Description: "Apple Push"},
+                        {Name: "googlepush", Description: "Google Push"},
+                        {Name: "mspush", Description: "Microsoft Push"}
                     ];
                     var contactTypes = PersonContactTypes.forge(allContactTypes);
                     console.log("Adding contact types.");
@@ -1388,8 +1410,8 @@ var PersonContactData = bookshelf.Model.extend({
     PersonContactDataAddress: function () {
         return this.hasOne(PersonContactDataAddress);
     },
-    PersonContactDataPhone: function () {
-        return this.hasOne(PersonContactDataPhone);
+    PersonContactDataPhonenumber: function () {
+        return this.hasOne(PersonContactDataPhonenumber);
     },
     PersonContactDataAccount: function () {
         return this.hasOne(PersonContactDataAccount);
@@ -1422,7 +1444,7 @@ var PersonContactDataAddresses = bookshelf.Collection.extend({
     model: PersonContactDataAddress
 });
 
-var PersonContactDataPhone = bookshelf.Model.extend({
+var PersonContactDataPhonenumber = bookshelf.Model.extend({
     tableName: 'PersonContactDataPhonenumbers',
     PersonContactData: function () {
         return this.belongsTo(PersonContactData);
@@ -1430,7 +1452,7 @@ var PersonContactDataPhone = bookshelf.Model.extend({
 });
 
 var PersonContactDataPhonenumbers = bookshelf.Collection.extend({
-    model: PersonContactDataPhone
+    model: PersonContactDataPhonenumber
 });
 
 var PersonContactDataAccount = bookshelf.Model.extend({
@@ -1795,7 +1817,7 @@ module.exports.models = {
     PersonContactDatas: PersonContactDatas,
     PersonContactDataAddress: PersonContactDataAddress,
     PersonContactDataAddresses: PersonContactDataAddresses,
-    PersonContactDataPhone: PersonContactDataPhone,
+    PersonContactDataPhonenumber: PersonContactDataPhonenumber,
     PersonContactDataPhonenumbers: PersonContactDataPhonenumbers,
     PersonContactDataAccount: PersonContactDataAccount,
     PersonContactDataAccounts: PersonContactDataAccounts,
@@ -2093,7 +2115,7 @@ var ffwMitglieder = [
     {"ID": 556, "Anrede": "Herr", "Vorname": "Norbert", "Vorstandsmitglied": false, "Nachname": "Spicker", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Untermühlstr. 5", "Unterdorf": true, "verzogen": false, "Geboren": "1967-02-02T00:00:00", "Telefon": "30030", "Mobiltelefon": null, "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "1994-12-31T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 9, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 46, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 557, "Anrede": "Herr", "Vorname": "Andreas", "Vorstandsmitglied": false, "Nachname": "Escher", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Untermühlstr. 2", "Unterdorf": true, "verzogen": false, "Geboren": "1968-10-06T00:00:00", "Telefon": "31773", "Mobiltelefon": "01728542869", "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 29, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": "2010-01-06T00:00:00", "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 45, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 558, "Anrede": "Herr", "Vorname": "Johann", "Vorstandsmitglied": false, "Nachname": "Grabmann, jun.", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Paartalweg 29", "Unterdorf": false, "verzogen": false, "Geboren": "1968-11-25T00:00:00", "Telefon": "31587", "Mobiltelefon": null, "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2009-01-01T00:00:00", "verstorben": null, "aktiv": true, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 24, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 45, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
-    {"ID": 559, "Anrede": "Herr", "Vorname": "Anton", "Vorstandsmitglied": true, "Nachname": "Schegg, jun.", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Bahnhofstr. 10a", "Unterdorf": true, "verzogen": false, "Geboren": "1967-09-01T00:00:00", "Telefon": null, "Mobiltelefon": "01638146810", "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 29, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": "2010-01-06T00:00:00", "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 46, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
+    {"ID": 559, "Anrede": "Herr", "Vorname": "Anton", "Vorstandsmitglied": true, "Nachname": "Schegg, jun.", "Email": "as1@schegg.de","PLZ": 86504.0, "Ort": "Merching", "Straße": "Bahnhofstr. 10a", "Unterdorf": true, "verzogen": false, "Geboren": "1967-09-01T00:00:00", "Telefon": null, "Mobiltelefon": "01638146810", "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 29, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": "2010-01-06T00:00:00", "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 46, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 560, "Anrede": "Herr", "Vorname": "Pius", "Vorstandsmitglied": false, "Nachname": "Müller, jun.", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Landsbergerstr. 18", "Unterdorf": true, "verzogen": false, "Geboren": "1969-03-20T00:00:00", "Telefon": "32049", "Mobiltelefon": "01626842822", "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 29, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": "2010-01-06T00:00:00", "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 44, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 561, "Anrede": "Herr", "Vorname": "Albert", "Vorstandsmitglied": false, "Nachname": "Müller", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Grüntenstr. 14", "Unterdorf": false, "verzogen": false, "Geboren": "1969-01-17T00:00:00", "Telefon": "30021", "Mobiltelefon": null, "Eingetreten": "1985-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2009-01-01T00:00:00", "verstorben": null, "aktiv": true, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 24, "Mitgliedsjahre": 29, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 44, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 563, "Anrede": "Herr", "Vorname": "Hermann", "Vorstandsmitglied": false, "Nachname": "Schamberger", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Unterbergerstr. 10", "Unterdorf": true, "verzogen": false, "Geboren": "1970-08-16T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "1987-04-23T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2010-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 22, "Mitgliedsjahre": 26, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 43, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},

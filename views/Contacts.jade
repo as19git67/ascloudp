@@ -9,17 +9,23 @@ block content
             div(class="col-md-12 col-xs-12")
                 address
                     if record.Suffix
-                        strong #{record.Firstname}&nbsp#{record.Lastname},&nbsp#{record.Suffix}
+                        strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
                     else
-                        strong #{record.Firstname}&nbsp#{record.Lastname}
+                        strong #{record.Lastname},&nbsp#{record.Firstname}
                     br
-                    | 795 Folsom Ave, Suite 600
-                    br
-                    | San Francisco, CA 94107
-                    br
-                    | Telefon: 08233 123456
-                    br
-                    a(href="mailto:name@example.com") name@example.com
-                    br
+                    each address in record.Addresses
+                        | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                        br
+                    each phoneNumber in record.PhoneNumbers
+                        | Tel. #{phoneNumber.Number}
+                        if record.PhoneNumbers.length > 1
+                            | &nbsp;(#{phoneNumber.Usage})
+                        br
+                    each account in record.Accounts
+                        | #{account.Type}:&nbsp;
+                        a(href="mailto:#{account.Account}") #{account.Account}
+                        if record.Accounts.length > 1
+                            | &nbsp;(#{account.Usage})
+                        br
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
