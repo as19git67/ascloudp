@@ -472,6 +472,37 @@ exports.importTestDataFFW = function () {
                 });
             },
             function () {
+                // LINKS
+                return new Promise(function (resolve, reject) {
+                    Promise.map(ffwLinks, function (value) {
+                        return new Promise(function (resolveLink, rejectLink) {
+                            new Link({ Page_id: "links"}).save().then(function (newLink) {
+                                var linkObj = {
+                                    Link_id: newLink.get('id'),
+                                    Url: value.href,
+                                    Description: value.d,
+                                    valid_start: new Date()
+                                };
+                                new LinkItem(linkObj).save().then(function (newLinkItem) {
+                                    resolveLink();
+                                }).catch(function (error) {
+                                    console.log("Error while saving LinkItem: " + error);
+                                    rejectLink(error);
+                                });
+                            }).catch(function (error) {
+                                console.log("Error while saving Link: " + error);
+                                rejectLink(error);
+                            });
+                        });
+                    }).then(function (savedLinks) {
+                        console.log(savedLinks.length + " links added to database");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log("Error while saving links: " + error);
+                    });
+                });
+            },
+            function () {
                 // VORSTANDSCHAFT (Contacts)
                 return new Promise(function (resolve, reject) {
                     var pageName = "vorstand";
@@ -2296,4 +2327,12 @@ var ffwEvents = [
     { title: "Monatsübung", description: "THL / Greifzug / Abs. der Einsatzstelle", eventDateStart: new Date("2014-11-03 19:30:00"), eventDateEnd: new Date("2014-11-03 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
     { title: "Monatsübung", description: "Lima  /Notstromaggregat / Motorsäge", eventDateStart: new Date("2014-11-28 19:30:00"), eventDateEnd: new Date("2014-11-28 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
     { title: "Monatsübung", description: "Lima  /Notstromaggregat / Motorsäge", eventDateStart: new Date("2014-12-01 19:30:00"), eventDateEnd: new Date("2014-12-01 21:30:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" }
+];
+
+var ffwLinks = [
+    { href: "http://www.merching.de", d: "Gemeinde Merching"},
+    { href: "http://www.pfarrei-merching.de", d: "Pfarrei Merching"},
+    { href: "http://www.kbv-merching.de", d: "Kath. Burschenverein Merching"},
+    { href: "http://www.hutv-bayermuenching.de", d: "Trachtenverein Bayermünching"},
+    { href: "http://www.paartaler-merching.de", d: "Trachtenverein D` Paartaler"}
 ];

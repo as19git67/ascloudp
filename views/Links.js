@@ -2,21 +2,23 @@ var _ = require('underscore');
 var config = require('../config');
 var model = require('../model');
 var Link = model.models.Link;
+var LinkItem = model.models.LinkItem;
 
 var appName = config.get('appName');
 
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
 
-    new Link().query(function (qb) {
-        qb.orderBy('linkText', 'ASC');
+    new LinkItem().query(function (qb) {
+        qb.leftJoin('Links', 'Links.id', 'LinkItems.Link_id');
+        qb.orderBy('Description', 'ASC');
         qb.where({ 'Page_id': page.Name,  'valid_end': null});
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
                 var dataObj = {
-                    href: dataModel.get('Href'),
-                    linkText: dataModel.get('LinkText')
+                    href: dataModel.get('Url'),
+                    linkText: dataModel.get('Description')
                 };
                 return dataObj;
             });
