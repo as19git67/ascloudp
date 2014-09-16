@@ -13,7 +13,6 @@ var appName = config.get('appName');
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
     var now = new Date();
 
-    console.log("Select ArticleItems");
     new ArticleItem().query(function (qb) {
         qb.innerJoin('Articles', 'Articles.id', 'ArticleItems.Article_id');
         qb.where({ 'Page_id': page.Name, 'valid_end': null})
@@ -23,23 +22,17 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
-            console.log("Number of ArticleItems: " + dataCollection.length);
-            dataCollection.forEach(function(article){
-                console.log("Article.id: " + article.get('id'));
-            });
-            Promise.map(dataCollection.models, function (article) {
+            Promise.reduce(dataCollection.models, function (total, article, index, arrayLength) {
                 var sectionReferenceObjs = [];
                 var articleSectionObjs = [];
                 return new Promise(function (resolveArticle, rejectArticle) {
 
-                    console.log("Select ArticleReferenceItem for article " + article.get('id'));
                     new ArticleSectionItem().query(function (qb) {
                         qb.innerJoin('ArticleSections', 'ArticleSections.id', 'ArticleSectionItems.ArticleSection_id');
                         qb.innerJoin('Articles', 'Articles.id', 'ArticleSections.Article_id');
-                        qb.where('ArticleSections.Article_id', article.get('id')).andWhere('valid_end',null);
+                        qb.where('ArticleSections.Article_id', article.get('id')).andWhere('valid_end', null);
                         qb.orderBy('Order', 'ASC');
                     }).fetchAll().then(function (articleSections) {
-                        console.log("Number of ArticleSectionItems: " + articleSections.length);
                         Promise.map(articleSections.models, function (articleSection) {
                             var section = {
                                 title: articleSection.get('Title'),
@@ -52,13 +45,11 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
 
                             // get section references
                             return new Promise(function (resolveArticleSection, rejectArticleSection) {
-                                console.log("Select ArticleReferenceItem for articleSection " + articleSection.get('id'));
                                 new ArticleReferenceItem().query(function (qb) {
                                     qb.innerJoin('ArticleReferences', 'ArticleReferences.id', 'ArticleReferenceItems.ArticleReference_id');
                                     qb.innerJoin('ArticleSections', 'ArticleSections.id', 'ArticleReferences.ArticleSection_id');
-                                    qb.where('ArticleReferences.ArticleSection_id', articleSection.get('id')).andWhere('valid_end',null);
+                                    qb.where('ArticleReferences.ArticleSection_id', articleSection.get('id')).andWhere('valid_end', null);
                                 }).fetchAll().then(function (sectionReferences) {
-                                    console.log("Number of ArticleReferenceItems: " + sectionReferences.length);
                                     sectionReferences.forEach(function (sectionReference) {
                                         var reference = {
                                             text: sectionReference.get('Text')
@@ -76,7 +67,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                         }).then(function (allArticleSections) {
                             var articleObj = {
                                 date: article.get('Date'),
-                                date_formatted: moment(article.get('Date')).format('dddd, D. MMMM'),
+                                date_formatted: moment(article.get('Date')).format('dddd, D. MMMM YYYY'),
                                 title: article.get('Title'),
                                 subtitle: article.get('Subtitle'),
                                 author: article.get('Author'),
@@ -94,8 +85,10 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                         console.log("Error while reading article from database: " + error);
                         rejectArticle(error);
                     });
-                });
-            }).then(function (articles) {
+                }).then(function () {
+                        total.push(article);
+                    }).return(total);
+            }, []).then(function (articles) {
 
                 res.render(page.View, {
                     csrfToken: req.csrfToken(),

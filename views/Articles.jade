@@ -27,7 +27,7 @@ block content
                             else
                                 img(src='#{section.imageUrl}')
                 if record.references && record.references.length > 0
-                    strong Quellenangaben:
+                    h4 Quellenangaben:
                     each reference in record.references
                         p #{reference.text}
     else
