@@ -50,7 +50,10 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                                     dataObj.Accounts = contactData.Accounts;
 
                                     total.push(dataModel);
+                                    console.log("Finish person # " + total.length);
                                     resolvePerson(dataModel);
+                                }).catch(function(error){
+                                    rejectPerson(error);
                                 });
                             }
                         ).return(total);
