@@ -13,10 +13,62 @@ var PersonContactDataAccount = model.models.PersonContactDataAccount;
 var Membership = model.models.Membership;
 var MembershipItem = model.models.MembershipItem;
 
+var databaseClient = config.get('databaseClient');
+var connectionString = config.get('connectionString');
+
+var knex = require('knex')({client: databaseClient, connection: connectionString, debug: true });
+
 var appName = config.get('appName');
 
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
 
+    knex.select('*').from('Persons')
+        .join('Memberships', 'Memberships.Person_id', 'Persons.id')
+        .join('MembershipItems', 'MembershipItems.Membership_id','Memberships.id' )
+        .join('PersonItems', 'Persons.id', 'PersonItems.Person_id')
+//         .leftJoin('PersonContactDatas', 'PersonContactDatas.Person_id', 'Persons.id')
+//        .innerJoin('PersonContactTypes', 'PersonContactDatas.PersonContactType_id', 'PersonContactTypes.id')
+//        .leftJoin('PersonContactDataAddresses', 'PersonContactDataAddresses.PersonContactData_id', 'PersonContactDatas.id')
+//        .leftJoin('PersonContactDataPhonenumbers', 'PersonContactDataPhonenumbers.PersonContactData_id', 'PersonContactDatas.id')
+//        .leftJoin('PersonContactDataAccounts', 'PersonContactDataAccounts.PersonContactData_id', 'PersonContactDatas.id')
+//        .where({
+//            'PersonItems.valid_end': null,
+//            'PersonContactTypes.Deleted': false,
+//            'PersonContactDataAddresses.valid_end': null,
+//            'PersonContactDataPhonenumbers.valid_end': null,
+//            'PersonContactDataAccounts.valid_end': null,
+//            'MembershipItems.valid_end': null,
+//            'MembershipItems.LeavingDate': null
+//        })
+//        .orderBy('PersonItems.Lastname', 'ASC')
+        .then(function (rows) {
+            console.log(JSON.stringify(rows));
+            res.render(page.View, {
+                csrfToken: req.csrfToken(),
+                appName: appName,
+                title: page.EntityNamePlural,
+                user: req.user,
+                pages: pages,
+                page: page,
+                Records: []
+            });
+        })
+        .catch(function (error) {
+            console.log("Error while reading persons with contact data from database: " + error);
+            res.render(page.View, {
+                csrfToken: req.csrfToken(),
+                appName: appName,
+                title: page.EntityNamePlural,
+                user: req.user,
+                pages: pages,
+                page: page,
+                error: "Fehler beim Lesen der Personen aus der Datenbank"
+            });
+        });
+
+    return;
+
+    /*
     new PersonItem().query(function (qb) {
         qb.leftJoin('Persons', 'Persons.id', 'PersonItems.Person_id');
         qb.leftJoin('Memberships', 'Persons.id', 'Memberships.Person_id');
@@ -52,7 +104,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                                     total.push(dataModel);
                                     console.log("Finish person # " + total.length);
                                     resolvePerson(dataModel);
-                                }).catch(function(error){
+                                }).catch(function (error) {
                                     rejectPerson(error);
                                 });
                             }
@@ -108,4 +160,5 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         err.status = 500;
         next(err);
     });
+    */
 };

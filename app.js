@@ -83,6 +83,7 @@ app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
 
 app.use(function (req, res, next) {
+
     var url = req.originalUrl.toLowerCase();
     // remove / from start
     if (url.substr(0, 1) == "/") {
