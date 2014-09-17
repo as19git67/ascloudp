@@ -3,12 +3,32 @@ block content
     if error
         p.text-danger #{error}
     if Records && Records.length > 0
-        div.container-fluid
-            each record in Records
-                div(class="col-md-12 col-xs-12")
-                    div(style="padding-left: 3px;margin-top:2px;margin-bottom:2px;background-color:#fafafa;")
-                        strong(style="padding-bottom:2px;padding-top:1px;font-size: 1.1em") #{record.Firstname}&nbsp#{record.Lastname}
-                        if record.Suffix
-                            | ,#{record.Suffix}
+        h1
+            u #{page.EntityNamePlural}
+        each record in Records
+            div(class="col-md-12 col-xs-12")
+                address
+                    if record.Suffix
+                        strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
+                    else
+                        strong #{record.Lastname},&nbsp#{record.Firstname}
+                    br
+                    each address in record.Addresses
+                        if address.Street
+                            | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                        else
+                            | #{address.Postalcode} #{address.City}
+                        br
+                    each phoneNumber in record.PhoneNumbers
+                        | Tel.: #{phoneNumber.Number}
+                        if record.PhoneNumbers.length > 1
+                            | &nbsp;(#{phoneNumber.Usage})
+                        br
+                    each account in record.Accounts
+                        | #{account.Type}:&nbsp;
+                        a(href="mailto:#{account.Account}") #{account.Account}
+                        if record.Accounts.length > 1
+                            | &nbsp;(#{account.Usage})
+                        br
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

@@ -11,6 +11,90 @@ var PersonContactDataAccount = model.models.PersonContactDataAccount;
 
 var appName = config.get('appName');
 
+// returns a promise, which will be resolved after all contact data has been loaded from the database
+module.exports.getContactDataForPerson = function (personItemModel, personContactTypesByName) {
+    return new Promise(function (resolvePersonItem, rejectPersonItem) {
+
+        var contactData = {
+            Addresses: [],
+            PhoneNumbers: [],
+            Accounts: []
+        };
+
+        var personContactTypeAddress = personContactTypesByName['address'];
+        var personContactTypePhone = personContactTypesByName['phone'];
+        var personContactTypeEmail = personContactTypesByName['email'];
+        var personContactTypeTwitter = personContactTypesByName['twitter'];
+
+        new PersonContactDataAddress().query(function (qb) {
+            qb.innerJoin('PersonContactDatas', 'PersonContactDatas.id', 'PersonContactDataAddresses.PersonContactData_id');
+            qb.where({
+                'Person_id': personItemModel.get('Person_id'),
+                'PersonContactType_id': personContactTypeAddress,
+                'valid_end': null
+            });
+            qb.select('PersonContactDatas.Usage');
+        }).fetchAll().then(function (personContactAddresses) {
+            personContactAddresses.forEach(function (personContactAddress) {
+                var addressObj = {
+                    Street: personContactAddress.get('Street'),
+                    StreetNumber: personContactAddress.get('StreetNumber'),
+                    Postalcode: personContactAddress.get('Postalcode'),
+                    City: personContactAddress.get('City'),
+                    Usage: personContactAddress.get('Usage')
+                };
+                contactData.Addresses.push(addressObj);
+            });
+
+            new PersonContactDataPhonenumber().query(function (qb) {
+                qb.innerJoin('PersonContactDatas', 'PersonContactDatas.id', 'PersonContactDataPhonenumbers.PersonContactData_id');
+                qb.where({
+                    'Person_id': personItemModel.get('Person_id'),
+                    'PersonContactType_id': personContactTypePhone,
+                    'valid_end': null
+                });
+                qb.select('PersonContactDatas.Usage');
+            }).fetchAll().then(function (personContactPhoneNumbers) {
+                personContactPhoneNumbers.forEach(function (personContactPhoneNumber) {
+                    var phoneNumberObj = {
+                        Number: personContactPhoneNumber.get('Number'),
+                        Usage: personContactPhoneNumber.get('Usage')
+                    };
+                    if (phoneNumberObj.Number.substr(0, 3) == '+49') {
+                        phoneNumberObj.Number = '0' + phoneNumberObj.Number.substr(3);
+                    }
+                    contactData.PhoneNumbers.push(phoneNumberObj);
+                });
+
+                new PersonContactDataAccount().query(function (qb) {
+                    qb.innerJoin('PersonContactDatas', 'PersonContactDatas.id', 'PersonContactDataAccounts.PersonContactData_id');
+                    qb.innerJoin('PersonContactTypes', 'PersonContactTypes.id', 'PersonContactDatas.PersonContactType_id');
+                    qb.where({
+                        'Person_id': personItemModel.get('Person_id'),
+                        'valid_end': null
+                    });
+                    qb.where({'PersonContactType_id': personContactTypeEmail})
+                        .orWhere({'PersonContactType_id': personContactTypeTwitter});
+                    qb.select(['PersonContactDatas.Usage', 'PersonContactTypes.Description']);
+                }).fetchAll().then(function (personContactAccount) {
+                    personContactAccount.forEach(function (personContactAccount) {
+                        var accountObj = {
+                            Account: personContactAccount.get('Account'),
+                            Usage: personContactAccount.get('Usage'),
+                            Type: personContactAccount.get('Description')
+                        };
+                        contactData.Accounts.push(accountObj);
+                    });
+                    resolvePersonItem(contactData);
+                });
+            });
+        }).catch(function (error) {
+            console.log("Error while reading person contact data: " + error);
+            rejectPersonItem(error);
+        });
+    });
+}
+
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
 
     new PersonItem().query(function (qb) {
@@ -29,100 +113,28 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                 personContactTypes.forEach(function (personContactType) {
                     personContactTypesByName[personContactType.get('Name')] = personContactType.get('id');
                 });
-                var personContactTypeAddress = personContactTypesByName['address'];
-                var personContactTypePhone = personContactTypesByName['phone'];
-                var personContactTypeEmail = personContactTypesByName['email'];
-                var personContactTypeTwitter = personContactTypesByName['twitter'];
 
                 Promise.reduce(dataCollection.models, function (total, dataModel, index, arrayLength) {
-                    var addresses = [];
-                    var phoneNumbers = [];
-                    var accounts = [];
-
                     var dataObj = {
                         Firstname: dataModel.get('Firstname'),
                         Lastname: dataModel.get('Lastname'),
                         Suffix: dataModel.get('Suffix'),
                         Salutation: dataModel.get('Salutation'),
-                        Birthday: dataModel.get('Birthday'),
-                        Addresses: addresses,
-                        PhoneNumbers: phoneNumbers,
-                        Accounts: accounts
+                        Birthday: dataModel.get('Birthday')
                     };
-                    console.log("Processing " + dataObj.Firstname + " " + dataObj.Lastname);
                     records.push(dataObj);
 
                     return new Promise(function (resolvePerson, rejectPerson) {
-                        console.log("Getting PersonContactDataAddresses for Person_id " + dataModel.get('Person_id'));
-                        new PersonContactDataAddress().query(function (qb) {
-                            qb.innerJoin('PersonContactDatas', 'PersonContactDatas.id', 'PersonContactDataAddresses.PersonContactData_id');
-                            qb.where({
-                                'Person_id': dataModel.get('Person_id'),
-                                'PersonContactType_id': personContactTypeAddress,
-                                'valid_end': null
+                            module.exports.getContactDataForPerson(dataModel, personContactTypesByName).then(function (contactData) {
+                                dataObj.Addresses = contactData.Addresses;
+                                dataObj.PhoneNumbers = contactData.PhoneNumbers;
+                                dataObj.Accounts = contactData.Accounts;
+
+                                total.push(dataModel);
+                                resolvePerson(dataModel);
                             });
-                            qb.select('PersonContactDatas.Usage');
-                        }).fetchAll().then(function (personContactAddresses) {
-                            console.log("Person " + dataModel.get('Person_id') + " has " + personContactAddresses.length + " address entries");
-                            personContactAddresses.forEach(function (personContactAddress) {
-                                var addressObj = {
-                                    Street: personContactAddress.get('Street'),
-                                    StreetNumber: personContactAddress.get('StreetNumber'),
-                                    Postalcode: personContactAddress.get('Postalcode'),
-                                    City: personContactAddress.get('City'),
-                                    Usage: personContactAddress.get('Usage')
-                                };
-                                addresses.push(addressObj);
-                            });
-                            console.log("Getting PersonContactDataPhonenumbers for Person_id " + dataModel.get('Person_id'));
-                            new PersonContactDataPhonenumber().query(function (qb) {
-                                qb.innerJoin('PersonContactDatas', 'PersonContactDatas.id', 'PersonContactDataPhonenumbers.PersonContactData_id');
-                                qb.where({
-                                    'Person_id': dataModel.get('Person_id'),
-                                    'PersonContactType_id': personContactTypePhone,
-                                    'valid_end': null
-                                });
-                                qb.select('PersonContactDatas.Usage');
-                            }).fetchAll().then(function (personContactPhoneNumbers) {
-                                console.log("Person " + dataModel.get('Person_id') + " has " + personContactPhoneNumbers.length + " phone number entries");
-                                personContactPhoneNumbers.forEach(function (personContactPhoneNumber) {
-                                    var phoneNumberObj = {
-                                        Number: personContactPhoneNumber.get('Number'),
-                                        Usage: personContactPhoneNumber.get('Usage')
-                                    };
-                                    if (phoneNumberObj.Number.substr(0, 3) == '+49') {
-                                        phoneNumberObj.Number = '0' + phoneNumberObj.Number.substr(3);
-                                    }
-                                    phoneNumbers.push(phoneNumberObj);
-                                });
-                                console.log("Getting PersonContactDataAccounts for Person_id " + dataModel.get('Person_id'));
-                                new PersonContactDataAccount().query(function (qb) {
-                                    qb.innerJoin('PersonContactDatas', 'PersonContactDatas.id', 'PersonContactDataAccounts.PersonContactData_id');
-                                    qb.innerJoin('PersonContactTypes', 'PersonContactTypes.id', 'PersonContactDatas.PersonContactType_id');
-                                    qb.where({
-                                        'Person_id': dataModel.get('Person_id'),
-                                        'valid_end': null
-                                    });
-                                    qb.where({'PersonContactType_id': personContactTypeEmail})
-                                        .orWhere({'PersonContactType_id': personContactTypeTwitter});
-                                    qb.select(['PersonContactDatas.Usage', 'PersonContactTypes.Description']);
-                                }).fetchAll().then(function (personContactAccount) {
-                                    console.log("Person " + dataModel.get('Person_id') + " has " + personContactAccount.length + " account entries");
-                                    personContactAccount.forEach(function (personContactAccount) {
-                                        var accountObj = {
-                                            Account: personContactAccount.get('Account'),
-                                            Usage: personContactAccount.get('Usage'),
-                                            Type: personContactAccount.get('Description')
-                                        };
-                                        accounts.push(accountObj);
-                                    });
-                                    resolvePerson(dataModel);
-                                });
-                            });
-                        });
-                    }).then(function () {
-                            total.push(dataModel);
-                        }).return(total);
+                        }
+                    ).return(total);
                 }, []).then(function (allPersons) {
                     res.render(page.View, {
                         csrfToken: req.csrfToken(),
@@ -133,7 +145,6 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                         page: page,
                         Records: records
                     });
-
                 }).catch(function (error) {
                     console.log("Error while processing PersonItems from database: " + error);
                     res.render(page.View, {

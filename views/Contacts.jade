@@ -17,7 +17,7 @@ block content
                         | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
                         br
                     each phoneNumber in record.PhoneNumbers
-                        | Tel. #{phoneNumber.Number}
+                        | Tel.: #{phoneNumber.Number}
                         if record.PhoneNumbers.length > 1
                             | &nbsp;(#{phoneNumber.Usage})
                         br
