@@ -57,12 +57,9 @@ module.exports.getContactDataForPerson = function (personItemModel, personContac
             }).fetchAll().then(function (personContactPhoneNumbers) {
                 personContactPhoneNumbers.forEach(function (personContactPhoneNumber) {
                     var phoneNumberObj = {
-                        Number: personContactPhoneNumber.get('Number'),
+                        Number: model.formatPhoneNumber(personContactPhoneNumber.get('Number')),
                         Usage: personContactPhoneNumber.get('Usage')
                     };
-                    if (phoneNumberObj.Number.substr(0, 3) == '+49') {
-                        phoneNumberObj.Number = '0' + phoneNumberObj.Number.substr(3);
-                    }
                     contactData.PhoneNumbers.push(phoneNumberObj);
                 });
 

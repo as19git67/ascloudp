@@ -12,23 +12,30 @@ block content
                         strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
                     else
                         strong #{record.Lastname},&nbsp#{record.Firstname}
-                    br
-                    each address in record.Addresses
-                        if address.Street
-                            | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
-                        else
-                            | #{address.Postalcode} #{address.City}
-                        br
-                    each phoneNumber in record.PhoneNumbers
-                        | Tel.: #{phoneNumber.Number}
-                        if record.PhoneNumbers.length > 1
-                            | &nbsp;(#{phoneNumber.Usage})
-                        br
-                    each account in record.Accounts
-                        | #{account.Type}:&nbsp;
-                        a(href="mailto:#{account.Account}") #{account.Account}
-                        if record.Accounts.length > 1
-                            | &nbsp;(#{account.Usage})
-                        br
+
+                    if record.Birthday
+                        | ,&nbsp;Geboren: #{record.Birthday}
+                    if record.Addresses && record.Addresses.length > 0
+                    div
+                        each address in record.Addresses
+                            if address.Street
+                                | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                            else
+                                | #{address.Postalcode} #{address.City}
+                    if record.PhoneNumbers && record.PhoneNumbers.length > 0
+                    div
+                        each phoneNumber in record.PhoneNumbers
+                            | Tel.: #{phoneNumber.Number}
+                            if record.PhoneNumbers.length > 1
+                                | &nbsp;(#{phoneNumber.Usage})
+                            br
+                    if record.Accounts && record.Accounts.length > 0
+                    div
+                        each account in record.Accounts
+                            div
+                                | #{account.Type}:&nbsp;
+                                a(href="mailto:#{account.Account}") #{account.Account}
+                                if record.Accounts.length > 1
+                                    | &nbsp;(#{account.Usage})
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

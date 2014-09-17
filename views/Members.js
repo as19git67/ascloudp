@@ -55,8 +55,52 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         })
         .orderBy('PersonItems.Lastname', 'ASC')
         .orderBy('Persons.id', 'ASC')
-        .then(function (rows) {
-            console.log(JSON.stringify(rows));
+        .then(function (persons) {
+            var records = [];
+            var lastMemberId;
+            var currentPersonObj;
+            _.each(persons, function (p) {
+                if (p.MembershipNumber != lastMemberId) {
+                    lastMemberId = p.MembershipNumber;
+                    currentPersonObj = new Object();
+                    records.push(currentPersonObj);
+                    currentPersonObj.MembershipNumber = p.MembershipNumber;
+                    currentPersonObj.Salutation = p.Salutation;
+                    currentPersonObj.Firstname = p.Firstname;
+                    currentPersonObj.Lastname = p.Lastname;
+                    currentPersonObj.Suffix = p.Suffix;
+                    currentPersonObj.Birthday = model.formatDate(p.Birthday);
+                    currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
+                    currentPersonObj.Addresses = [];
+                    currentPersonObj.PhoneNumbers = [];
+                    currentPersonObj.Accounts = [];
+                }
+                switch (p.PersonContactTypeName) {
+                    case 'address':
+                        currentPersonObj.Addresses.push({
+                            Street: p.Street,
+                            StreetNumber: p.StreetNumber,
+                            Postalcode: p.Postalcode,
+                            City: p.City,
+                            Usage: p.PersonContactDataUsage,
+                            Type: p.PersonContactTypeDescription
+                        });
+                        break;
+                    case 'phone':
+                        currentPersonObj.PhoneNumbers.push({
+                            Number: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                            Usage: p.PersonContactDataUsage,
+                            Type: p.PersonContactTypeDescription});
+                        break;
+                    default:
+                        currentPersonObj.Accounts.push({
+                            Account: p.PersonContactDataAccount,
+                            Usage: p.PersonContactDataUsage,
+                            Type: p.PersonContactTypeDescription
+                        });
+                }
+            });
+
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
                 appName: appName,
@@ -64,7 +108,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                 user: req.user,
                 pages: pages,
                 page: page,
-                Records: []
+                Records: records
             });
         })
         .catch(function (error) {

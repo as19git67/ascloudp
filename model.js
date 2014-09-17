@@ -1857,11 +1857,76 @@ var getPagesForUser = function (user) {
     });
 };
 
+var formatDateTime = function(date)
+{
+    return moment(date).format('D. MMMM YYYY  HH:mm');
+};
+var formatDateTimeShort = function(date)
+{
+    return moment(date).format('L HH:mm');
+};
+
+var formatDateTimeLong = function(date)
+{
+    return moment(date).format('dddd, D. MMMM YYYY  HH:mm');
+};
+
+var formatDate = function(date)
+{
+    return moment(date).format('D. MMMM YYYY');
+};
+
+var formatDateShort = function(date)
+{
+    return moment(date).format('L');
+};
+
+var formatDateLong = function(date)
+{
+    return moment(date).format('dddd, D. MMMM YYYY');
+};
+
+var formatTime = function(date)
+{
+    return moment(date).format('HH:mm');
+};
+
+var formatTimeLong = function(date)
+{
+    return moment(date).format('HH:mm:ss');
+};
+
+var formatPhoneNumber = function(phoneNumber) {
+    var numberFormatted = phoneNumber;
+    if (numberFormatted.substr(0, 3) == '+49') {
+        numberFormatted = '0' + numberFormatted.substr(3);
+    }
+    if (numberFormatted.substr(0, 5) == '08233') {
+        numberFormatted = '08233 ' + numberFormatted.substr(5);
+    } else {
+        var firstThree = numberFormatted.substr(0, 3);
+        if (firstThree == '015' ||firstThree == '016' ||firstThree == '017') {
+            numberFormatted = numberFormatted.substr(0, 4) + ' ' + numberFormatted.substr(4);
+        }
+    }
+
+    return numberFormatted;
+};
+
 module.exports.createSalt = createSalt;
 module.exports.encryptPassword = encryptPassword;
 module.exports.checkPassword = checkPassword;
 module.exports.getPages = getPages;
 module.exports.getPagesForUser = getPagesForUser;
+module.exports.formatDateTime = formatDateTime;
+module.exports.formatDateTimeShort = formatDateTimeShort;
+module.exports.formatDateTimeLong = formatDateTimeLong;
+module.exports.formatDate = formatDate;
+module.exports.formatDateShort = formatDateShort;
+module.exports.formatDateLong = formatDateLong;
+module.exports.formatTime = formatTime;
+module.exports.formatTimeLong = formatTimeLong;
+module.exports.formatPhoneNumber = formatPhoneNumber;
 
 module.exports.models = {
     User: User,
