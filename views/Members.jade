@@ -5,37 +5,38 @@ block content
     if Records && Records.length > 0
         h1
             u #{page.EntityNamePlural}
-        each record in Records
-            div(class="col-md-12 col-xs-12")
-                address
-                    if record.Suffix
-                        strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
-                    else
-                        strong #{record.Lastname},&nbsp#{record.Firstname}
+        div.col-md-6
+            dl.dl-horizontal
+                each record in Records
+                    dt
+                        if record.Suffix
+                            strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
+                        else
+                            strong #{record.Lastname},&nbsp#{record.Firstname}
+                    dd
+                        if record.Birthday
+                            | Geboren: #{record.Birthday}
+                    dd
+                        if record.Addresses && record.Addresses.length > 0
+                            each address in record.Addresses
+                                if address.Street
+                                    | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                                else
+                                    | #{address.Postalcode} #{address.City}
 
-                    if record.Birthday
-                        | ,&nbsp;Geboren: #{record.Birthday}
-                    if record.Addresses && record.Addresses.length > 0
-                    div
-                        each address in record.Addresses
-                            if address.Street
-                                | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
-                            else
-                                | #{address.Postalcode} #{address.City}
-                    if record.PhoneNumbers && record.PhoneNumbers.length > 0
-                    div
-                        each phoneNumber in record.PhoneNumbers
-                            | Tel.: #{phoneNumber.Number}
-                            if record.PhoneNumbers.length > 1
-                                | &nbsp;(#{phoneNumber.Usage})
-                            br
-                    if record.Accounts && record.Accounts.length > 0
-                    div
-                        each account in record.Accounts
-                            div
-                                | #{account.Type}:&nbsp;
-                                a(href="mailto:#{account.Account}") #{account.Account}
-                                if record.Accounts.length > 1
-                                    | &nbsp;(#{account.Usage})
+                        if record.PhoneNumbers && record.PhoneNumbers.length > 0
+                            each phoneNumber in record.PhoneNumbers
+                                dd Tel.: #{phoneNumber.Number}
+                                    if record.PhoneNumbers.length > 1
+                                        | &nbsp;(#{phoneNumber.Usage})
+
+                        if record.Accounts && record.Accounts.length > 0
+                            each account in record.Accounts
+                                dd #{account.Type}:&nbsp;
+                                    a(href="mailto:#{account.Account}") #{account.Account}
+                                    if record.Accounts.length > 1
+                                        | &nbsp;(#{account.Usage})
+                    dd
+                        hr
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
