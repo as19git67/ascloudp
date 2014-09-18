@@ -10,41 +10,47 @@ block content
                 div.col-md-6
                     dl.dl-horizontal
                         each record in Records
-                            dt
-                                if record.Suffix
-                                    strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
-                                else
-                                    strong #{record.Lastname},&nbsp#{record.Firstname}
-                            dd
-                                if record.Birthday
-                                    | Geboren: #{record.Birthday}
-                            dd
-                                if record.Addresses && record.Addresses.length > 0
-                                    each address in record.Addresses
-                                        if address.Street
-                                            | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                            div(class="panel panel-default")
+                                div.panel-body
+                                    dt
+                                        if record.Suffix
+                                            strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
                                         else
-                                            | #{address.Postalcode} #{address.City}
-                            dd
-                                if record.PhoneNumbers && record.PhoneNumbers.length > 0
-                                    each phoneNumber in record.PhoneNumbers
-                                        dd Tel.: #{phoneNumber.Number}
-                                            if record.PhoneNumbers.length > 1
-                                                | &nbsp;(#{phoneNumber.Usage})
-                            dd
-                                if record.Accounts && record.Accounts.length > 0
-                                    each account in record.Accounts
-                                        dd #{account.Type}:&nbsp;
-                                            a(href="mailto:#{account.Account}") #{account.Account}
-                                            if record.Accounts.length > 1
-                                                | &nbsp;(#{account.Usage})
-                            dd
-                                hr
+                                            strong #{record.Lastname},&nbsp#{record.Firstname}
+                                    dd
+                                        if record.Birthday
+                                            | Geboren: #{record.Birthday}
+                                    dd
+                                        if record.Addresses && record.Addresses.length > 0
+                                            each address in record.Addresses
+                                                if address.Street
+                                                    | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                                                else
+                                                    | #{address.Postalcode} #{address.City}
+                                    dd
+                                        if record.PhoneNumbers && record.PhoneNumbers.length > 0
+                                            each phoneNumber in record.PhoneNumbers
+                                                dd Tel.: #{phoneNumber.Number}
+                                                    if record.PhoneNumbers.length > 1
+                                                        | &nbsp;(#{phoneNumber.Usage})
+                                    dd
+                                        if record.Accounts && record.Accounts.length > 0
+                                            each account in record.Accounts
+                                                dd #{account.Type}:&nbsp;
+                                                    a(href="mailto:#{account.Account}") #{account.Account}
+                                                    if record.Accounts.length > 1
+                                                        | &nbsp;(#{account.Usage})
                 div.col-md-6
-                    script(src="lib/handlebars-v1.3.0.js", type="text/javascript")
-                    script(src="lib/ember-1.7.0/ember.js", type="text/javascript")
-                    script(src="lib/ember-data-1.0.0-beta11/ember-data.js", type="text/javascript")
-                    script(src="javascripts/MembersApp.js", type="text/javascript")
+                    script(src="/lib/jquery-2.1.1.min.js", type="text/javascript")
+                    script(src="/lib/handlebars-v1.3.0.js", type="text/javascript")
+                    script(src="/lib/ember-1.7.0/ember.js", type="text/javascript")
+                    script(src="/lib/ember-data-1.0.0-beta11/ember-data.js", type="text/javascript")
+                    script(src="/javascripts/MembersApp.js", type="text/javascript")
                     h2 ember is here
+                    div(id="memberDetail").
+                        <script type="text/x-handlebars" data-template-name="member">
+                           <h1>N:{{name}}</h1>
+                        </script>
+
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

@@ -31,6 +31,7 @@ var loginManageAccount = require('./routes/loginManageAccount');
 var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
+var apiMembers = require('./routes/api/v1/members');
 
 moment.lang("de"); // todo: use language from configuration or browser setting
 var app = express();
@@ -81,6 +82,9 @@ app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
+
+//app.get('/api/v1/members', passport.authenticate('bearer', { session: false }), apiMembers.list);
+app.get('/api/v1/members', apiMembers.list);
 
 app.use(function (req, res, next) {
 

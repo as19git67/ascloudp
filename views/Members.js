@@ -13,8 +13,8 @@ var PersonContactDataAccount = model.models.PersonContactDataAccount;
 var Membership = model.models.Membership;
 var MembershipItem = model.models.MembershipItem;
 
-var databaseClient = config.get('databaseClient');
-var connectionString = config.get('connectionString');
+//var databaseClient = config.get('databaseClient');
+//var connectionString = config.get('connectionString');
 
 //var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false });
 var knex = model.bookshelf.knex;
