@@ -47,10 +47,7 @@ block content
                     script(src="/lib/ember-data-1.0.0-beta11/ember-data.js", type="text/javascript")
                     script(src="/javascripts/MembersApp.js", type="text/javascript")
                     h2 ember is here
-                    div(id="memberDetail").
-                        <script type="text/x-handlebars" data-template-name="member">
-                           <h1>N:{{name}}</h1>
-                        </script>
+                    include MembersTemplate.html
 
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
