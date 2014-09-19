@@ -24,7 +24,8 @@ var appName = config.get('appName');
 module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
 
     knex.select('Salutation', 'Firstname', 'Lastname', 'Suffix', 'Birthday',
-        'PersonContactDatas.Usage as PersonContactDataUsage',
+        'PersonItems.Person_id as Person_id',
+        'PersonContactDatas.id as PersonContactData_id', 'PersonContactDatas.Usage as PersonContactDataUsage',
         'PersonContactTypes.Name as PersonContactTypeName', 'PersonContactTypes.Description as PersonContactTypeDescription',
         'Memberships.MembershipNumber',
         'MembershipItems.EntryDate', 'MembershipItems.LeavingDate', 'MembershipItems.PassiveSince', 'MembershipItems.LivingElsewhereSince',
@@ -64,6 +65,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                     lastMemberId = p.MembershipNumber;
                     currentPersonObj = new Object();
                     records.push(currentPersonObj);
+                    currentPersonObj.id = p.Person_id;
                     currentPersonObj.MembershipNumber = p.MembershipNumber;
                     currentPersonObj.Salutation = p.Salutation;
                     currentPersonObj.Firstname = p.Firstname;

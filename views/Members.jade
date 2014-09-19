@@ -11,7 +11,7 @@ block content
                     dl.dl-horizontal
                         each record in Records
                             div(class="panel panel-default")
-                                div.panel-body
+                                div(class="panel-body memberListItem", data-id='#{record.id}')
                                     dt
                                         if record.Suffix
                                             strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
@@ -45,9 +45,8 @@ block content
                     script(src="/lib/handlebars-v1.3.0.js", type="text/javascript")
                     script(src="/lib/ember-1.7.0/ember.js", type="text/javascript")
                     script(src="/lib/ember-data-1.0.0-beta11/ember-data.js", type="text/javascript")
-                    script(src="/javascripts/MembersApp.js", type="text/javascript")
-                    h2 ember is here
                     include MembersTemplate.html
+                    script(src="/javascripts/MembersApp.js", type="text/javascript")
 
     else
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
