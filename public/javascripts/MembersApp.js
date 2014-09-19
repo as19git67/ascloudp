@@ -4,18 +4,18 @@ MembersApp = Em.Application.create({
 });
 
 MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
-    pathForType: function(type) {
-        var decamelized = Ember.String.decamelize(type);
-        return Ember.String.pluralize(decamelized);
-    },
-    namespace: 'api/v1/'
+//    pathForType: function(type) {
+//        var decamelized = Ember.String.decamelize(type);
+//        return Ember.String.pluralize(decamelized);
+//    },
+    namespace: 'api/v1'
 });
 
-DS.RESTAdapter.reopen({
-    buildURL: function(record, suffix) {
-        return this._super(record,suffix).toLowerCase();
-    }
-});
+//DS.RESTAdapter.reopen({
+//    buildURL: function(record, suffix) {
+//        return this._super(record,suffix).toLowerCase();
+//    }
+//});
 
 MembersApp.Router.map(function () {
     this.resource('member', { path: '/' });
