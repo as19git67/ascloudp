@@ -4,10 +4,10 @@ MembersApp = Em.Application.create({
 });
 
 MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
-//    pathForType: function(type) {
-//        var decamelized = Ember.String.decamelize(type);
-//        return Ember.String.pluralize(decamelized);
-//    },
+    //    pathForType: function(type) {
+    //        var decamelized = Ember.String.decamelize(type);
+    //        return Ember.String.pluralize(decamelized);
+    //    },
     namespace: 'api/v1'
 });
 
@@ -17,43 +17,62 @@ MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
 //    }
 //});
 
+MembersApp.Member = DS.Model.extend({
+    membershipNumber: DS.attr('number'),
+    salutation: DS.attr('string'),
+    firstname: DS.attr('string'),
+    lastname: DS.attr('string'),
+    suffix: DS.attr('string'),
+    birthday: DS.attr('date'),
+    entryDate: DS.attr('date'),
+    birthday_formatted: DS.attr('string'),
+    entryDate_formatted: DS.attr('string')
+});
+
+MembersApp.Address = DS.Model.extend({
+    street: DS.attr('string'),
+    streetNumber: DS.attr('string'),
+    postalcode: DS.attr('string'),
+    city: DS.attr('string')
+});
+
+MembersApp.PhoneNumber = DS.Model.extend({
+    number: DS.attr('string')
+});
+
+MembersApp.Account = DS.Model.extend({
+    account: DS.attr('string')
+});
+
 MembersApp.Router.map(function () {
     this.resource('member', { path: '/' });
 });
 
-MembersApp.Member = DS.Model.extend({
-    MembershipNumber: DS.attr('number'),
-    Salutation: DS.attr('string'),
-    Firstname: DS.attr('string'),
-    Lastname: DS.attr('string'),
-    Suffix: DS.attr('string'),
-    Birthday: DS.attr('date'),
-    EntryDate: DS.attr('date')
-});
-
-MembersApp.Address = DS.Model.extend({
-    Street: DS.attr('string'),
-    Streetnumber: DS.attr('string'),
-    Postalcode: DS.attr('string'),
-    City: DS.attr('string')
-});
-
-MembersApp.PhoneNumber = DS.Model.extend({
-    Number: DS.attr('string')
-});
-
-MembersApp.Account = DS.Model.extend({
-    Account: DS.attr('string')
+MembersApp.MemberRoute = Ember.Route.extend({
+    // The code below is the default behavior, so if this is all you
+    // need, you do not need to provide a setupController implementation
+    // at all.
+    setupController: function(controller, model) {
+        controller.store.findById('member', "1").then(function (person) {
+            controller.set('model', person);
+        });
+    }
 });
 
 MembersApp.MemberController = Ember.ObjectController.extend({
+    errorMessage: '',
+    previouslySelectedElement: null,
+
     setId: function (id) {
         var self = this;
-        var p = this.store.findById('member', id);
-        p.then(function (person) {
+        this.store.findById('member', id).then(function (person) {
             self.set('model', person);
         }).catch(function (error) {
-            alert("ERROR: " + error);
+            var errorMessage = error.statusText;
+            if (error.responseText) {
+                errorMessage += " (" + error.responseText + ")"
+            }
+            self.set('errorMessage', errorMessage);
         });
 
     },
@@ -62,6 +81,11 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         $(".memberListItem").click(function () {
             var clickedElement = $(this);
             var id = clickedElement.attr('data-id');
+            if (self.previouslySelectedElement) {
+                self.previouslySelectedElement.removeClass('panel-primary');
+            }
+            clickedElement.addClass('panel-primary');
+            self.previouslySelectedElement = clickedElement;
             self.setId(id);
         });
     }

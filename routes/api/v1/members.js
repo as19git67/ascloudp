@@ -53,46 +53,49 @@ module.exports.get = function (req, res) {
                     currentPersonObj = new Object();
                     records.push(currentPersonObj);
                     currentPersonObj.id = p.Person_id;
-                    currentPersonObj.MembershipNumber = p.MembershipNumber;
-                    currentPersonObj.Salutation = p.Salutation;
-                    currentPersonObj.Firstname = p.Firstname;
-                    currentPersonObj.Lastname = p.Lastname;
-                    currentPersonObj.Suffix = p.Suffix;
-                    currentPersonObj.Birthday = model.formatDate(p.Birthday);
-                    currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
-                    currentPersonObj.Addresses = [];
-                    currentPersonObj.PhoneNumbers = [];
-                    currentPersonObj.Accounts = [];
+                    currentPersonObj.membershipNumber = p.MembershipNumber;
+                    currentPersonObj.salutation = p.Salutation;
+                    currentPersonObj.firstname = p.Firstname;
+                    currentPersonObj.lastname = p.Lastname;
+                    currentPersonObj.suffix = p.Suffix;
+                    currentPersonObj.birthday = p.Birthday;
+                    currentPersonObj.entryDate = p.EntryDate;
+                    currentPersonObj.birthday_formatted = model.formatDate(p.Birthday);
+                    currentPersonObj.entryDate_formatted = model.formatDate(p.EntryDate);
+                    currentPersonObj.addresses = [];
+                    currentPersonObj.phoneNumbers = [];
+                    currentPersonObj.accounts = [];
                 }
                 switch (p.PersonContactTypeName) {
-                    case 'address':
-                        addresses.push({
-                            id: p.PersonContactData_id,
-                            Street: p.Street,
-                            StreetNumber: p.StreetNumber,
-                            Postalcode: p.Postalcode,
-                            City: p.City,
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
-                        });
-                        currentPersonObj.Addresses.push(p.PersonContactData_id);
-                        break;
-                    case 'phone':
-                        phoneNumbers.push({
-                            id: p.PersonContactData_id,
-                            Number: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription});
-                        currentPersonObj.PhoneNumbers.push(p.PersonContactData_id);
-                        break;
-                    default:
-                        accounts.push({
-                            id: p.PersonContactData_id,
-                            Account: p.PersonContactDataAccount,
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
-                        });
-                        currentPersonObj.Accounts.push(p.PersonContactData_id);
+                case 'address':
+                    addresses.push({
+                        id: p.PersonContactData_id,
+                        street: p.Street,
+                        streetNumber: p.StreetNumber,
+                        postalcode: p.Postalcode,
+                        city: p.City,
+                        usage: p.PersonContactDataUsage,
+                        type: p.PersonContactTypeDescription
+                    });
+                    currentPersonObj.addresses.push(p.PersonContactData_id);
+                    break;
+                case 'phone':
+                    phoneNumbers.push({
+                        id: p.PersonContactData_id,
+                        number: p.PersonContactDataPhoneNumber,
+                        number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                        usage: p.PersonContactDataUsage,
+                        type: p.PersonContactTypeDescription});
+                    currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
+                    break;
+                default:
+                    accounts.push({
+                        id: p.PersonContactData_id,
+                        account: p.PersonContactDataAccount,
+                        usage: p.PersonContactDataUsage,
+                        type: p.PersonContactTypeDescription
+                    });
+                    currentPersonObj.accounts.push(p.PersonContactData_id);
                 }
             });
 
@@ -161,46 +164,49 @@ module.exports.list = function (req, res) {
                     currentPersonObj = new Object();
                     records.push(currentPersonObj);
                     currentPersonObj.id = p.Person_id;
-                    currentPersonObj.MembershipNumber = p.MembershipNumber;
-                    currentPersonObj.Salutation = p.Salutation;
-                    currentPersonObj.Firstname = p.Firstname;
-                    currentPersonObj.Lastname = p.Lastname;
-                    currentPersonObj.Suffix = p.Suffix;
-                    currentPersonObj.Birthday = model.formatDate(p.Birthday);
-                    currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
-                    currentPersonObj.Addresses = [];
-                    currentPersonObj.PhoneNumbers = [];
-                    currentPersonObj.Accounts = [];
+                    currentPersonObj.membershipNumber = p.MembershipNumber;
+                    currentPersonObj.salutation = p.Salutation;
+                    currentPersonObj.firstname = p.Firstname;
+                    currentPersonObj.lastname = p.Lastname;
+                    currentPersonObj.suffix = p.Suffix;
+                    currentPersonObj.birthday = p.Birthday;
+                    currentPersonObj.entryDate = p.EntryDate;
+                    currentPersonObj.birthday_formatted = model.formatDate(p.Birthday);
+                    currentPersonObj.entryDate_formatted = model.formatDate(p.EntryDate);
+                    currentPersonObj.addresses = [];
+                    currentPersonObj.phoneNumbers = [];
+                    currentPersonObj.accounts = [];
                 }
                 switch (p.PersonContactTypeName) {
-                    case 'address':
-                        addresses.push({
-                            id: p.PersonContactData_id,
-                            Street: p.Street,
-                            StreetNumber: p.StreetNumber,
-                            Postalcode: p.Postalcode,
-                            City: p.City,
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
-                        });
-                        currentPersonObj.Addresses.push(p.PersonContactData_id);
-                        break;
-                    case 'phone':
-                        phoneNumbers.push({
-                            id: p.PersonContactData_id,
-                            Number: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription});
-                        currentPersonObj.PhoneNumbers.push(p.PersonContactData_id);
-                        break;
-                    default:
-                        accounts.push({
-                            id: p.PersonContactData_id,
-                            Account: p.PersonContactDataAccount,
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
-                        });
-                        currentPersonObj.Accounts.push(p.PersonContactData_id);
+                case 'address':
+                    addresses.push({
+                        id: p.PersonContactData_id,
+                        street: p.Street,
+                        streetNumber: p.StreetNumber,
+                        postalcode: p.Postalcode,
+                        city: p.City,
+                        usage: p.PersonContactDataUsage,
+                        type: p.PersonContactTypeDescription
+                    });
+                    currentPersonObj.addresses.push(p.PersonContactData_id);
+                    break;
+                case 'phone':
+                    phoneNumbers.push({
+                        id: p.PersonContactData_id,
+                        number: p.PersonContactDataPhoneNumber,
+                        number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                        usage: p.PersonContactDataUsage,
+                        type: p.PersonContactTypeDescription});
+                    currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
+                    break;
+                default:
+                    accounts.push({
+                        id: p.PersonContactData_id,
+                        account: p.PersonContactDataAccount,
+                        usage: p.PersonContactDataUsage,
+                        type: p.PersonContactTypeDescription
+                    });
+                    currentPersonObj.accounts.push(p.PersonContactData_id);
                 }
             });
 

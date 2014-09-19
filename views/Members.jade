@@ -1,5 +1,6 @@
 extends layout
 block content
+    style .memberListItem:hover{cursor: pointer;}
     if error
         p.text-danger #{error}
     if Records && Records.length > 0
@@ -10,8 +11,8 @@ block content
                 div.col-md-6
                     dl.dl-horizontal
                         each record in Records
-                            div(class="panel panel-default")
-                                div(class="panel-body memberListItem", data-id='#{record.id}')
+                            div(class="panel panel-default memberListItem", data-id='#{record.id}')
+                                div(class="panel-body")
                                     dt
                                         if record.Suffix
                                             strong #{record.Lastname},&nbsp#{record.Firstname},&nbsp#{record.Suffix}
