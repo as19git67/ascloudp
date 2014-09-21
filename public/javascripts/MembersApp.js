@@ -11,6 +11,13 @@ MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
     namespace: 'api/v1'
 });
 
+var token = $('meta[name="csrf-token"]').attr('content');
+DS.RESTAdapter.reopen({
+    headers: {
+        "X-CSRF-Token": token
+    }
+});
+
 //DS.RESTAdapter.reopen({
 //    buildURL: function(record, suffix) {
 //        return this._super(record,suffix).toLowerCase();
@@ -55,6 +62,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
     setId: function (id) {
         var self = this;
+        self.set('errorMessage', "");
         this.store.findById('member', id).then(function (person) {
             if (person && person.get(''))
                 self.set('model', person);
@@ -85,20 +93,23 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         });
     },
     actions: {
-        save: function (member) {
-            var controller = this;
+        save: function (controller) {
             //this.get('model').send('becomeDirty');
-            controller.get('model').save().then(function (savedMember) {
+            var mod = this.get('model');
+            mod.save().then(function (savedMember) {
                     console.log("Member saved with id " + savedMember.get('id'));
                 },
                 function (error) {
-                    controller.set('errorMessage', error.responseText);
-                    member.rollback();
+                    mod.rollback();
+                    var errorMessage = error.statusText;
+                    if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                        errorMessage += " (" + error.responseText + ")"
+                    }
+                    controller.set('errorMessage', errorMessage);
                 }
             );
         },
-        delete: function (member) {
-            var controller = this;
+        delete: function (controller) {
 
             // remove recipient from group
             var members = controller.content.get('members');
@@ -113,13 +124,17 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                     console.log('Member ' + savedMember.get('id') + 'saved');
                 },
                 function (error) {
-                    controller.set('errorMessage', error.responseText);
+                    var errorMessage = error.statusText;
+                    if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                        errorMessage += " (" + error.responseText + ")"
+                    }
+                    controller.set('errorMessage', errorMessage);
                 }
             );
 
         },
-        cancel: function () {
-            this.content.rollback();
+        discardChanges: function() {
+            this.get('model').rollback();
         }
     }
 });

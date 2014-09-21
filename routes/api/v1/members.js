@@ -100,6 +100,7 @@ module.exports.get = function (req, res) {
             });
 
             if (records.length > 0) {
+                res.setHeader('X-CSRF-Token', req.csrfToken());
                 res.json(
                     {
                         members: records,
@@ -230,4 +231,13 @@ module.exports.list = function (req, res) {
             res.statusCode = 500;
             return res.send('Error 500: reading of persons from database failed');
         });
+};
+
+module.exports.put = function (req, res) {
+    var personId = req.params.id;
+
+    console.log("Saving person with id " + personId);
+
+    // return put data again back to caller
+    module.exports.get(req, res);
 };

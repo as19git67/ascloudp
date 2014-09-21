@@ -86,6 +86,7 @@ app.use('/loginManageAccount', loginManageAccount);
 //app.get('/api/v1/members', passport.authenticate('bearer', { session: false }), apiMembers.list);
 app.get('/api/v1/members', apiMembers.list);
 app.get('/api/v1/members/:id', apiMembers.get);
+app.put('/api/v1/members/:id', apiMembers.put);
 
 app.use(function (req, res, next) {
 
