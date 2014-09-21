@@ -1,38 +1,61 @@
 <div id="memberDetail">
-  <script type="text/x-handlebars" data-template-name="member">
-    <p class="bg-danger">{{errorMessage}}</p>
-    <div class="page-header">
-      <h1>Mitglied {{membershipNumber}} ({{firstname}} {{lastname}}) bearbeiten</h1>
-    </div>
-    <form class="form-horizontal" role="form">
-      <div class="form-group">
-        <label for="firstname" class="col-md-2 control-label">Vorname:</label>
+    <script type="text/x-handlebars" data-template-name="member">
 
-        <div class="col-md-4" id="firstname">
-          {{input type="text" class="form-control" value=firstname placeholder="Vorname"}}
+        <!-- Modal -->
+        <div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal"><span
+                                aria-hidden="true">&times;</span><span
+                                class="sr-only">Close</span></button>
+                        <h4 class="modal-title" id="myModalLabel">{{firstname}} {{lastname}} ({{membershipNumber}})</h4>
+                    </div>
+                    <div class="modal-body">
+                        <p class="bg-danger">{{errorMessage}}</p>
+
+                        <form class="form-horizontal" role="form">
+                            <div class="form-group">
+                                <label for="firstname" class="col-md-2 control-label">Vorname:</label>
+
+                                <div class="col-md-4" id="firstname">
+                                    {{input type="text" class="form-control" value=firstname placeholder="Vorname"}}
+                                </div>
+
+                                <label for="lastname" class="col-md-2 control-label">Nachname:</label>
+
+                                <div class="col-md-4" id="lastname">
+                                    {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="MembershipNumber" class="col-md-2 control-label">Mitgliedsnr.:</label>
+
+                                <div class="col-md-4" id="MembershipNumber">
+                                    {{input type="text" class="form-control" value=membershipNumber
+                                    placeholder="Mitgliedsnummer"}}
+                                </div>
+
+                                <label for="birthday" class="col-md-2 control-label">Geboren:</label>
+
+                                <div class="col-md-4" id="birthday">
+                                    {{input type="text" class="form-control" value=birthday_formatted
+                                    placeholder="Geburtsdatum"}}
+                                </div>
+
+                            </div>
+                        </form>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal" {{action "cancel"}}>Abbrechen</button>
+                        <button type="button" class="btn btn-primary" {{action "save" controller}} {{bind-attr disabled="isNotDirty"}}>Speichern</button>
+                    </div>
+                </div>
+            </div>
         </div>
+    </script>
 
-        <label for="lastname" class="col-md-2 control-label">Nachname:</label>
-
-        <div class="col-md-4" id="lastname">
-          {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label for="MembershipNumber" class="col-md-2 control-label">Mitgliedsnr.:</label>
-
-        <div class="col-md-4" id="MembershipNumber">
-          {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
-        </div>
-
-        <label for="birthday" class="col-md-2 control-label">Geboren:</label>
-
-        <div class="col-md-4" id="birthday">
-          {{input type="text" class="form-control" value=birthday_formatted placeholder="Geburtsdatum"}}
-        </div>
-
-      </div>
-    </form>
-  </script>
 </div>

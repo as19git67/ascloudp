@@ -67,46 +67,51 @@ module.exports.get = function (req, res) {
                     currentPersonObj.accounts = [];
                 }
                 switch (p.PersonContactTypeName) {
-                case 'address':
-                    addresses.push({
-                        id: p.PersonContactData_id,
-                        street: p.Street,
-                        streetNumber: p.StreetNumber,
-                        postalcode: p.Postalcode,
-                        city: p.City,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.addresses.push(p.PersonContactData_id);
-                    break;
-                case 'phone':
-                    phoneNumbers.push({
-                        id: p.PersonContactData_id,
-                        number: p.PersonContactDataPhoneNumber,
-                        number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription});
-                    currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
-                    break;
-                default:
-                    accounts.push({
-                        id: p.PersonContactData_id,
-                        account: p.PersonContactDataAccount,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.accounts.push(p.PersonContactData_id);
+                    case 'address':
+                        addresses.push({
+                            id: p.PersonContactData_id,
+                            street: p.Street,
+                            streetNumber: p.StreetNumber,
+                            postalcode: p.Postalcode,
+                            city: p.City,
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription
+                        });
+                        currentPersonObj.addresses.push(p.PersonContactData_id);
+                        break;
+                    case 'phone':
+                        phoneNumbers.push({
+                            id: p.PersonContactData_id,
+                            number: p.PersonContactDataPhoneNumber,
+                            number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription});
+                        currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
+                        break;
+                    default:
+                        accounts.push({
+                            id: p.PersonContactData_id,
+                            account: p.PersonContactDataAccount,
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription
+                        });
+                        currentPersonObj.accounts.push(p.PersonContactData_id);
                 }
             });
 
-            res.json(
-                {
-                    members: records,
-                    addresses: addresses,
-                    phoneNumbers: phoneNumbers,
-                    accounts: accounts
-                }
-            );
+            if (records.length > 0) {
+                res.json(
+                    {
+                        members: records,
+                        addresses: addresses,
+                        phoneNumbers: phoneNumbers,
+                        accounts: accounts
+                    }
+                );
+            } else {
+                res.statusCode = 404;
+                res.send('Error 404: Person with id ' + personId + ' not found');
+            }
 
         })
         .catch(function (error) {
@@ -178,35 +183,35 @@ module.exports.list = function (req, res) {
                     currentPersonObj.accounts = [];
                 }
                 switch (p.PersonContactTypeName) {
-                case 'address':
-                    addresses.push({
-                        id: p.PersonContactData_id,
-                        street: p.Street,
-                        streetNumber: p.StreetNumber,
-                        postalcode: p.Postalcode,
-                        city: p.City,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.addresses.push(p.PersonContactData_id);
-                    break;
-                case 'phone':
-                    phoneNumbers.push({
-                        id: p.PersonContactData_id,
-                        number: p.PersonContactDataPhoneNumber,
-                        number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription});
-                    currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
-                    break;
-                default:
-                    accounts.push({
-                        id: p.PersonContactData_id,
-                        account: p.PersonContactDataAccount,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.accounts.push(p.PersonContactData_id);
+                    case 'address':
+                        addresses.push({
+                            id: p.PersonContactData_id,
+                            street: p.Street,
+                            streetNumber: p.StreetNumber,
+                            postalcode: p.Postalcode,
+                            city: p.City,
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription
+                        });
+                        currentPersonObj.addresses.push(p.PersonContactData_id);
+                        break;
+                    case 'phone':
+                        phoneNumbers.push({
+                            id: p.PersonContactData_id,
+                            number: p.PersonContactDataPhoneNumber,
+                            number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription});
+                        currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
+                        break;
+                    default:
+                        accounts.push({
+                            id: p.PersonContactData_id,
+                            account: p.PersonContactDataAccount,
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription
+                        });
+                        currentPersonObj.accounts.push(p.PersonContactData_id);
                 }
             });
 

@@ -48,16 +48,6 @@ MembersApp.Router.map(function () {
     this.resource('member', { path: '/' });
 });
 
-MembersApp.MemberRoute = Ember.Route.extend({
-    // The code below is the default behavior, so if this is all you
-    // need, you do not need to provide a setupController implementation
-    // at all.
-    setupController: function(controller, model) {
-        controller.store.findById('member', "1").then(function (person) {
-            controller.set('model', person);
-        });
-    }
-});
 
 MembersApp.MemberController = Ember.ObjectController.extend({
     errorMessage: '',
@@ -66,7 +56,8 @@ MembersApp.MemberController = Ember.ObjectController.extend({
     setId: function (id) {
         var self = this;
         this.store.findById('member', id).then(function (person) {
-            self.set('model', person);
+            if (person && person.get(''))
+                self.set('model', person);
         }).catch(function (error) {
             var errorMessage = error.statusText;
             if (error.responseText) {
@@ -86,8 +77,50 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             }
             clickedElement.addClass('panel-primary');
             self.previouslySelectedElement = clickedElement;
-            self.setId(id);
+            $('#editMember').on('shown.bs.modal', function (e) {
+                self.setId(id);
+            });
+            $('#editMember').modal({backdrop: true});
+
         });
+    },
+    actions: {
+        save: function (member) {
+            var controller = this;
+            //this.get('model').send('becomeDirty');
+            controller.get('model').save().then(function (savedMember) {
+                    console.log("Member saved with id " + savedMember.get('id'));
+                },
+                function (error) {
+                    controller.set('errorMessage', error.responseText);
+                    member.rollback();
+                }
+            );
+        },
+        delete: function (member) {
+            var controller = this;
+
+            // remove recipient from group
+            var members = controller.content.get('members');
+            members.removeObject(member);
+
+            member.rollback();
+            member.deleteRecord();
+
+
+            controller.content.save().then(
+                function (savedMember) {
+                    console.log('Member ' + savedMember.get('id') + 'saved');
+                },
+                function (error) {
+                    controller.set('errorMessage', error.responseText);
+                }
+            );
+
+        },
+        cancel: function () {
+            this.content.rollback();
+        }
     }
 });
 
