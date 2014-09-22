@@ -41,22 +41,39 @@ MembersApp.Member = DS.Model.extend({
     birthday: DS.attr('date'),
     entryDate: DS.attr('date'),
     birthday_formatted: DS.attr('string'),
-    entryDate_formatted: DS.attr('string')
+    entryDate_formatted: DS.attr('string'),
+    leavingDate: DS.attr('date'),
+    passiveSince: DS.attr('date'),
+    leavingReasonName: DS.attr('string'),
+    membershipFeeName: DS.attr('string'),
+    membershipFeeAmount: DS.attr('string'),
+    addresses: DS.hasMany(MembersApp.Address),
+    phoneNumbers: DS.hasMany(MembersApp.PhoneNumber),
+    accounts: DS.hasMany(MembersApp.Account)
 });
 
 MembersApp.Address = DS.Model.extend({
     street: DS.attr('string'),
     streetNumber: DS.attr('string'),
     postalcode: DS.attr('string'),
-    city: DS.attr('string')
+    city: DS.attr('string'),
+    usage: DS.attr('string'),
+    type: DS.attr('string'),
+    member: DS.belongsTo('member')
 });
 
 MembersApp.PhoneNumber = DS.Model.extend({
-    number: DS.attr('string')
+    number: DS.attr('string'),
+    usage: DS.attr('string'),
+    type: DS.attr('string'),
+    member: DS.belongsTo('member')
 });
 
 MembersApp.Account = DS.Model.extend({
-    account: DS.attr('string')
+    account: DS.attr('string'),
+    usage: DS.attr('string'),
+    type: DS.attr('string'),
+    member: DS.belongsTo('member')
 });
 
 MembersApp.Router.map(function () {

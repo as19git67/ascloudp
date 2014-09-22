@@ -46,12 +46,93 @@
                                 </div>
 
                             </div>
+                            <hr>
+                            <div class="form-group">
+                                <label for="entryDate" class="col-md-2 control-label">Eintritt:</label>
+
+                                <div class="col-md-4" id="entryDate">
+                                    {{input type="text" class="form-control" value=entryDate
+                                    placeholder="Eintrittsdatum"}}
+                                </div>
+
+                                <label for="leavingDate" class="col-md-2 control-label">Austritt:</label>
+
+                                <div class="col-md-4" id="leavingDate">
+                                    {{input type="text" class="form-control" value=leavingDate
+                                    placeholder="Austrittsdatum"}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="LeavingReasonName" class="col-md-8 control-label">Austrittsgrund:</label>
+
+                                <div class="col-md-4" id="LeavingReasonName">
+                                    {{input type="text" class="form-control" value=leavingReasonName
+                                    placeholder="Austrittsgrund"}}
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="membershipFeeName" class="col-md-2 control-label">Beitrag:</label>
+
+                                <div class="col-md-4" id="membershipFeeName">
+                                    {{input type="text" class="form-control" value=membershipFeeName
+                                    placeholder="Mitgliedsbeitrag"}}
+                                </div>
+
+                                <label for="membershipFeeAmount" class="col-md-2 control-label">Betrag:</label>
+
+                                <div class="col-md-4" id="membershipFeeAmount">
+                                    {{input type="text" class="form-control" value=membershipFeeAmount
+                                    placeholder="Betrag"}}
+                                </div>
+                            </div>
+                            <hr>
+                            <div class="form-group">
+                                <label class="col-md-12 control-label">Postadressen:</label>
+                                {{#each a in addresses}}
+                                <label for="street" class="col-md-2 control-label">Straße:</label>
+
+                                <div class="col-md-4" id="street">
+                                    {{input type="text" class="form-control" value=a.street
+                                    placeholder="Straße"}}
+                                </div>
+
+                                <label for="streetNumber" class="col-md-2 control-label">Nummer:</label>
+
+                                <div class="col-md-4" id="streetNumber">
+                                    {{input type="text" class="form-control" value=a.streetNumber
+                                    placeholder="Hausnummer"}}
+                                </div>
+                                {{/each}}
+                            </div>
+                            <hr>
+                            <div class="panel panel-default">
+                                <div class="panel-heading">Telefonnummern:</div>
+                                <div class="panel-body">
+                                    <div class="form-group">
+                                        {{#each p in phoneNumbers}}
+
+                                        <div class="col-md-5" id="Usage">
+                                            {{input type="text" class="form-control" value=p.usage
+                                            placeholder="Verwendung"}}
+                                        </div>
+
+
+                                        <div class="col-md-7" id="Number">
+                                            {{input type="text" class="form-control" value=p.number
+                                            placeholder="Nummer"}}
+                                        </div>
+                                        {{/each}}
+                                    </div>
+                                </div>
+                            </div>
                         </form>
 
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal" {{action "cancel"}}>Abbrechen</button>
-                        <button type="button" class="btn btn-primary" {{action "save" controller}} {{bind-attr disabled="isNotDirty"}}>Speichern</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal"
+                        {{action "discardChanges"}}>Abbrechen</button>
+                        <button type="button" class="btn btn-primary"
+                        {{action "save" controller}} {{bind-attr disabled="isNotDirty"}}>Speichern</button>
                     </div>
                 </div>
             </div>
