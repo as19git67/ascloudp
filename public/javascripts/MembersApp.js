@@ -104,18 +104,27 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         save: function (controller) {
             //this.get('model').send('becomeDirty');
             var mod = this.get('model');
-            mod.save().then(function (savedMember) {
-                    console.log("Member saved with id " + savedMember.get('id'));
-                },
-                function (error) {
-                    mod.rollback();
-                    var errorMessage = error.statusText;
-                    if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
-                        errorMessage += " (" + error.responseText + ")"
+            if (mod.get('isDirty')) {
+                mod.save().then(function (savedMember) {
+                        console.log("Member saved with id " + savedMember.get('id'));
+                        $('#editMember').modal('hide');
+                        location.reload();
+                    },
+                    function (error) {
+                        mod.rollback();
+                        var errorMessage = error.statusText;
+                        if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                            errorMessage += " (" + error.responseText + ")"
+                        }
+                        controller.set('errorMessage', errorMessage);
                     }
-                    controller.set('errorMessage', errorMessage);
-                }
-            );
+                );
+            }
+            else
+            {
+                // nothing changed - just close modal dialog
+                $('#editMember').modal('hide');
+            }
         },
         delete: function (controller) {
 
@@ -145,8 +154,4 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             this.get('model').rollback();
         }
     }
-});
-
-MembersApp.MemberView = Ember.View.extend({
-
 });
