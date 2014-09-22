@@ -11,13 +11,17 @@ MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
     namespace: 'api/v1'
 });
 
-var token = $('meta[name="csrf-token"]').attr('content');
+// save the csrfToken from the ajax response and add it at the header for the following request
 DS.RESTAdapter.reopen({
-    headers: {
-        "X-CSRF-Token": token
-    },
+    csrfToken: "",
+    headers: function() {
+        return {
+            "X-CSRF-Token": this.get("csrfToken")
+        };
+    }.property("csrfToken"),
     ajaxSuccess: function(jqXHR, jsonPayload) {
-        console.log("RESPONSE " + JSON.stringify(jqXHR));
+        var token = jqXHR.getResponseHeader('X-CSRF-Token');
+        this.set('csrfToken', token);
         return jsonPayload;
     }
 });
