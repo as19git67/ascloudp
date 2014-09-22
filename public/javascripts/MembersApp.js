@@ -15,6 +15,10 @@ var token = $('meta[name="csrf-token"]').attr('content');
 DS.RESTAdapter.reopen({
     headers: {
         "X-CSRF-Token": token
+    },
+    ajaxSuccess: function(jqXHR, jsonPayload) {
+        console.log("RESPONSE " + JSON.stringify(jqXHR));
+        return jsonPayload;
     }
 });
 
