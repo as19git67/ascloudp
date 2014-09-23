@@ -2,129 +2,169 @@
     <script type="text/x-handlebars" data-template-name="member">
 
         <!-- Modal -->
-        <div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-             aria-hidden="true">
+        <div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span
-                                aria-hidden="true">&times;</span><span
-                                class="sr-only">Close</span></button>
+                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                         <h4 class="modal-title" id="myModalLabel">{{firstname}} {{lastname}} ({{membershipNumber}})</h4>
                     </div>
                     <div class="modal-body">
-                        <p class="bg-danger">{{errorMessage}}</p>
+                        <div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
 
-                        <form class="form-horizontal" role="form">
-                            <div class="form-group">
-                                <label for="firstname" class="col-md-2 control-label">Vorname:</label>
-
-                                <div class="col-md-4" id="firstname">
-                                    {{input type="text" class="form-control" value=firstname placeholder="Vorname"}}
+                        <form class="form" role="form">
+                            <div class="row">
+                                <div class="form-group ">
+                                    <div class="col-md-2 bg-primary">kein Foto<br>leer<br>nix<br>empty<br>ohne<br>leer<br>nix<br>empty</div>
                                 </div>
+                                <div class="col-md-10">
+                                    <div class="form-group ">
 
-                                <label for="lastname" class="col-md-2 control-label">Nachname:</label>
+                                        <label for="firstname" class="sr-only">Vorname</label>
 
-                                <div class="col-md-4" id="lastname">
-                                    {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                                        <div id="firstname">
+                                            {{input type="text" class="form-control" value=firstname placeholder="Vorname"}}
+                                        </div>
+
+                                    </div>
+
+                                    <div class="form-group ">
+                                        <label for="lastname" class="sr-only">Nachname</label>
+
+                                        <div id="lastname">
+                                            {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                                        </div>
+
+                                    </div>
+
+                                    <div class="form-group ">
+                                        <label for="suffix" class="sr-only">Namenszusatz</label>
+
+                                        <div id="suffix">
+                                            {{input type="text" class="form-control" value=suffix placeholder="Namenszusatz"}}
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
 
-                            <div class="form-group">
-                                <label for="MembershipNumber" class="col-md-2 control-label">Mitgliedsnr.:</label>
+                            <div class="row">
+                                <hr>
+                                <div class="form-group col-md-12">
+                                    <label class="control-label" for="MembershipNumber">Mitgliedsnummer:</label>
 
-                                <div class="col-md-4" id="MembershipNumber">
-                                    {{input type="text" class="form-control" value=membershipNumber
-                                    placeholder="Mitgliedsnummer"}}
+                                    <div id="MembershipNumber" class="">
+                                        {{input type="text" class="form-control" value=membershipNumber
+                                        placeholder="Mitgliedsnummer"}}
+                                    </div>
+
                                 </div>
 
-                                <label for="birthday" class="col-md-2 control-label">Geboren:</label>
+                                <div class="form-group col-md-12">
+                                    <label for="birthday" class="control-label">Geboren:</label>
 
-                                <div class="col-md-4" id="birthday">
-                                    {{input type="text" class="form-control" value=birthday_formatted
-                                    placeholder="Geburtsdatum"}}
+                                    <div id="birthday">
+                                        {{input type="text" class="form-control" value=birthday_formatted
+                                        placeholder="Geburtsdatum"}}
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <hr>
+                                <div class="form-group col-md-12">
+                                    <label for="entryDate" class="control-label col-md-2">Eintritt:</label>
+
+                                    <div class="col-md-4" id="entryDate">
+                                        {{input type="text" class="form-control" value=entryDate
+                                        placeholder="Eintrittsdatum"}}
+                                    </div>
                                 </div>
 
+                                <div class="form-group col-md-12">
+                                    <label for="leavingDate" class="col-md-2 control-label">Austritt:</label>
+
+                                    <div class="col-md-4" id="leavingDate">
+                                        {{input type="text" class="form-control" value=leavingDate
+                                        placeholder="Austrittsdatum"}}
+                                    </div>
+                                    <label for="LeavingReasonName" class="col-md-2 control-label">Grund:</label>
+
+                                    <div class="col-md-4" id="LeavingReasonName">
+                                        {{input type="text" class="form-control" value=leavingReasonName
+                                        placeholder="Austrittsgrund"}}
+                                    </div>
+                                </div>
                             </div>
                             <hr>
-                            <div class="form-group">
-                                <label for="entryDate" class="col-md-2 control-label">Eintritt:</label>
-
-                                <div class="col-md-4" id="entryDate">
-                                    {{input type="text" class="form-control" value=entryDate
-                                    placeholder="Eintrittsdatum"}}
-                                </div>
-
-                                <label for="leavingDate" class="col-md-2 control-label">Austritt:</label>
-
-                                <div class="col-md-4" id="leavingDate">
-                                    {{input type="text" class="form-control" value=leavingDate
-                                    placeholder="Austrittsdatum"}}
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="LeavingReasonName" class="col-md-8 control-label">Austrittsgrund:</label>
-
-                                <div class="col-md-4" id="LeavingReasonName">
-                                    {{input type="text" class="form-control" value=leavingReasonName
-                                    placeholder="Austrittsgrund"}}
-                                </div>
-                            </div>
                             <div class="form-group">
                                 <label for="membershipFeeName" class="col-md-2 control-label">Beitrag:</label>
 
                                 <div class="col-md-4" id="membershipFeeName">
-                                    {{input type="text" class="form-control" value=membershipFeeName
-                                    placeholder="Mitgliedsbeitrag"}}
+                                    {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
                                 </div>
 
                                 <label for="membershipFeeAmount" class="col-md-2 control-label">Betrag:</label>
 
                                 <div class="col-md-4" id="membershipFeeAmount">
-                                    {{input type="text" class="form-control" value=membershipFeeAmount
-                                    placeholder="Betrag"}}
+                                    {{input type="text" class="form-control" value=membershipFeeAmount placeholder="Betrag"}}
                                 </div>
                             </div>
-                            <hr>
+
+                            <h4>Anschrift:</h4>
+                            {{#each a in addresses}}
                             <div class="form-group">
-                                <label class="col-md-12 control-label">Postadressen:</label>
-                                {{#each a in addresses}}
                                 <label for="street" class="col-md-2 control-label">Straße:</label>
 
                                 <div class="col-md-4" id="street">
-                                    {{input type="text" class="form-control" value=a.street
-                                    placeholder="Straße"}}
+                                    {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
                                 </div>
 
                                 <label for="streetNumber" class="col-md-2 control-label">Nummer:</label>
 
                                 <div class="col-md-4" id="streetNumber">
-                                    {{input type="text" class="form-control" value=a.streetNumber
-                                    placeholder="Hausnummer"}}
+                                    {{input type="text" class="form-control" value=a.streetNumber placeholder="Hausnummer"}}
                                 </div>
-                                {{/each}}
                             </div>
+                            <div class="form-group">
+                                <label for="postalcode" class="col-md-2 control-label">PLZ:</label>
+
+                                <div class="col-md-4" id="postalcode">
+                                    {{input type="text" class="form-control" value=a.postalcode placeholder="Postleitzahl"}}
+                                </div>
+
+                                <label for="city" class="col-md-2 control-label">Ort:</label>
+
+                                <div class="col-md-4" id="city">
+                                    {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
+                                </div>
+                            </div>
+                            {{/each}}
+
                             <hr>
-                            <div class="panel panel-default">
-                                <div class="panel-heading">Telefonnummern:</div>
-                                <div class="panel-body">
-                                    <div class="form-group">
-                                        {{#each p in phoneNumbers}}
+                            <div class="dropdown">
+                                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
+                                    <span class="glyphicon glyphicon-plus-sign"></span>Telefon
 
-                                        <div class="col-md-5" id="Usage">
-                                            {{input type="text" class="form-control" value=p.usage
-                                            placeholder="Verwendung"}}
-                                        </div>
+                                </button>
+                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mobil</a></li>
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Privat</a></li>
+                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arbeit</a></li>
+                                </ul>
+                            </div>
+                            {{#each p in phoneNumbers}}
+                            <div class="form-group">
 
+                                <div class="col-md-5" id="Usage">
+                                    {{input type="text" class="form-control" value=p.usage placeholder="Verwendung"}}
+                                </div>
 
-                                        <div class="col-md-7" id="Number">
-                                            {{input type="text" class="form-control" value=p.number
-                                            placeholder="Nummer"}}
-                                        </div>
-                                        {{/each}}
-                                    </div>
+                                <div class="col-md-7" id="Number">
+                                    {{input type="text" class="form-control" value=p.number placeholder="Nummer"}}
                                 </div>
                             </div>
+                            {{/each}}
                         </form>
 
                     </div>
