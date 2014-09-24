@@ -188,6 +188,26 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         },
         discardChanges: function () {
             this.get('model').rollback();
+        },
+        createAddress: function (usage) {
+            console.log("createAddress (MemberController) clicked");
         }
     }
 });
+
+MembersApp.AddressesController = Ember.ArrayController.extend({
+    actions: {
+        createAddress: function (controller, i) {
+            console.log("createAddress clicked");
+        }
+    }
+});
+
+MembersApp.AddressController = Ember.ObjectController.extend({
+    actions: {
+        createAddress: function (controller, i) {
+            console.log("createAddress clicked");
+        }
+    }
+});
+
