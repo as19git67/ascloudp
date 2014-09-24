@@ -12,202 +12,218 @@
     <h4 class="modal-title" id="myModalLabel">{{firstname}} {{lastname}} ({{membershipNumber}})</h4>
 </div>
 <div class="modal-body">
-    <div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
+<div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
 
-    <form class="form" role="form">
-        <div class="row">
-            <div class="form-group col-md-3">
-                <div class="bg-primary">kein Foto<br>leer<br>nix<br>empty<br>ohne<br>leer<br>nix<br>empty
+<form class="form" role="form">
+    <div class="row">
+        <div class="form-group col-md-3">
+            <div class="bg-primary">kein Foto<br>leer<br>nix<br>empty<br>ohne<br>leer<br>nix<br>empty
+            </div>
+        </div>
+        <div class="col-md-9" style="border-left: 1px solid lightgray;">
+            <div class="form-group">
+
+                <label for="salutation" class="sr-only">Anrede</label>
+
+                <div id="salutation">
+                    {{input type="text" class="form-control" value=salutation
+                    placeholder="Anrede"}}
+                </div>
+
+            </div>
+            <div class="form-group">
+
+                <label for="firstname" class="sr-only">Vorname</label>
+
+                <div id="firstname">
+                    {{input type="text" class="form-control" value=firstname
+                    placeholder="Vorname"}}
+                </div>
+
+            </div>
+
+
+            <div class="form-group has-feedback">
+                <label class="sr-only">Nachname</label>
+
+                {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+
+            </div>
+
+            <div class="form-group">
+                <label for="suffix" class="sr-only">Namenszusatz</label>
+
+                <div id="suffix">
+                    {{input type="text" class="form-control" value=suffix
+                    placeholder="Namenszusatz"}}
                 </div>
             </div>
-            <div class="col-md-9" style="border-left: 1px solid lightgray;">
-                <div class="form-group">
+        </div>
+    </div>
+</form>
+<hr>
 
-                    <label for="salutation" class="sr-only">Anrede</label>
+<div class="row">
+    <div class="col-md-6">
+        <form class="form-horizontal" role="form">
+            <div class="form-group">
+                <label for="birthday" class="col-md-4 control-label">Geboren:</label>
 
-                    <div id="salutation">
-                        {{input type="text" class="form-control" value=salutation
-                        placeholder="Anrede"}}
-                    </div>
-
+                <div class="col-md-8" id="birthday">
+                    {{input type="text" class="form-control" value=birthday placeholder="Geburtsdatum"}}
                 </div>
-                <div class="form-group">
+            </div>
+        </form>
+    </div>
+</div>
+<hr>
 
-                    <label for="firstname" class="sr-only">Vorname</label>
+<div class="row">
+    <div class="col-md-6" style="border-right: 1px solid lightgray;">
+        <form class="form-horizontal" role="form">
+            <div class="form-group has-feedback">
+                <label for="entryDate" class="col-md-4 control-label">Eintritt:</label>
 
-                    <div id="firstname">
-                        {{input type="text" class="form-control" value=firstname
-                        placeholder="Vorname"}}
-                    </div>
-
-                </div>
-
-
-                <div class="form-group has-feedback">
-                    <label class="sr-only">Nachname</label>
-
-                    {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                <div class="col-md-8" id="entryDate">
+                    {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
                     <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-
-                </div>
-
-                <div class="form-group">
-                    <label for="suffix" class="sr-only">Namenszusatz</label>
-
-                    <div id="suffix">
-                        {{input type="text" class="form-control" value=suffix
-                        placeholder="Namenszusatz"}}
-                    </div>
                 </div>
             </div>
-        </div>
-        <hr>
+            <div class="form-group">
+                <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
 
-        <div class="row">
-            <div class="col-md-12">
-                <div class="form-group has-feedback">
-                    <label class="control-label">Geboren:</label>
-                    {{input type="text" class="form-control" value=birthday_formatted placeholder="Geburtsdatum"}}
+                <div class="col-md-8" id="leavingDate">
+                    {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
                 </div>
             </div>
-        </div>
-        <hr>
 
-        <div class="row">
-            <div class="col-md-6" style="border-right: 1px solid lightgray;">
-                <div class="form-group has-feedback">
-                    <label for="entryDate" class="control-label">Eintritt:</label>
+            <div class="form-group">
+                <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
 
-                    <div class="" id="entryDate">
-                        {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                    </div>
+                <div class="col-md-8" id="LeavingReasonName">
+                    {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="form-group has-feedback">
-                    <label class="control-label">Mitgliedsnummer:</label>
+        </form>
+    </div>
+    <div class="col-md-6">
+        <form class="form-horizontal" role="form">
+            <div class="form-group has-feedback">
+                <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
+
+                <div class="col-md-8" id="membershipNumber">
                     {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
                     <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
                 </div>
             </div>
-        </div>
-    </form>
-    <div class="row">
-        <div class="col-md-6" style="border-right: 1px solid lightgray;">
-            <form class="form-horizontal" role="form">
-                <div class="form-group">
-                    <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
+            <div class="form-group has-feedback">
+                <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
 
-                    <div class="col-md-8" id="leavingDate">
-                        {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
-                    </div>
+                <div class="col-md-8" id="membershipFeeName">
+                    {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
                 </div>
-
-                <div class="form-group">
-                    <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
-
-                    <div class="col-md-8" id="LeavingReasonName">
-                        {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
-            <form class="form-horizontal" role="form">
-                <div class="form-group has-feedback">
-                    <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
-
-                    <div class="col-md-8" id="membershipFeeName">
-                        {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
-
-                    <div class="col-md-8" id="membershipFeeAmount">
-                        {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <form class="form" role="form">
-        <hr>
-
-        <div class="row">
-            <div class="col-md-12">
-                <span class="glyphicon glyphicon-plus-sign"></span>
             </div>
 
-            {{#each a in addresses}}
             <div class="form-group">
-                <label for="street" class="col-md-2 control-label">Straße:</label>
+                <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
 
-                <div class="col-md-4" id="street">
+                <div class="col-md-8" id="membershipFeeAmount">
+                    {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+<hr>
+
+<div class="row">
+    {{#each a in addresses}}
+    <div class="col-md-12">
+        <h4>{{a.usage}}:</h4>
+    </div>
+    <form class="form-horizontal" role="form">
+        <div class="form-group">
+            <label for="streetaddress" class="control-label col-md-3">Straße, Nr.:</label>
+
+            <div class="col-md-9" id="streetaddress">
+                <div class="col-md-9 ">
                     {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
                 </div>
-
-                <label for="streetNumber" class="col-md-2 control-label">Nummer:</label>
-
-                <div class="col-md-4" id="streetNumber">
-                    {{input type="text" class="form-control" value=a.streetNumber
-                    placeholder="Hausnummer"}}
+                <div class="col-md-3">
+                    {{input type="text" class="form-control" value=a.streetNumber placeholder="#"}}
                 </div>
             </div>
-            <div class="form-group">
-                <label for="postalcode" class="col-md-2 control-label">PLZ:</label>
-
-                <div class="col-md-4" id="postalcode">
-                    {{input type="text" class="form-control" value=a.postalcode
-                    placeholder="Postleitzahl"}}
-                </div>
-
-                <label for="city" class="col-md-2 control-label">Ort:</label>
-
-                <div class="col-md-4" id="city">
-                    {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
-                </div>
-            </div>
-            {{/each}}
         </div>
+        <div class="form-group has-feedback">
+            <label for="cityaddress" class="control-label col-md-3">Plz., Ort:</label>
 
-        <hr>
-        <div class="dropdown">
-            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
-                    data-toggle="dropdown">
-                <span class="glyphicon glyphicon-plus-sign"></span>Telefon
-
+            <div id="cityaddress" class="col-md-9">
+                <div class="col-md-4">
+                    {{input type="text" class="form-control" value=a.postalcode placeholder="PLZ"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                </div>
+                <div class="col-md-8">
+                    {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                </div>
+            </div>
+        </div>
+    </form>
+    <hr>
+    {{/each}}
+    <div class="col-md-12">
+        <div class="btn-group">
+            <button type="button" class="btn btn-danger">Neue Adresse</button>
+            <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
+                <span class="caret"></span>
+                <span class="sr-only">Toggle Dropdown</span>
             </button>
-            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mobil</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Privat</a></li>
-                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arbeit</a></li>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Privat</a></li>
+                <li><a href="#">Arbeit</a></li>
+                <li><a href="#">Firma</a></li>
             </ul>
         </div>
-        {{#each p in phoneNumbers}}
-        <div class="form-group">
+    </div>
+</div>
 
-            <div class="col-md-5" id="Usage">
-                {{input type="text" class="form-control" value=p.usage placeholder="Verwendung"}}
-            </div>
 
-            <div class="col-md-7" id="Number">
-                {{input type="text" class="form-control" value=p.number placeholder="Nummer"}}
-            </div>
+<hr>
+<div class="dropdown">
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+            data-toggle="dropdown">
+        <span class="glyphicon glyphicon-plus-sign"></span>Telefon
+
+    </button>
+    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mobil</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Privat</a></li>
+        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arbeit</a></li>
+    </ul>
+</div>
+<form class="form-horizontal" role="form">
+    {{#each p in phoneNumbers}}
+    <div class="form-group">
+
+        <div class="col-md-5" id="Usage">
+            {{input type="text" class="form-control" value=p.usage placeholder="Verwendung"}}
         </div>
-        {{/each}}
-    </form>
+
+        <div class="col-md-7" id="Number">
+            {{input type="text" class="form-control" value=p.number placeholder="Nummer"}}
+        </div>
+    </div>
+    {{/each}}
+</form>
 
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal"
-    {{action "discardChanges"}}>Abbrechen</button>
+    {{action "discardChanges"}} >Abbrechen</button>
     <button type="button" class="btn btn-primary"
-    {{action "save" controller}} {{bind-attr disabled="isNotDirty"}}>Speichern</button>
+    {{action "save" controller}} {{bind-attr disabled="isNotDirty"}} >Speichern</button>
 </div>
 </div>
 </div>

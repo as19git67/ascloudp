@@ -1011,8 +1011,8 @@ exports.createSchema = function () {
                     t.integer('PersonContactData_id').notNullable().references('id').inTable('PersonContactDatas').index();
                     t.string('Street', 30).index();
                     t.string('StreetNumber', 5);
-                    t.integer('Postalcode').index();
-                    t.string('City').index();
+                    t.integer('Postalcode').notNullable().index();
+                    t.string('City').notNullable().index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
