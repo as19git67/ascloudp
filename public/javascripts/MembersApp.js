@@ -14,12 +14,12 @@ MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
 // save the csrfToken from the ajax response and add it at the header for the following request
 DS.RESTAdapter.reopen({
     csrfToken: "",
-    headers: function() {
+    headers: function () {
         return {
             "X-CSRF-Token": this.get("csrfToken")
         };
     }.property("csrfToken"),
-    ajaxSuccess: function(jqXHR, jsonPayload) {
+    ajaxSuccess: function (jqXHR, jsonPayload) {
         var token = jqXHR.getResponseHeader('X-CSRF-Token');
         this.set('csrfToken', token);
         return jsonPayload;
@@ -84,7 +84,27 @@ MembersApp.Router.map(function () {
 MembersApp.MemberController = Ember.ObjectController.extend({
     errorMessage: '',
     previouslySelectedElement: null,
-
+    haveAddresses: function () {
+        if (this.model) {
+            return this.model.get('addresses').content.length > 0;
+        } else {
+            return false;
+        }
+    }.property('model.addresses').cacheable(),
+    havePhoneNumbers: function () {
+        if (this.model) {
+            return this.model.get('phoneNumbers').content.length > 0;
+        } else {
+            return false;
+        }
+    }.property('model.phoneNumbers').cacheable(),
+    haveAccounts: function () {
+        if (this.model) {
+            return this.model.get('accounts').content.length > 0;
+        } else {
+            return false;
+        }
+    }.property('model.accounts').cacheable(),
     setId: function (id) {
         var self = this;
         self.set('errorMessage', "");
@@ -137,8 +157,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                     }
                 );
             }
-            else
-            {
+            else {
                 // nothing changed - just close modal dialog
                 $('#editMember').modal('hide');
             }
@@ -167,7 +186,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             );
 
         },
-        discardChanges: function() {
+        discardChanges: function () {
             this.get('model').rollback();
         }
     }

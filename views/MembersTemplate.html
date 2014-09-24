@@ -12,13 +12,21 @@
     <h4 class="modal-title" id="myModalLabel">{{firstname}} {{lastname}} ({{membershipNumber}})</h4>
 </div>
 <div class="modal-body">
-<div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
+    <div {{bind-attr class="errorMessage::hidden"}} >
+    <div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
+</div>
 
 <form class="form" role="form">
     <div class="row">
         <div class="form-group col-md-3">
-            <div class="bg-primary">kein Foto<br>leer<br>nix<br>empty<br>ohne<br>leer<br>nix<br>empty
-            </div>
+            {{#if personImageUrl}}
+                <img src='{{personImageUrl}}'>
+            {{else}}
+
+                <div class="text-center"><br><br>
+                    <small class="text-center">kein Foto</small>
+                </div>
+            {{/if}}
         </div>
         <div class="col-md-9" style="border-left: 1px solid lightgray;">
             <div class="form-group">
@@ -141,7 +149,7 @@
 <div class="row">
     {{#each a in addresses}}
     <div class="col-md-12">
-        <h4>{{a.usage}}:</h4>
+        <strong>Adresse ({{a.usage}}):</strong>
     </div>
     <form class="form-horizontal" role="form">
         <div class="form-group">
@@ -171,14 +179,12 @@
             </div>
         </div>
     </form>
-    <hr>
     {{/each}}
     <div class="col-md-12">
-        <div class="btn-group">
-            <button type="button" class="btn btn-danger">Neue Adresse</button>
-            <button type="button" class="btn btn-danger dropdown-toggle" data-toggle="dropdown">
-                <span class="caret"></span>
-                <span class="sr-only">Toggle Dropdown</span>
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAddresses" data-toggle="dropdown">
+                Neue Adresse
+                <span class="glyphicon glyphicon-plus-sign"></span>
             </button>
             <ul class="dropdown-menu" role="menu">
                 <li><a href="#">Privat</a></li>
@@ -188,37 +194,82 @@
         </div>
     </div>
 </div>
-
-
 <hr>
-<div class="dropdown">
-    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
-            data-toggle="dropdown">
-        <span class="glyphicon glyphicon-plus-sign"></span>Telefon
 
-    </button>
-    <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mobil</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Privat</a></li>
-        <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arbeit</a></li>
-    </ul>
-</div>
-<form class="form-horizontal" role="form">
-    {{#each p in phoneNumbers}}
-    <div class="form-group">
+<div class="row">
+    <div class="col-md-12">
+        {{#if havePhoneNumbers}}
+        <strong>Telefonnummern:</strong>
+        {{/if}}
+        {{#each p in phoneNumbers}}
+        <form class="form-horizontal" role="form">
 
-        <div class="col-md-5" id="Usage">
-            {{input type="text" class="form-control" value=p.usage placeholder="Verwendung"}}
-        </div>
 
-        <div class="col-md-7" id="Number">
-            {{input type="text" class="form-control" value=p.number placeholder="Nummer"}}
+            <div class="form-group has-feedback">
+                <label for="phonenumber" class="control-label col-md-3">{{p.usage}}:</label>
+
+                <div class="col-md-9" id="phonenumber">
+                    {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                </div>
+            </div>
+        </form>
+        {{/each}}
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuPhoneNumbers" data-toggle="dropdown">
+                Neue Telefonnummer
+                <span class="glyphicon glyphicon-plus-sign"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Privat</a></li>
+                <li><a href="#">Mobil</a></li>
+                <li><a href="#">Mobil Arbeit</a></li>
+                <li><a href="#">Mobil 2</a></li>
+                <li><a href="#">Arbeit</a></li>
+            </ul>
         </div>
     </div>
-    {{/each}}
-</form>
+</div>
+
+<hr>
+
+<div class="row">
+    <div class="col-md-12">
+        {{#if haveAccounts}}
+        <strong>Email und Social-Media Konten:</strong>
+        {{/if}}
+        {{#each a in accounts}}
+        <form class="form-horizontal" role="form">
+            <div class="form-group has-feedback">
+                <label for="accountname" class="control-label col-md-3">{{a.type}}&nbsp;({{a.usage}}):</label>
+
+                <div class="col-md-9" id="accountname">
+                    {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                </div>
+            </div>
+        </form>
+        {{/each}}
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAccounts" data-toggle="dropdown">
+                Neues Konto
+                <span class="glyphicon glyphicon-plus-sign"></span>
+            </button>
+            <ul class="dropdown-menu" role="menu">
+                <li><a href="#">Email</a></li>
+                <li><a href="#">Email 2</a></li>
+                <li><a href="#">Email Work</a></li>
+                <li><a href="#">Twitter</a></li>
+                <li><a href="#">Facebook</a></li>
+                <li><a href="#">Google</a></li>
+                <li><a href="#">Windows Live</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
 
 </div>
+
 <div class="modal-footer">
     <button type="button" class="btn btn-default" data-dismiss="modal"
     {{action "discardChanges"}} >Abbrechen</button>

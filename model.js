@@ -217,6 +217,50 @@ exports.importTestDataFFW = function () {
                                                 .then(function (newMemberItem) {
                                                     //console.log("Member added: " + newMember.get('MembershipNumber'));
                                                     new PersonContactType().fetchAll().then(function (personContactTypes) {
+
+                                                        function addMorePart1() {
+                                                            if (value.Email && value.Email != '') {
+                                                                new PersonContactData({
+                                                                    Person_id: newPerson.get('id'),
+                                                                    PersonContactType_id: personContactTypeEmail,
+                                                                    Usage: 'Privat'
+                                                                }).save()
+                                                                    .then(function (newPersonContactDataForEmail) {
+                                                                        new PersonContactDataAccount({
+                                                                            PersonContactData_id: newPersonContactDataForEmail.get('id'),
+                                                                            Account: value.Email,
+                                                                            valid_start: now
+                                                                        }).save()
+                                                                            .then(function (newPersonContactDataEmail) {
+                                                                                console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
+                                                                                resolvePerson({ person: newPerson, membership: newMember});
+                                                                            }
+                                                                        );
+                                                                    }
+                                                                );
+                                                            } else {
+                                                                resolvePerson({ person: newPerson, membership: newMember});
+                                                            }
+                                                            //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
+                                                            /*
+                                                             var awards = createAwardsArray(element, newPerson);
+                                                             if (awards.length > 0) {
+                                                             MemberAward.bulkCreate(awards).success(function () {
+                                                             console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
+                                                             " (id: " + newMembership.person_id + ")");
+                                                             callback();
+
+                                                             }).error(function (error) {
+                                                             console.log('MemberAward.bulkCreate had ERRORS');
+                                                             console.log(error);
+                                                             callback(error);
+                                                             });
+                                                             } else {
+                                                             callback();
+                                                             }
+                                                             */
+                                                        }
+
                                                         var personContactTypesByName = {};
                                                         personContactTypes.forEach(function (personContactType) {
                                                             personContactTypesByName[personContactType.get('Name')] = personContactType.get('id');
@@ -224,147 +268,107 @@ exports.importTestDataFFW = function () {
                                                         var personContactTypeAddress = personContactTypesByName['address'];
                                                         var personContactTypePhone = personContactTypesByName['phone'];
                                                         var personContactTypeEmail = personContactTypesByName['email'];
-                                                        if (personContactTypeAddress && personContactTypePhone && personContactTypeEmail) {
-                                                            new PersonContactData({
-                                                                Person_id: newPerson.get('id'),
-                                                                PersonContactType_id: personContactTypeAddress,
-                                                                Usage: 'Privat'
-                                                            }).save().then(function (newPersonContactDataAddress) {
 
-                                                                    function addMorePart1() {
-                                                                        if (value.Email && value.Email != '') {
-                                                                            new PersonContactData({
-                                                                                Person_id: newPerson.get('id'),
-                                                                                PersonContactType_id: personContactTypeEmail,
-                                                                                Usage: 'Privat'
-                                                                            }).save()
-                                                                                .then(function (newPersonContactDataForEmail) {
-                                                                                    new PersonContactDataAccount({
-                                                                                        PersonContactData_id: newPersonContactDataForEmail.get('id'),
-                                                                                        Account: value.Email,
-                                                                                        valid_start: now
-                                                                                    }).save()
-                                                                                        .then(function (newPersonContactDataEmail) {
-                                                                                            console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
-                                                                                            resolvePerson({ person: newPerson, membership: newMember});
-                                                                                        }
-                                                                                    );
-                                                                                }
-                                                                            );
+                                                        function addOtherCommData() {
+                                                            if (value.Mobiltelefon && value.Mobiltelefon != '') {
+                                                                new PersonContactData({
+                                                                    Person_id: newPerson.get('id'),
+                                                                    PersonContactType_id: personContactTypePhone,
+                                                                    Usage: 'Mobil'
+                                                                }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                        var number = value.Mobiltelefon;
+                                                                        if (number.length > 1 && number.charAt(0) == '0') {
+                                                                            number = '+49' + number.substr(1);
                                                                         } else {
-                                                                            resolvePerson({ person: newPerson, membership: newMember});
+                                                                            console.log('WARNING: wrong phone number format: ' + number);
                                                                         }
-                                                                        //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
-                                                                        /*
-                                                                         var awards = createAwardsArray(element, newPerson);
-                                                                         if (awards.length > 0) {
-                                                                         MemberAward.bulkCreate(awards).success(function () {
-                                                                         console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
-                                                                         " (id: " + newMembership.person_id + ")");
-                                                                         callback();
-
-                                                                         }).error(function (error) {
-                                                                         console.log('MemberAward.bulkCreate had ERRORS');
-                                                                         console.log(error);
-                                                                         callback(error);
-                                                                         });
-                                                                         } else {
-                                                                         callback();
-                                                                         }
-                                                                         */
-                                                                    }
-
-                                                                    new PersonContactDataAddress({
-                                                                        PersonContactData_id: newPersonContactDataAddress.get('id'),
-                                                                        Street: street,
-                                                                        StreetNumber: streetNumber,
-                                                                        Postalcode: value.PLZ,
-                                                                        City: value.Ort,
-                                                                        valid_start: now
-                                                                    }).save().then(function (newPersonContactDataAddress) {
-                                                                            console.log('PersonContactDataAddress added');
-                                                                            if (value.Mobiltelefon && value.Mobiltelefon != '') {
-                                                                                new PersonContactData({
-                                                                                    Person_id: newPerson.get('id'),
-                                                                                    PersonContactType_id: personContactTypePhone,
-                                                                                    Usage: 'Mobil'
-                                                                                }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                        console.log('New PersonContactData for mobile phone added');
-                                                                                        var number = value.Mobiltelefon;
-                                                                                        if (number.length > 1 && number.charAt(0) == '0') {
-                                                                                            number = '+49' + number.substr(1);
-                                                                                        } else {
-                                                                                            console.log('WARNING: wrong phone number format: ' + number);
-                                                                                        }
-                                                                                        new PersonContactDataPhonenumber({
-                                                                                            PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
-                                                                                            Number: number,
-                                                                                            valid_start: now
-                                                                                        }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                                console.log('newPersonContactDataPhonenumber added: ' + newPersonContactDataPhonenumber.get('Number'));
-                                                                                                if (value.Telefon && value.Telefon != '') {
-                                                                                                    new PersonContactData({
-                                                                                                        Person_id: newPerson.get('id'),
-                                                                                                        PersonContactType_id: personContactTypePhone,
-                                                                                                        Usage: 'Privat'
-                                                                                                    }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                                            console.log('New PersonContactData for phone added');
-                                                                                                            var number = value.Telefon;
-                                                                                                            if (number.charAt(0) != '0' ) {
-                                                                                                                number = '08233' + number;
-                                                                                                            }
-                                                                                                            if (number.length > 1 && number.charAt(0) == '0') {
-                                                                                                                number = '+49' + number.substr(1);
-                                                                                                            } else {
-                                                                                                                console.log('WARNING: wrong phone number format: ' + number);
-                                                                                                            }
-                                                                                                            new PersonContactDataPhonenumber({
-                                                                                                                PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
-                                                                                                                Number: number,
-                                                                                                                valid_start: now
-                                                                                                            }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                                                    console.log('newPersonContactDataPhonenumber added: ' + newPersonContactDataPhonenumber.get('Number'));
-                                                                                                                    addMorePart1();
-                                                                                                                }).catch(function (error) {
-                                                                                                                    console.log('PersonContactDataAddress.create had ERRORS');
-                                                                                                                    console.log(error);
-                                                                                                                    rejectPerson(error);
-                                                                                                                }
-                                                                                                            );
-                                                                                                        }).catch(function (error) {
-                                                                                                            console.log('PersonContactData.create had ERRORS');
-                                                                                                            console.log(error);
-                                                                                                            rejectPerson(error);
-                                                                                                        });
-                                                                                                } else {
-                                                                                                    addMorePart1();
-                                                                                                }
-                                                                                            }).catch(function (error) {
-                                                                                                console.log('PersonContactDataAddress.create had ERRORS');
-                                                                                                console.log(error);
-                                                                                                rejectPerson(error);
+                                                                        new PersonContactDataPhonenumber({
+                                                                            PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
+                                                                            Number: number,
+                                                                            valid_start: now
+                                                                        }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                if (value.Telefon && value.Telefon != '') {
+                                                                                    new PersonContactData({
+                                                                                        Person_id: newPerson.get('id'),
+                                                                                        PersonContactType_id: personContactTypePhone,
+                                                                                        Usage: 'Privat'
+                                                                                    }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                            var number = value.Telefon;
+                                                                                            if (number.charAt(0) != '0') {
+                                                                                                number = '08233' + number;
                                                                                             }
-                                                                                        );
-                                                                                    }).catch(function (error) {
-                                                                                        console.log('PersonContactData.create had ERRORS');
-                                                                                        console.log(error);
-                                                                                        rejectPerson(error);
-                                                                                    });
-                                                                            } else {
-                                                                                addMorePart1();
+                                                                                            if (number.length > 1 && number.charAt(0) == '0') {
+                                                                                                number = '+49' + number.substr(1);
+                                                                                            } else {
+                                                                                                console.log('WARNING: wrong phone number format: ' + number);
+                                                                                            }
+                                                                                            new PersonContactDataPhonenumber({
+                                                                                                PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
+                                                                                                Number: number,
+                                                                                                valid_start: now
+                                                                                            }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                                    addMorePart1();
+                                                                                                }).catch(function (error) {
+                                                                                                    console.log('PersonContactDataAddress.create had ERRORS');
+                                                                                                    console.log(error);
+                                                                                                    rejectPerson(error);
+                                                                                                }
+                                                                                            );
+                                                                                        }).catch(function (error) {
+                                                                                            console.log('PersonContactData.create had ERRORS');
+                                                                                            console.log(error);
+                                                                                            rejectPerson(error);
+                                                                                        });
+                                                                                } else {
+                                                                                    addMorePart1();
+                                                                                }
+                                                                            }).catch(function (error) {
+                                                                                console.log('PersonContactDataAddress.create had ERRORS');
+                                                                                console.log(error);
+                                                                                rejectPerson(error);
                                                                             }
-                                                                        }).catch(function (error) {
-                                                                            console.log('PersonContactDataAddress.create had ERRORS');
-                                                                            console.log(error);
-                                                                            rejectPerson(error);
-                                                                        });
+                                                                        );
+                                                                    }).catch(function (error) {
+                                                                        console.log('PersonContactData.create had ERRORS');
+                                                                        console.log(error);
+                                                                        rejectPerson(error);
+                                                                    });
+                                                            } else {
+                                                                addMorePart1();
+                                                            }
+                                                        }
 
-                                                                }).catch(function (error) {
-                                                                    console.log("Error while saving PersonContactData: " + error);
-                                                                    rejectPerson(error);
+                                                        if (personContactTypeAddress && personContactTypePhone && personContactTypeEmail) {
 
-                                                                }
-                                                            );
+                                                            if (value.PLZ && value.Ort) {
+                                                                new PersonContactData({
+                                                                    Person_id: newPerson.get('id'),
+                                                                    PersonContactType_id: personContactTypeAddress,
+                                                                    Usage: 'Privat'
+                                                                }).save().then(function (newPersonContactDataAddress) {
+                                                                        new PersonContactDataAddress({
+                                                                            PersonContactData_id: newPersonContactDataAddress.get('id'),
+                                                                            Street: street,
+                                                                            StreetNumber: streetNumber,
+                                                                            Postalcode: value.PLZ,
+                                                                            City: value.Ort,
+                                                                            valid_start: now
+                                                                        }).save().then(function (newPersonContactDataAddress) {
+                                                                                addOtherCommData();
+                                                                            }).catch(function (error) {
+                                                                                console.log('PersonContactDataAddress.create had ERRORS');
+                                                                                console.log(error);
+                                                                                rejectPerson(error);
+                                                                            });
+                                                                    }).catch(function (error) {
+                                                                        console.log("Error while saving PersonContactData: " + error);
+                                                                        rejectPerson(error);
+                                                                    }
+                                                                );
+                                                            } else {
+                                                                // no address added - try to add the rest
+                                                                addOtherCommData();
+                                                            }
                                                         }
                                                         else {
                                                             var errMsg = "PersonContactType address or phone does not exist in the database.";
@@ -1857,46 +1861,38 @@ var getPagesForUser = function (user) {
     });
 };
 
-var formatDateTime = function(date)
-{
+var formatDateTime = function (date) {
     return moment(date).format('D. MMMM YYYY  HH:mm');
 };
-var formatDateTimeShort = function(date)
-{
+var formatDateTimeShort = function (date) {
     return moment(date).format('L HH:mm');
 };
 
-var formatDateTimeLong = function(date)
-{
+var formatDateTimeLong = function (date) {
     return moment(date).format('dddd, D. MMMM YYYY  HH:mm');
 };
 
-var formatDate = function(date)
-{
+var formatDate = function (date) {
     return moment(date).format('D. MMMM YYYY');
 };
 
-var formatDateShort = function(date)
-{
+var formatDateShort = function (date) {
     return moment(date).format('L');
 };
 
-var formatDateLong = function(date)
-{
+var formatDateLong = function (date) {
     return moment(date).format('dddd, D. MMMM YYYY');
 };
 
-var formatTime = function(date)
-{
+var formatTime = function (date) {
     return moment(date).format('HH:mm');
 };
 
-var formatTimeLong = function(date)
-{
+var formatTimeLong = function (date) {
     return moment(date).format('HH:mm:ss');
 };
 
-var formatPhoneNumber = function(phoneNumber) {
+var formatPhoneNumber = function (phoneNumber) {
     var numberFormatted = phoneNumber;
     if (numberFormatted.substr(0, 3) == '+49') {
         numberFormatted = '0' + numberFormatted.substr(3);
@@ -1905,7 +1901,7 @@ var formatPhoneNumber = function(phoneNumber) {
         numberFormatted = '08233 ' + numberFormatted.substr(5);
     } else {
         var firstThree = numberFormatted.substr(0, 3);
-        if (firstThree == '015' ||firstThree == '016' ||firstThree == '017') {
+        if (firstThree == '015' || firstThree == '016' || firstThree == '017') {
             numberFormatted = numberFormatted.substr(0, 4) + ' ' + numberFormatted.substr(4);
         }
     }
@@ -2010,7 +2006,7 @@ var ffwMitglieder = [
     {"ID": 17, "Anrede": "Herr", "Vorname": "Dieter", "Vorstandsmitglied": false, "Nachname": "Berghofer", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Raiffeisenring 6", "Unterdorf": false, "verzogen": false, "Geboren": "1961-01-08T00:00:00", "Telefon": "30250", "Mobiltelefon": null, "Eingetreten": "1977-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "1900-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 37, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 52, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 18, "Anrede": "Herr", "Vorname": "Erich", "Vorstandsmitglied": false, "Nachname": "Bernhard", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Carl Theodor Str. 8", "Unterdorf": false, "verzogen": false, "Geboren": "1959-09-11T00:00:00", "Telefon": "92000", "Mobiltelefon": null, "Eingetreten": "1980-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "1900-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 34, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 54, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 19, "Anrede": "Herr", "Vorname": "Stefan", "Vorstandsmitglied": false, "Nachname": "Bernhard", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Wankstr. 3", "Unterdorf": false, "verzogen": true, "Geboren": "1974-07-14T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "1991-01-06T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2006-11-05T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 16, "Mitgliedsjahre": 16, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 32, "Geburtstag60": null, "Beitrag": 0.0000, "verzogenDatum": null},
-    {"ID": 21, "Anrede": "Herr", "Vorname": "Wolfgang", "Vorstandsmitglied": false, "Nachname": "Berschneider", "PLZ": null, "Ort": "Türkenfeld ?", "Straße": null, "Unterdorf": false, "verzogen": true, "Geboren": "1962-08-16T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "1978-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 26, "Mitgliedsjahre": 26, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": null, "Geburtstag60": null, "Beitrag": 0.0000, "verzogenDatum": null},
+    {"ID": 21, "Anrede": "Herr", "Vorname": "Wolfgang", "Vorstandsmitglied": false, "Nachname": "Berschneider", "PLZ": 82299, "Ort": "Türkenfeld ?", "Straße": null, "Unterdorf": false, "verzogen": true, "Geboren": "1962-08-16T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "1978-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 26, "Mitgliedsjahre": 26, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": null, "Geburtstag60": null, "Beitrag": 0.0000, "verzogenDatum": null},
     {"ID": 22, "Anrede": "Herr", "Vorname": "Leonhard", "Vorstandsmitglied": false, "Nachname": "Blank", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Badackerstr. 14", "Unterdorf": true, "verzogen": false, "Geboren": "1947-01-25T00:00:00", "Telefon": "92701", "Mobiltelefon": null, "Eingetreten": "1964-01-12T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "1900-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 49, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 66, "Geburtstag60": "2007-01-25T00:00:00", "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 23, "Anrede": "Herr", "Vorname": "Paul", "Vorstandsmitglied": false, "Nachname": "Blank", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Nebelhornstr. 16", "Unterdorf": false, "verzogen": false, "Geboren": "1957-06-28T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "1973-01-06T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "1900-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 41, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 56, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 25, "Anrede": "Herr", "Vorname": "Martin", "Vorstandsmitglied": false, "Nachname": "Brunnenmeier", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Leitschlagweg 5a", "Unterdorf": true, "verzogen": false, "Geboren": "1948-12-02T00:00:00", "Telefon": "9841", "Mobiltelefon": null, "Eingetreten": "1978-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "1900-01-01T00:00:00", "verstorben": "2006-04-24T00:00:00", "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 28, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 57, "Geburtstag60": "2008-12-02T00:00:00", "Beitrag": 7.0000, "verzogenDatum": null},
@@ -2270,7 +2266,7 @@ var ffwMitglieder = [
     {"ID": 1244, "Anrede": "Herr", "Vorname": "Martin", "Vorstandsmitglied": false, "Nachname": "Wecker", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Obermühlstr. 1", "Unterdorf": true, "verzogen": false, "Geboren": "1987-02-05T00:00:00", "Telefon": "082334707", "Mobiltelefon": "016090217447", "Eingetreten": "2003-08-23T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 10, "Mitgliedsjahre": 10, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 26, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1245, "Anrede": "Herr", "Vorname": "Michael", "Vorstandsmitglied": false, "Nachname": "Casper", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Eichenstr. 28", "Unterdorf": true, "verzogen": false, "Geboren": "1965-07-30T00:00:00", "Telefon": "738867", "Mobiltelefon": null, "Eingetreten": "2000-01-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2012-12-10T00:00:00", "verstorben": "2014-08-11T00:00:00", "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 12, "Mitgliedsjahre": 14, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 48, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1246, "Anrede": "Herr", "Vorname": "Andreas", "Vorstandsmitglied": false, "Nachname": "Jocher", "PLZ": 86931.0, "Ort": "Prittriching", "Straße": "Angerstr. 26", "Unterdorf": false, "verzogen": false, "Geboren": "1970-10-30T00:00:00", "Telefon": "08206903253", "Mobiltelefon": null, "Eingetreten": "2003-09-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2003-09-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 0, "Mitgliedsjahre": 10, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 43, "Geburtstag60": null, "Beitrag": 0.0000, "verzogenDatum": null},
-    {"ID": 1247, "Anrede": "Herr", "Vorname": "Harald", "Vorstandsmitglied": false, "Nachname": "Leyh", "PLZ": null, "Ort": "Königsbrunn", "Straße": null, "Unterdorf": false, "verzogen": true, "Geboren": "1968-07-06T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "2004-04-26T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 1, "Mitgliedsjahre": 1, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 37, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
+    {"ID": 1247, "Anrede": "Herr", "Vorname": "Harald", "Vorstandsmitglied": false, "Nachname": "Leyh", "PLZ": 86343, "Ort": "Königsbrunn", "Straße": null, "Unterdorf": false, "verzogen": true, "Geboren": "1968-07-06T00:00:00", "Telefon": null, "Mobiltelefon": null, "Eingetreten": "2004-04-26T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 1, "Mitgliedsjahre": 1, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 37, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1248, "Anrede": "Herr", "Vorname": "Andreas", "Vorstandsmitglied": false, "Nachname": "Pribil", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Paartalweg 5", "Unterdorf": true, "verzogen": false, "Geboren": "1986-12-01T00:00:00", "Telefon": "082334762", "Mobiltelefon": "01733884993", "Eingetreten": "1999-01-06T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2010-01-01T00:00:00", "verstorben": null, "aktiv": false, "Einladung": false, "EinladungSeparat": false, "aktive_Jahre": 10, "Mitgliedsjahre": 15, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 27, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1249, "Anrede": "Herr", "Vorname": "Christian", "Vorstandsmitglied": false, "Nachname": "Rinkes", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Wiesenstr. 4a", "Unterdorf": true, "verzogen": false, "Geboren": "1987-06-18T00:00:00", "Telefon": "082334655", "Mobiltelefon": "01716254787", "Eingetreten": "2005-06-30T00:00:00", "Ausgetreten": null, "Übergang_Passiv": null, "verstorben": null, "aktiv": true, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 8, "Mitgliedsjahre": 8, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 26, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
     {"ID": 1250, "Anrede": "Herr", "Vorname": "Andreas", "Vorstandsmitglied": false, "Nachname": "Beistle", "PLZ": 86504.0, "Ort": "Merching", "Straße": "Lindenweg 4", "Unterdorf": true, "verzogen": false, "Geboren": "1989-05-19T00:00:00", "Telefon": "0823331810", "Mobiltelefon": "01726390122", "Eingetreten": "2005-04-01T00:00:00", "Ausgetreten": null, "Übergang_Passiv": "2012-12-10T00:00:00", "verstorben": null, "aktiv": false, "Einladung": true, "EinladungSeparat": false, "aktive_Jahre": 7, "Mitgliedsjahre": 8, "Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null, "Alter": 24, "Geburtstag60": null, "Beitrag": 7.0000, "verzogenDatum": null},
