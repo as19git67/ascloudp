@@ -1,182 +1,217 @@
 <div id="memberDetail">
-    <script type="text/x-handlebars" data-template-name="member">
+<script type="text/x-handlebars" data-template-name="member">
 
-        <!-- Modal -->
-        <div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                        <h4 class="modal-title" id="myModalLabel">{{firstname}} {{lastname}} ({{membershipNumber}})</h4>
+<!-- Modal -->
+<div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+            class="sr-only">Close</span></button>
+    <h4 class="modal-title" id="myModalLabel">{{firstname}} {{lastname}} ({{membershipNumber}})</h4>
+</div>
+<div class="modal-body">
+    <div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
+
+    <form class="form" role="form">
+        <div class="row">
+            <div class="form-group col-md-3">
+                <div class="bg-primary">kein Foto<br>leer<br>nix<br>empty<br>ohne<br>leer<br>nix<br>empty
+                </div>
+            </div>
+            <div class="col-md-9" style="border-left: 1px solid lightgray;">
+                <div class="form-group">
+
+                    <label for="salutation" class="sr-only">Anrede</label>
+
+                    <div id="salutation">
+                        {{input type="text" class="form-control" value=salutation
+                        placeholder="Anrede"}}
                     </div>
-                    <div class="modal-body">
-                        <div class="alert alert-danger hidden" role="alert">{{errorMessage}}</div>
 
-                        <form class="form" role="form">
-                            <div class="row">
-                                <div class="form-group ">
-                                    <div class="col-md-2 bg-primary">kein Foto<br>leer<br>nix<br>empty<br>ohne<br>leer<br>nix<br>empty</div>
-                                </div>
-                                <div class="col-md-10">
-                                    <div class="form-group ">
+                </div>
+                <div class="form-group">
 
-                                        <label for="firstname" class="sr-only">Vorname</label>
+                    <label for="firstname" class="sr-only">Vorname</label>
 
-                                        <div id="firstname">
-                                            {{input type="text" class="form-control" value=firstname placeholder="Vorname"}}
-                                        </div>
-
-                                    </div>
-
-                                    <div class="form-group ">
-                                        <label for="lastname" class="sr-only">Nachname</label>
-
-                                        <div id="lastname">
-                                            {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
-                                        </div>
-
-                                    </div>
-
-                                    <div class="form-group ">
-                                        <label for="suffix" class="sr-only">Namenszusatz</label>
-
-                                        <div id="suffix">
-                                            {{input type="text" class="form-control" value=suffix placeholder="Namenszusatz"}}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <hr>
-                                <div class="form-group col-md-12">
-                                    <label class="control-label" for="MembershipNumber">Mitgliedsnummer:</label>
-
-                                    <div id="MembershipNumber" class="">
-                                        {{input type="text" class="form-control" value=membershipNumber
-                                        placeholder="Mitgliedsnummer"}}
-                                    </div>
-
-                                </div>
-
-                                <div class="form-group col-md-12">
-                                    <label for="birthday" class="control-label">Geboren:</label>
-
-                                    <div id="birthday">
-                                        {{input type="text" class="form-control" value=birthday_formatted
-                                        placeholder="Geburtsdatum"}}
-                                    </div>
-
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <hr>
-                                <div class="form-group col-md-12">
-                                    <label for="entryDate" class="control-label col-md-2">Eintritt:</label>
-
-                                    <div class="col-md-4" id="entryDate">
-                                        {{input type="text" class="form-control" value=entryDate
-                                        placeholder="Eintrittsdatum"}}
-                                    </div>
-                                </div>
-
-                                <div class="form-group col-md-12">
-                                    <label for="leavingDate" class="col-md-2 control-label">Austritt:</label>
-
-                                    <div class="col-md-4" id="leavingDate">
-                                        {{input type="text" class="form-control" value=leavingDate
-                                        placeholder="Austrittsdatum"}}
-                                    </div>
-                                    <label for="LeavingReasonName" class="col-md-2 control-label">Grund:</label>
-
-                                    <div class="col-md-4" id="LeavingReasonName">
-                                        {{input type="text" class="form-control" value=leavingReasonName
-                                        placeholder="Austrittsgrund"}}
-                                    </div>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="form-group">
-                                <label for="membershipFeeName" class="col-md-2 control-label">Beitrag:</label>
-
-                                <div class="col-md-4" id="membershipFeeName">
-                                    {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
-                                </div>
-
-                                <label for="membershipFeeAmount" class="col-md-2 control-label">Betrag:</label>
-
-                                <div class="col-md-4" id="membershipFeeAmount">
-                                    {{input type="text" class="form-control" value=membershipFeeAmount placeholder="Betrag"}}
-                                </div>
-                            </div>
-
-                            <h4>Anschrift:</h4>
-                            {{#each a in addresses}}
-                            <div class="form-group">
-                                <label for="street" class="col-md-2 control-label">Straße:</label>
-
-                                <div class="col-md-4" id="street">
-                                    {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
-                                </div>
-
-                                <label for="streetNumber" class="col-md-2 control-label">Nummer:</label>
-
-                                <div class="col-md-4" id="streetNumber">
-                                    {{input type="text" class="form-control" value=a.streetNumber placeholder="Hausnummer"}}
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label for="postalcode" class="col-md-2 control-label">PLZ:</label>
-
-                                <div class="col-md-4" id="postalcode">
-                                    {{input type="text" class="form-control" value=a.postalcode placeholder="Postleitzahl"}}
-                                </div>
-
-                                <label for="city" class="col-md-2 control-label">Ort:</label>
-
-                                <div class="col-md-4" id="city">
-                                    {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
-                                </div>
-                            </div>
-                            {{/each}}
-
-                            <hr>
-                            <div class="dropdown">
-                                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown">
-                                    <span class="glyphicon glyphicon-plus-sign"></span>Telefon
-
-                                </button>
-                                <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mobil</a></li>
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Privat</a></li>
-                                    <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arbeit</a></li>
-                                </ul>
-                            </div>
-                            {{#each p in phoneNumbers}}
-                            <div class="form-group">
-
-                                <div class="col-md-5" id="Usage">
-                                    {{input type="text" class="form-control" value=p.usage placeholder="Verwendung"}}
-                                </div>
-
-                                <div class="col-md-7" id="Number">
-                                    {{input type="text" class="form-control" value=p.number placeholder="Nummer"}}
-                                </div>
-                            </div>
-                            {{/each}}
-                        </form>
-
+                    <div id="firstname">
+                        {{input type="text" class="form-control" value=firstname
+                        placeholder="Vorname"}}
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal"
-                        {{action "discardChanges"}}>Abbrechen</button>
-                        <button type="button" class="btn btn-primary"
-                        {{action "save" controller}} {{bind-attr disabled="isNotDirty"}}>Speichern</button>
+
+                </div>
+
+
+                <div class="form-group has-feedback">
+                    <label class="sr-only">Nachname</label>
+
+                    {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+
+                </div>
+
+                <div class="form-group">
+                    <label for="suffix" class="sr-only">Namenszusatz</label>
+
+                    <div id="suffix">
+                        {{input type="text" class="form-control" value=suffix
+                        placeholder="Namenszusatz"}}
                     </div>
                 </div>
             </div>
         </div>
-    </script>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Geboren:</label>
+                    {{input type="text" class="form-control" value=birthday_formatted placeholder="Geburtsdatum"}}
+                </div>
+            </div>
+        </div>
+        <hr>
+
+        <div class="row">
+            <div class="col-md-6" style="border-right: 1px solid lightgray;">
+                <div class="form-group has-feedback">
+                    <label for="entryDate" class="control-label">Eintritt:</label>
+
+                    <div class="" id="entryDate">
+                        {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
+                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="form-group has-feedback">
+                    <label class="control-label">Mitgliedsnummer:</label>
+                    {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
+                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                </div>
+            </div>
+        </div>
+    </form>
+    <div class="row">
+        <div class="col-md-6" style="border-right: 1px solid lightgray;">
+            <form class="form-horizontal" role="form">
+                <div class="form-group">
+                    <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
+
+                    <div class="col-md-8" id="leavingDate">
+                        {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
+
+                    <div class="col-md-8" id="LeavingReasonName">
+                        {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="col-md-6">
+            <form class="form-horizontal" role="form">
+                <div class="form-group has-feedback">
+                    <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
+
+                    <div class="col-md-8" id="membershipFeeName">
+                        {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
+                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
+
+                    <div class="col-md-8" id="membershipFeeAmount">
+                        {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <form class="form" role="form">
+        <hr>
+
+        <div class="row">
+            <div class="col-md-12">
+                <span class="glyphicon glyphicon-plus-sign"></span>
+            </div>
+
+            {{#each a in addresses}}
+            <div class="form-group">
+                <label for="street" class="col-md-2 control-label">Straße:</label>
+
+                <div class="col-md-4" id="street">
+                    {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
+                </div>
+
+                <label for="streetNumber" class="col-md-2 control-label">Nummer:</label>
+
+                <div class="col-md-4" id="streetNumber">
+                    {{input type="text" class="form-control" value=a.streetNumber
+                    placeholder="Hausnummer"}}
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="postalcode" class="col-md-2 control-label">PLZ:</label>
+
+                <div class="col-md-4" id="postalcode">
+                    {{input type="text" class="form-control" value=a.postalcode
+                    placeholder="Postleitzahl"}}
+                </div>
+
+                <label for="city" class="col-md-2 control-label">Ort:</label>
+
+                <div class="col-md-4" id="city">
+                    {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
+                </div>
+            </div>
+            {{/each}}
+        </div>
+
+        <hr>
+        <div class="dropdown">
+            <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
+                    data-toggle="dropdown">
+                <span class="glyphicon glyphicon-plus-sign"></span>Telefon
+
+            </button>
+            <ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenu1">
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Mobil</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Privat</a></li>
+                <li role="presentation"><a role="menuitem" tabindex="-1" href="#">Arbeit</a></li>
+            </ul>
+        </div>
+        {{#each p in phoneNumbers}}
+        <div class="form-group">
+
+            <div class="col-md-5" id="Usage">
+                {{input type="text" class="form-control" value=p.usage placeholder="Verwendung"}}
+            </div>
+
+            <div class="col-md-7" id="Number">
+                {{input type="text" class="form-control" value=p.number placeholder="Nummer"}}
+            </div>
+        </div>
+        {{/each}}
+    </form>
+
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-default" data-dismiss="modal"
+    {{action "discardChanges"}}>Abbrechen</button>
+    <button type="button" class="btn btn-primary"
+    {{action "save" controller}} {{bind-attr disabled="isNotDirty"}}>Speichern</button>
+</div>
+</div>
+</div>
+</div>
+</script>
 
 </div>
