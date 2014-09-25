@@ -10,7 +10,7 @@ var ArticleReferenceItem = model.models.ArticleReferenceItem;
 
 var appName = config.get('appName');
 
-module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
+module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
     var now = new Date();
 
     new ArticleItem().query(function (qb) {

@@ -92,7 +92,7 @@ module.exports.getContactDataForPerson = function (personItemModel, personContac
     });
 }
 
-module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
+module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
 
     new PersonItem().query(function (qb) {
         qb.leftJoin('Persons', 'Persons.id', 'PersonItems.Person_id');

@@ -3,7 +3,7 @@ var moment = require('moment');
 var config = require('../config');
 var model = require('../model');
 
-module.exports.render = function(req, res, next, page, pages, collectionModelClass) {
+module.exports.render = function(req, res, next, page, pages, canEdit, collectionModelClass) {
     new model.models.PageCollectionColumn().query(function (qb) {
         qb.where({Page_id: page.Name});
         qb.orderBy('Order', 'ASC');

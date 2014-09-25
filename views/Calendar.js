@@ -7,7 +7,7 @@ var Event = model.models.Event;
 
 var appName = config.get('appName');
 
-module.exports.getical = function (req, res, next, page, pages, collectionModelClass) {
+module.exports.getical = function (req, res, next, page, pages, canEdit, collectionModelClass) {
     var cal = ical();
 
     cal.setDomain('ascloud.de').setName(page.EntityNamePlural);

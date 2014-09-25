@@ -188,7 +188,7 @@ app.use(function (req, res, next) {
                                     if (view.getical && req.query && req.query.type && req.query.type == "ical") {
                                         view.getical(req, res, next, page, pages, collectionModelClass);
                                     } else {
-                                        view.render(req, res, next, page, pages, collectionModelClass);
+                                        view.render(req, res, next, page, pages, canPost, collectionModelClass);
                                     }
                                 } else {
                                     console.log("Error displaying view " + viewName + ". require('views/'" + viewName + ") failed.");
