@@ -139,59 +139,99 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         });
     },
     actions: {
-        save: function (controller) {
-/*
-            this.get('store').commit().then(function(){
-                console.log("Member saved with id " + savedMember.get('id'));
-                $('#editMember').modal('hide');
-                location.reload();
-            }).catch(function(error){
-                var errorMessage = error.statusText;
-                if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
-                    errorMessage += " (" + error.responseText + ")"
+        discardChanges: function () {
+            this.get('model').rollback();
+            var addresses = this.model.get('addresses');
+            addresses.forEach(function (address) {
+                if (address.get('isNew')) {
+                    address.destroyRecord();
+                } else {
+                    if (address.get('isDirty')) {
+                        address.rollback();
+                    }
                 }
-                console.log("Error while saving member: " + errorMessage);
-                controller.set('errorMessage', errorMessage);
             });
-
-            return;
-
-*/
-
-            //this.get('model').send('becomeDirty');
-
+        },
+        createAddress: function (usage) {
+            console.log("createAddress (MemberController) clicked");
+            var personId = this.model.get('id');
+            var addresses = this.model.get('addresses');
+            var newAddress = addresses.createRecord({
+                Person_id: personId,
+                usage: usage
+            });
+        },
+        save: function (controller) {
             var mod = this.get('model');
 
-
             var addresses = mod.get('addresses');
-            var addressesToSave = new DS.RecordArray();
+            var addressesToSavePromises = [];
             addresses.forEach(function (address) {
                 if (address.get('isNew') || address.get('isDirty')) {
-                    addressesToSave.pushRecord(address);
+                    addressesToSavePromises.push(address.save());   // add promise from save to array
                 }
             });
-            addressesToSave.save().then(function (allSavedAddresses) {
-                console.log("All new or changed addresses saved");
-                if (mod.get('isDirty')) {
-                    mod.save()
-                        .then(function (savedMember) {
-                            console.log("Member saved with id " + savedMember.get('id'));
-                            $('#editMember').modal('hide');
-                            location.reload();
-                        })
-                        .catch(function (error) {
-                            mod.rollback();
-                            var errorMessage = error.statusText;
-                            if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
-                                errorMessage += " (" + error.responseText + ")"
+            Ember.RSVP.allSettled(addressesToSavePromises).then(function (array) {
+                // array == [
+                //   { state: 'fulfilled', value: 1 },
+                //   { state: 'rejected', reason: Error },
+                //   { state: 'rejected', reason: Error }
+                // ]
+                // Note that for the second item, reason.message will be '2', and for the
+                // third item, reason.message will be '3'.
+                var haveError = false;
+                var errorMessage;
+                array.forEach(function (result) {
+                    if (!haveError) {
+                        var state = result.state;
+                        if (state == 'rejected') {
+                            haveError = true;
+                            var reason = result.reason;
+
+                            errorMessage = reason.statusText;
+                            if (reason.responseText && reason.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                                errorMessage += " (" + reason.responseText + ")"
                             }
-                            console.log("Error while saving member: " + errorMessage);
-                            controller.set('errorMessage', errorMessage);
-                        });
+                        }
+                    }
+                });
+
+                if (haveError) {
+                    errorMessage = "Error while saving addresses: " + errorMessage;
+                    console.log(errorMessage);
+                    controller.set('errorMessage', errorMessage);
                 }
                 else {
-                    // nothing changed - just close modal dialog
-                    $('#editMember').modal('hide');
+                    console.log("All new or changed addresses saved");
+
+                    // todo: check array for rejected promises
+
+                    if (mod.get('isDirty')) {
+                        mod.save()
+                            .then(function (savedMember) {
+                                console.log("Member saved with id " + savedMember.get('id'));
+                                $('#editMember').modal('hide');
+                                location.reload();
+                            })
+                            .catch(function (error) {
+                                mod.rollback();
+                                var errorMessage = error.statusText;
+                                if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                                    errorMessage += " (" + error.responseText + ")"
+                                }
+                                console.log("Error while saving member: " + errorMessage);
+                                controller.set('errorMessage', errorMessage);
+                            });
+                    }
+                    else {
+                        $('#editMember').modal('hide');
+                        if (addressesToSavePromises.length > 0) {
+                            location.reload();
+                        } else {
+                            // nothing changed - just close modal dialog
+                        }
+                    }
+
                 }
             }).catch(function (error) {
                 console.log("ERROR while saving new or changed addresses: " + error);
@@ -222,24 +262,6 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 }
             );
 
-        },
-        discardChanges: function () {
-            this.get('model').rollback();
-            var addresses = this.model.get('addresses');
-            addresses.forEach(function (address) {
-                if (address.get('isNew')) {
-                    address.rollback();
-                }
-            });
-        },
-        createAddress: function (usage) {
-            console.log("createAddress (MemberController) clicked");
-            var personId = this.model.get('id');
-            var addresses = this.model.get('addresses');
-            var newAddress = addresses.createRecord({
-                Person_id: personId,
-                usage: usage
-            });
         }
     }
 });

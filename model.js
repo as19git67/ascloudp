@@ -1006,7 +1006,7 @@ exports.createSchema = function () {
                     t.integer('Person_id').notNullable().references('id').inTable('Persons').index();
                     t.integer('PersonContactType_id').notNullable().references('id').inTable('PersonContactTypes').index();
                     t.string('Usage', 15).notNullable();
-                    t.unique(['Person_id', 'PersonContactType_id', 'Usage']);
+//                    t.unique(['Person_id', 'PersonContactType_id', 'Usage']);
                 });
             },
             function () {

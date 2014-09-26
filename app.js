@@ -32,6 +32,7 @@ var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
 var apiMembers = require('./routes/api/v1/members');
+var apiAddresses = require('./routes/api/v1/addresses');
 
 moment.lang("de"); // todo: use language from configuration or browser setting
 var app = express();
@@ -87,6 +88,7 @@ app.use('/loginManageAccount', loginManageAccount);
 app.get('/api/v1/members', apiMembers.list);
 app.get('/api/v1/members/:id', apiMembers.get);
 app.put('/api/v1/members/:id', apiMembers.put);
+app.post('/api/v1/addresses', apiAddresses.post);
 
 app.use(function (req, res, next) {
 

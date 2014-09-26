@@ -24,9 +24,13 @@ block content
                                 if record.Addresses && record.Addresses.length > 0
                                     each address in record.Addresses
                                         if address.Street
-                                            | #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                                            dd #{address.Street} #{address.StreetNumber},&nbsp;#{address.Postalcode} #{address.City}
+                                                if record.Addresses.length > 1
+                                                    | &nbsp;(#{address.Usage})
                                         else
-                                            | #{address.Postalcode} #{address.City}
+                                            dd #{address.Postalcode} #{address.City}
+                                                if record.Addresses.length > 1
+                                                    | &nbsp;(#{address.Usage})
                             dd
                                 if record.PhoneNumbers && record.PhoneNumbers.length > 0
                                     each phoneNumber in record.PhoneNumbers
