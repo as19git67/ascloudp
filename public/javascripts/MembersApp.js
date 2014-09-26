@@ -109,8 +109,9 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         var self = this;
         self.set('errorMessage', "");
         this.store.findById('member', id).then(function (person) {
-            if (person && person.get(''))
+            if (person) {
                 self.set('model', person);
+            }
         }).catch(function (error) {
             var errorMessage = error.statusText;
             if (error.responseText) {
@@ -139,28 +140,64 @@ MembersApp.MemberController = Ember.ObjectController.extend({
     },
     actions: {
         save: function (controller) {
-            //this.get('model').send('becomeDirty');
-            var mod = this.get('model');
-            if (mod.get('isDirty')) {
-                mod.save().then(function (savedMember) {
-                        console.log("Member saved with id " + savedMember.get('id'));
-                        $('#editMember').modal('hide');
-                        location.reload();
-                    },
-                    function (error) {
-                        mod.rollback();
-                        var errorMessage = error.statusText;
-                        if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
-                            errorMessage += " (" + error.responseText + ")"
-                        }
-                        controller.set('errorMessage', errorMessage);
-                    }
-                );
-            }
-            else {
-                // nothing changed - just close modal dialog
+/*
+            this.get('store').commit().then(function(){
+                console.log("Member saved with id " + savedMember.get('id'));
                 $('#editMember').modal('hide');
-            }
+                location.reload();
+            }).catch(function(error){
+                var errorMessage = error.statusText;
+                if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                    errorMessage += " (" + error.responseText + ")"
+                }
+                console.log("Error while saving member: " + errorMessage);
+                controller.set('errorMessage', errorMessage);
+            });
+
+            return;
+
+*/
+
+            //this.get('model').send('becomeDirty');
+
+            var mod = this.get('model');
+
+
+            var addresses = mod.get('addresses');
+            var addressesToSave = new DS.RecordArray();
+            addresses.forEach(function (address) {
+                if (address.get('isNew') || address.get('isDirty')) {
+                    addressesToSave.pushRecord(address);
+                }
+            });
+            addressesToSave.save().then(function (allSavedAddresses) {
+                console.log("All new or changed addresses saved");
+                if (mod.get('isDirty')) {
+                    mod.save()
+                        .then(function (savedMember) {
+                            console.log("Member saved with id " + savedMember.get('id'));
+                            $('#editMember').modal('hide');
+                            location.reload();
+                        })
+                        .catch(function (error) {
+                            mod.rollback();
+                            var errorMessage = error.statusText;
+                            if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                                errorMessage += " (" + error.responseText + ")"
+                            }
+                            console.log("Error while saving member: " + errorMessage);
+                            controller.set('errorMessage', errorMessage);
+                        });
+                }
+                else {
+                    // nothing changed - just close modal dialog
+                    $('#editMember').modal('hide');
+                }
+            }).catch(function (error) {
+                console.log("ERROR while saving new or changed addresses: " + error);
+                controller.set('errorMessage', "Neue oder geänderte Adressen konnten nicht gespeichert werden");
+            });
+
         },
         delete: function (controller) {
 
@@ -188,9 +225,21 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         },
         discardChanges: function () {
             this.get('model').rollback();
+            var addresses = this.model.get('addresses');
+            addresses.forEach(function (address) {
+                if (address.get('isNew')) {
+                    address.rollback();
+                }
+            });
         },
         createAddress: function (usage) {
             console.log("createAddress (MemberController) clicked");
+            var personId = this.model.get('id');
+            var addresses = this.model.get('addresses');
+            var newAddress = addresses.createRecord({
+                Person_id: personId,
+                usage: usage
+            });
         }
     }
 });
