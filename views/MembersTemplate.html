@@ -146,7 +146,7 @@
     <div class="row">
         {{#each a in addresses}}
         <div class="col-md-12">
-            <strong>Adresse ({{a.usage}}):</strong>
+            <span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteAddress" a }} />&nbsp;<strong>Adresse ({{a.usage}}):</strong>
         </div>
         <form class="form-horizontal" role="form">
             <div class="form-group">

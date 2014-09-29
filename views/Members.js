@@ -34,7 +34,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         .where({
             'PersonItems.valid_end': null,
             'PersonContactTypes.Deleted': false,
-            'PersonContactDataAddresses.valid_end': null,
+//            'PersonContactDataAddresses.valid_end': null,
             'PersonContactDataPhonenumbers.valid_end': null,
             'PersonContactDataAccounts.valid_end': null,
             'MembershipItems.valid_end': null,

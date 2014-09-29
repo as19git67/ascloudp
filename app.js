@@ -89,6 +89,8 @@ app.get('/api/v1/members', apiMembers.list);
 app.get('/api/v1/members/:id', apiMembers.get);
 app.put('/api/v1/members/:id', apiMembers.put);
 app.post('/api/v1/addresses', apiAddresses.post);
+app.put('/api/v1/addresses/:id', apiAddresses.put);
+app.delete('/api/v1/addresses/:id', apiAddresses.delete);
 
 app.use(function (req, res, next) {
 

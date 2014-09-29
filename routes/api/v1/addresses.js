@@ -28,24 +28,26 @@ module.exports.post = function (req, res) {
                             City: address.city,
                             valid_start: new Date()
                         }).save()
-                            .then(function(newPersonContactDataAddress){
-                                console.log("New address for person with id " +  personId + " saved");
+                            .then(function (newPersonContactDataAddress) {
+                                console.log("New address for person with id " + personId + " saved");
                                 res.setHeader('X-CSRF-Token', req.csrfToken());
                                 res.json(
                                     {
-                                        addresses: [{
-                                            id: newPersonContactDataAddress.PersonContactData_id,
-                                            street: newPersonContactDataAddress.Street,
-                                            streetNumber: newPersonContactDataAddress.StreetNumber,
-                                            postalcode: newPersonContactDataAddress.Postalcode,
-                                            city: newPersonContactDataAddress.City,
-                                            usage: newPersonContactData.Usage,
-                                            type: contactTypeAddress.Description
-                                        }]
+                                        addresses: [
+                                            {
+                                                id: newPersonContactDataAddress.PersonContactData_id,
+                                                street: newPersonContactDataAddress.Street,
+                                                streetNumber: newPersonContactDataAddress.StreetNumber,
+                                                postalcode: newPersonContactDataAddress.Postalcode,
+                                                city: newPersonContactDataAddress.City,
+                                                usage: newPersonContactData.Usage,
+                                                type: contactTypeAddress.Description
+                                            }
+                                        ]
                                     }
                                 );
                             })
-                            .catch(function(error){
+                            .catch(function (error) {
                                 console.log("Saving PersonContactDataAddress failed: " + error);
                                 // todo: delete already created PersonContactData or use transaction
                                 //newPersonContactData.delete();
@@ -72,3 +74,92 @@ module.exports.post = function (req, res) {
         res.send('Error 400: addresses in request missing');
     }
 };
+
+module.exports.delete = function (req, res) {
+    var personContactData_id = req.params.id;
+    new PersonContactDataAddress({ PersonContactData_id: personContactData_id}).fetch().then(function (personContactData) {
+        if (personContactData) {
+            personContactData.set('valid_end', new Date()); // mark this record as not-latest
+            personContactData.save().then(function (savedPersonContactData) {
+                res.statusCode = 200;
+                res.end();
+            }).catch(function (error) {
+                var errMsg = "Saving PersonContactDataAddress to set valid_end failed";
+                console.log(errMsg + ": " + error);
+                res.statusCode = 500;
+                res.send('Error 500: ' + errMsg);
+            });
+        }
+        else {
+            console.log("Can't delete PersonContactDataAddress with PersonContactData_id=" + personContactData_id + ": not existing");
+            res.statusCode = 404;
+            res.send('Error 404: PersonContactDataAddress not found');
+        }
+    }).catch(function (error) {
+        var errMsg = "Reading PersonContactDataAddress failed";
+        console.log(errMsg + ": " + error);
+        res.statusCode = 500;
+        res.send('Error 500: ' + errMsg);
+    });
+};
+
+// update PersonContactDataAddress
+module.exports.put = function (req, res) {
+    var personContactData_id = req.params.id;
+    var address = req.body.address;
+    var now = new Date();
+    new PersonContactDataAddress({ PersonContactData_id: personContactData_id}).fetch().then(function (personContactData) {
+        if (personContactData) {
+
+            if (personContactData.get('Street') != address.street ||
+                personContactData.get('StreetNumber') != address.streetNumber ||
+                personContactData.get('Postalcode') != address.postalcode ||
+                personContactData.get('City') != address.city) {
+
+                // todo: use a transaction for both database writes
+
+                // create new record with updated values
+                new PersonContactDataAddress({
+                    PersonContactData_id: personContactData_id,
+                    Street: address.street,
+                    StreetNumber: address.streetNumber,
+                    Postalcode: address.postalcode,
+                    City: address.city,
+                    valid_start: now
+                }).save().then(function (savedPersonContactDataAddress) {
+                        // save previous record which gets the value_end set to now
+                        personContactData.set('valid_end', now); // mark this record as not-latest
+                        personContactData.save().then(function (savedPersonContactDataAddressHistory) {
+                            res.statusCode = 200;
+                            res.end();
+                        }).catch(function (error) {
+                            var errMsg = "Failed to mark PersonContactDataAddress old";
+                            console.log(errMsg + ": " + error);
+                            res.statusCode = 500;
+                            res.send("Error 500: " + errMsg);
+                        });
+
+                    }).catch(function (error) {
+                        var errMsg = "Failed to create new PersonContactDataAddress";
+                        console.log(errMsg + ": " + error);
+                        res.statusCode = 500;
+                        res.send("Error 500: " + errMsg);
+                    });
+            }
+            else {
+                // values did not change - not saving
+                res.statusCode = 304;
+                res.end();
+            }
+        }
+        else {
+            console.log("Can't delete PersonContactDataAddress with PersonContactData_id=" + personContactData_id + ": not existing");
+            res.statusCode = 404;
+            res.send('Error 404: PersonContactDataAddress not found');
+        }
+    }).catch(function (error) {
+        console.log("Reading PersonContactDataAddress failed: " + error);
+        res.statusCode = 500;
+        res.send('Error 500: Reading PersonContactDataAddress failed');
+    });
+}

@@ -138,19 +138,26 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
         });
     },
+    deletedAddresses: [],
     actions: {
         discardChanges: function () {
             this.get('model').rollback();
             var addresses = this.model.get('addresses');
             addresses.forEach(function (address) {
                 if (address.get('isNew')) {
-                    address.destroyRecord();
+                    address.deleteRecord();
                 } else {
                     if (address.get('isDirty')) {
                         address.rollback();
                     }
                 }
             });
+
+            var deletedAddressesArray = Ember.A(this.deletedAddresses);
+            deletedAddressesArray.forEach(function(addressMarkedDelete){
+                addressMarkedDelete.rollback();
+            });
+            this.deletedAddresses = [];
         },
         createAddress: function (usage) {
             console.log("createAddress (MemberController) clicked");
@@ -161,16 +168,36 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 usage: usage
             });
         },
+        deleteAddress: function (addressToDelete) {
+            console.log("deleteAddress (MemberController) for " + addressToDelete.get('id') + " clicked");
+            var addresses = this.model.get('addresses');
+            var self = this;
+            addresses.forEach(function (address) {
+                if (address.get('id') == addressToDelete.get('id')) {
+                    address.deleteRecord();
+                    self.deletedAddresses.push(address);
+                }
+            });
+        },
         save: function (controller) {
             var mod = this.get('model');
 
-            var addresses = mod.get('addresses');
             var addressesToSavePromises = [];
+
+            // save all addresses that are marked for deletion
+            var deletedAddressesArray = Ember.A(this.deletedAddresses);
+            deletedAddressesArray.forEach(function(addressMarkedDelete){
+                addressesToSavePromises.push(addressMarkedDelete.save());
+            });
+            this.deletedAddresses = [];
+
+            var addresses = mod.get('addresses');
             addresses.forEach(function (address) {
                 if (address.get('isNew') || address.get('isDirty')) {
                     addressesToSavePromises.push(address.save());   // add promise from save to array
                 }
             });
+
             Ember.RSVP.allSettled(addressesToSavePromises).then(function (array) {
                 // array == [
                 //   { state: 'fulfilled', value: 1 },
@@ -202,7 +229,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                     controller.set('errorMessage', errorMessage);
                 }
                 else {
-                    console.log("All new or changed addresses saved");
+                    console.log("All new or changed addresses saved. Addresses marked for deletion were deleted.");
 
                     // todo: check array for rejected promises
 
