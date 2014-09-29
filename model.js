@@ -2382,8 +2382,8 @@ var ffwMitgliederFunktionen = [
     {"IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null}
 ];
 
-var gesternStart = moment().subtract('days', 1).subtract('hours', 3).utc().toDate();
-var gesternEnd = moment().subtract('days', 1).utc().toDate();
+var gesternStart = moment().subtract(1, 'days').subtract(3,'hours').utc().toDate();
+var gesternEnd = moment().subtract(1, 'days').utc().toDate();
 
 var ffwEvents = [
     { title: "Kameradschaftsabend", description: "zum Aufbauen für den Kameradschaftsabend treffen wir uns um 17 Uhr im Feuerwehrhaus.", eventDateStart: new Date("2014-10-18 17:00:00"), eventDateEnd: new Date("2014-10-18 18:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
@@ -2396,9 +2396,7 @@ var ffwEvents = [
     { title: "Feuerwehrfest", description: "100 jähriges Gründungsfest in Haunswies", eventDateStart: new Date("2014-05-25 8:00:00"), eventDateEnd: new Date("2014-05-25 17:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
     { title: "Feuerwehrfest", description: "150 jähriges Gründungsfest der FF Friedberg", eventDateStart: new Date("2014-06-15 8:30:00"), eventDateEnd: new Date("2014-06-15 17:00:00"), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
     { title: "Test 1", description: "Test Gestern", eventDateStart: gesternStart, eventDateEnd: gesternEnd, street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
-    { title: "Test 2", description: "Test Heute", eventDateStart: moment().subtract('hours',
-        5).utc().toDate(), eventDateEnd: moment().add('hours',
-        1).utc().toDate(), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
+    { title: "Test 2", description: "Test Heute", eventDateStart: moment().subtract(5, 'hours').utc().toDate(), eventDateEnd: moment().add(1, 'hours').utc().toDate(), street: "Schulweg", streetnumber: "8", postalcode: "86504", city: "Merching", locationdescription: "Feuerwehrhaus" },
     { title: "Kartenvorverkauf Faschingsball", description: "Ab Montag, 4.2 startet der Kartenvorverkauf für den Faschingsball in der Raiffeisenbank in Merching", eventDateStart: new Date("2014-02-03 09:00:00"), eventDateEnd: new Date("2014-02-14 14:00:00"), street: "", streetnumber: "", postalcode: "", city: "Merching", locationdescription: "Raiffeisenbank" },
     { title: "Herrichten Faschingsball", description: "Zum Aufbauen und Herrichten für den Faschingsball treffen sich alle Helfer um 18 Uhr in der Mehrzweckhalle", eventDateStart: new Date("2014-02-14 18:00:00"), eventDateEnd: new Date("2014-02-14 21:00:00"), street: "Kirchstraße", streetnumber: "", postalcode: "86504", city: "Merching", locationdescription: "Mehrzweckhalle" },
     { title: "Faschingsball vom Schützenverein und der Feuerwehr",

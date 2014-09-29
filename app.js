@@ -34,7 +34,7 @@ var PageContent = model.models.PageContent;
 var apiMembers = require('./routes/api/v1/members');
 var apiAddresses = require('./routes/api/v1/addresses');
 
-moment.lang("de"); // todo: use language from configuration or browser setting
+moment.locale("de"); // todo: use language from configuration or browser setting
 var app = express();
 
 // view engine setup

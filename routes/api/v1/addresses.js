@@ -81,7 +81,7 @@ module.exports.delete = function (req, res) {
         if (personContactData) {
             personContactData.set('valid_end', new Date()); // mark this record as not-latest
             personContactData.save().then(function (savedPersonContactData) {
-                res.statusCode = 200;
+                res.statusCode = 204;   // 204 No Content (Deletion was successful and nothing must be told to the caller)
                 res.end();
             }).catch(function (error) {
                 var errMsg = "Saving PersonContactDataAddress to set valid_end failed";

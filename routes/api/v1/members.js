@@ -8,6 +8,8 @@ var knex = model.bookshelf.knex;
 module.exports.get = function (req, res) {
     var personId = req.params.id;
 
+    // todo move valid_end clauses to join or select independent from person/member select
+
     knex.select('Salutation', 'Firstname', 'Lastname', 'Suffix', 'Birthday',
         'PersonItems.Person_id as Person_id',
         'PersonContactDatas.id as PersonContactData_id', 'PersonContactDatas.Usage as PersonContactDataUsage',
