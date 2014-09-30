@@ -5,6 +5,8 @@ var PersonItem = model.models.PersonItem;
 
 var knex = model.bookshelf.knex;
 
+// todo check user + role
+
 module.exports.get = function (req, res) {
     var personId = req.params.id;
 

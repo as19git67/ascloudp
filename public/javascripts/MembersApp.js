@@ -212,12 +212,13 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                     if (!haveError) {
                         var state = result.state;
                         if (state == 'rejected') {
-                            haveError = true;
                             var reason = result.reason;
-
-                            errorMessage = reason.statusText;
-                            if (reason.responseText && reason.responseText.substr(0, 14) != "<!DOCTYPE html") {
-                                errorMessage += " (" + reason.responseText + ")"
+                            if (reason.status != 200 && reason.status != 204) {
+                                haveError = true;
+                                errorMessage = reason.statusText;
+                                if (reason.responseText && reason.responseText.substr(0, 14) != "<!DOCTYPE html") {
+                                    errorMessage += " (" + reason.responseText + ")"
+                                }
                             }
                         }
                     }
