@@ -188,8 +188,6 @@ module.exports.put = function (req, res) {
                         addressWithoutValidEnd.get('City') != address.city) {
                         addressWithoutValidEnd.set('valid_end', now);
                         savePromises.push(addressWithoutValidEnd.save());
-                    }
-                    else {
                         addressIsDirty = true;
                     }
                 } else {
