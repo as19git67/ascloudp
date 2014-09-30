@@ -7,6 +7,48 @@ var PersonContactDataAddress = model.models.PersonContactDataAddress;
 
 // post new address
 module.exports.post = function (req, res) {
+
+    function putContactData(contactTypeAddress, personContactData, address) {
+
+        var personContactData_id = personContactData.get('id');
+
+        // todo set valid_end to now of all existing records
+
+        new PersonContactDataAddress({
+            PersonContactData_id: personContactData_id,
+            Street: address.street,
+            StreetNumber: address.streetNumber,
+            Postalcode: address.postalcode,
+            City: address.city,
+            valid_start: new Date()
+        }).save().then(function (newPersonContactDataAddress) {
+                console.log("New address for person with id " + personContactData.get('Person_id') + " saved");
+                res.setHeader('X-CSRF-Token', req.csrfToken());
+                res.json(
+                    {
+                        addresses: [
+                            {
+                                id: newPersonContactDataAddress.PersonContactData_id,
+                                street: newPersonContactDataAddress.Street,
+                                streetNumber: newPersonContactDataAddress.StreetNumber,
+                                postalcode: newPersonContactDataAddress.Postalcode,
+                                city: newPersonContactDataAddress.City,
+                                usage: personContactData.Usage,
+                                type: contactTypeAddress.Description
+                            }
+                        ]
+                    }
+                );
+            })
+            .catch(function (error) {
+                console.log("Saving PersonContactDataAddress failed: " + error);
+                // todo: delete already created PersonContactData or use transaction
+                //newPersonContactData.delete();
+                res.statusCode = 500;
+                res.send('Error 500: Saving PersonContactDataAddress failed');
+            });
+    }
+
     if (req.body.address) {
         var address = req.body.address;
         var personId = address.member;  // in Ember app the person is handled as member and the address belongs to member
@@ -18,46 +60,29 @@ module.exports.post = function (req, res) {
                     Person_id: personId,
                     PersonContactType_id: personContactType_id,
                     Usage: address.usage
-                }).save().then(function (newPersonContactData) {
-                        var personContactData_id = newPersonContactData.get('id');
-                        new PersonContactDataAddress({
-                            PersonContactData_id: personContactData_id,
-                            Street: address.street,
-                            StreetNumber: address.streetNumber,
-                            Postalcode: address.postalcode,
-                            City: address.city,
-                            valid_start: new Date()
-                        }).save()
-                            .then(function (newPersonContactDataAddress) {
-                                console.log("New address for person with id " + personId + " saved");
-                                res.setHeader('X-CSRF-Token', req.csrfToken());
-                                res.json(
-                                    {
-                                        addresses: [
-                                            {
-                                                id: newPersonContactDataAddress.PersonContactData_id,
-                                                street: newPersonContactDataAddress.Street,
-                                                streetNumber: newPersonContactDataAddress.StreetNumber,
-                                                postalcode: newPersonContactDataAddress.Postalcode,
-                                                city: newPersonContactDataAddress.City,
-                                                usage: newPersonContactData.Usage,
-                                                type: contactTypeAddress.Description
-                                            }
-                                        ]
-                                    }
-                                );
-                            })
-                            .catch(function (error) {
-                                console.log("Saving PersonContactDataAddress failed: " + error);
-                                // todo: delete already created PersonContactData or use transaction
-                                //newPersonContactData.delete();
-                                res.statusCode = 500;
-                                res.send('Error 500: Saving PersonContactDataAddress failed');
-                            });
+                }).fetch().then(function (personContactData) {
+                        if (personContactData) {
+                            // use existing PersonContactData
+                            putContactData(contactTypeAddress, personContactData, address);
+                        }
+                        else {
+                            new PersonContactData({
+                                Person_id: personId,
+                                PersonContactType_id: personContactType_id,
+                                Usage: address.usage
+                            }).save().then(function (personContactData) {
+                                    putContactData(contactTypeAddress, personContactData, address);
+                                }).catch(function (error) {
+                                    console.log("Saving PersonContactData failed: " + error);
+                                    res.statusCode = 500;
+                                    res.send('Error 500: Saving PersonContactData failed');
+                                }
+                            );
+                        }
                     }).catch(function (error) {
-                        console.log("Saving PersonContactData failed: " + error);
+                        console.log("Reading PersonContactData failed: " + error);
                         res.statusCode = 500;
-                        res.send('Error 500: Saving PersonContactData failed');
+                        res.send('Error 500: Reading PersonContactData failed');
                     });
             } else {
                 res.statusCode = 404;

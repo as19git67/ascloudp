@@ -8,226 +8,106 @@ var knex = model.bookshelf.knex;
 module.exports.get = function (req, res) {
     var personId = req.params.id;
 
-    // todo move valid_end clauses to join or select independent from person/member select
-
-    knex.select('Salutation', 'Firstname', 'Lastname', 'Suffix', 'Birthday',
-        'PersonItems.Person_id as Person_id',
-        'PersonContactDatas.id as PersonContactData_id', 'PersonContactDatas.Usage as PersonContactDataUsage',
-        'PersonContactTypes.Name as PersonContactTypeName', 'PersonContactTypes.Description as PersonContactTypeDescription',
-        'Memberships.MembershipNumber',
-        'MembershipItems.EntryDate', 'MembershipItems.LeavingDate', 'MembershipItems.PassiveSince', 'MembershipItems.LivingElsewhereSince',
-        'LeavingReasons.Name as LeavingReasonName',
-        'MembershipFees.Name as MembershipFeeName', 'MembershipFees.Amount as MembershipFeeAmount',
-        'PersonContactDataAddresses.Street', 'PersonContactDataAddresses.StreetNumber', 'PersonContactDataAddresses.Postalcode',
-        'PersonContactDataAddresses.City',
-        'PersonContactDataPhonenumbers.Number as PersonContactDataPhoneNumber',
-        'PersonContactDataAccounts.Account as PersonContactDataAccount'
-    ).from('Persons')
-        .join('Memberships', 'Memberships.Person_id', 'Persons.id')
-        .join('MembershipItems', 'MembershipItems.Membership_id', 'Memberships.id')
-        .leftJoin('LeavingReasons', 'LeavingReasons.id', 'MembershipItems.LeavingReason_id')
-        .leftJoin('MembershipFees', 'MembershipFees.id', 'MembershipItems.MembershipFee_id')
-        .join('PersonItems', 'Persons.id', 'PersonItems.Person_id')
-        .leftJoin('PersonContactDatas', 'PersonContactDatas.Person_id', 'Persons.id')
-        .innerJoin('PersonContactTypes', 'PersonContactDatas.PersonContactType_id', 'PersonContactTypes.id')
-        .leftJoin('PersonContactDataAddresses', 'PersonContactDataAddresses.PersonContactData_id', 'PersonContactDatas.id')
-        .leftJoin('PersonContactDataPhonenumbers', 'PersonContactDataPhonenumbers.PersonContactData_id', 'PersonContactDatas.id')
-        .leftJoin('PersonContactDataAccounts', 'PersonContactDataAccounts.PersonContactData_id', 'PersonContactDatas.id')
-        .where({
-            'PersonItems.Person_id': personId,
-            'PersonItems.valid_end': null,
-            'PersonContactTypes.Deleted': false,
-            'PersonContactDataAddresses.valid_end': null,
-            'PersonContactDataPhonenumbers.valid_end': null,
-            'PersonContactDataAccounts.valid_end': null,
-            'MembershipItems.valid_end': null,
-            'MembershipItems.LeavingDate': null
-        })
-        .orderBy('PersonItems.Lastname', 'ASC')
-        .orderBy('Persons.id', 'ASC')
-        .then(function (persons) {
-            var records = [];
-            var addresses = [];
-            var phoneNumbers = [];
-            var accounts = [];
-            var lastMemberId;
-            var currentPersonObj;
-            _.each(persons, function (p) {
-                if (p.MembershipNumber != lastMemberId) {
-                    lastMemberId = p.MembershipNumber;
-                    currentPersonObj = new Object();
-                    records.push(currentPersonObj);
-                    currentPersonObj.id = p.Person_id;
-                    currentPersonObj.membershipNumber = p.MembershipNumber;
-                    currentPersonObj.salutation = p.Salutation;
-                    currentPersonObj.firstname = p.Firstname;
-                    currentPersonObj.lastname = p.Lastname;
-                    currentPersonObj.suffix = p.Suffix;
-                    currentPersonObj.birthday = p.Birthday;
-                    currentPersonObj.entryDate = p.EntryDate;
-                    currentPersonObj.birthday_formatted = model.formatDate(p.Birthday);
-                    currentPersonObj.entryDate_formatted = model.formatDate(p.EntryDate);
-                    currentPersonObj.leavingDate = p.LeavingDate;
-                    currentPersonObj.passiveSince = p.PassiveSince;
-                    currentPersonObj.livingElsewhereSince = p.LivingElsewhereSince;
-                    currentPersonObj.leavingReasonName = p.LeavingReasonName;
-                    currentPersonObj.membershipFeeName = p.MembershipFeeName;
-                    currentPersonObj.membershipFeeAmount = p.MembershipFeeAmount;
-                    currentPersonObj.addresses = [];
-                    currentPersonObj.phoneNumbers = [];
-                    currentPersonObj.accounts = [];
-                }
-                switch (p.PersonContactTypeName) {
-                case 'address':
-                    addresses.push({
-                        id: p.PersonContactData_id,
-                        street: p.Street,
-                        streetNumber: p.StreetNumber,
-                        postalcode: p.Postalcode,
-                        city: p.City,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.addresses.push(p.PersonContactData_id);
-                    break;
-                case 'phone':
-                    phoneNumbers.push({
-                        id: p.PersonContactData_id,
-                        number: p.PersonContactDataPhoneNumber,
-                        number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription});
-                    currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
-                    break;
-                default:
-                    accounts.push({
-                        id: p.PersonContactData_id,
-                        account: p.PersonContactDataAccount,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.accounts.push(p.PersonContactData_id);
-                }
-            });
-
-            if (records.length > 0) {
-                res.setHeader('X-CSRF-Token', req.csrfToken());
-                res.json(
-                    {
-                        members: records,
-                        addresses: addresses,
-                        phoneNumbers: phoneNumbers,
-                        accounts: accounts
-                    }
-                );
-            } else {
-                res.statusCode = 404;
-                res.send('Error 404: Person with id ' + personId + ' not found');
+    var query = 'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "Birthday", "PersonItems"."Person_id" as "Person_id",' +
+        '"PersonContactDataAddresses"."PersonContactData_id" as "PersonContactDataAddressesId",' +
+        '"PersonContactDataPhonenumbers"."PersonContactData_id" as "PersonContactDataPhonenumbersId",' +
+        '"PersonContactDataAccounts"."PersonContactData_id" as "PersonContactDataAccountsId",' +
+        '"PersonContactDatas"."id" as "PersonContactData_id",' +
+        '"PersonContactDatas"."Usage" as "PersonContactDataUsage",' +
+        '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
+        '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
+        '"MembershipItems"."PassiveSince", "MembershipItems"."LivingElsewhereSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
+        '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
+        '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
+        ' from "Persons"' +
+        ' inner join "PersonItems" on "Persons"."id" = "PersonItems"."Person_id"' +
+        ' inner join "Memberships" on "Memberships"."Person_id" = "Persons"."id"' +
+        ' inner join "MembershipItems" on "MembershipItems"."Membership_id" = "Memberships"."id"' +
+        ' left join "LeavingReasons" on "LeavingReasons"."id" = "MembershipItems"."LeavingReason_id"' +
+        ' left join "MembershipFees" on "MembershipFees"."id" = "MembershipItems"."MembershipFee_id"' +
+        ' left join "PersonContactDatas" on "PersonContactDatas"."Person_id" = "Persons"."id"' +
+        ' inner join "PersonContactTypes" on "PersonContactDatas"."PersonContactType_id" = "PersonContactTypes"."id"' +
+        ' left join "PersonContactDataAddresses" on ("PersonContactDataAddresses"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAddresses"."valid_end" is  null)' +
+        ' left join "PersonContactDataPhonenumbers" on ("PersonContactDataPhonenumbers"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataPhonenumbers"."valid_end" is  null)' +
+        ' left join "PersonContactDataAccounts" on ("PersonContactDataAccounts"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAccounts"."valid_end" is  null)' +
+        ' where "PersonItems"."Person_id" = ' + personId +
+        ' and "PersonItems"."valid_end" is null' +
+        ' and "PersonContactTypes"."Deleted" = false' +
+        ' and "MembershipItems"."valid_end" is null' +
+        ' and "MembershipItems"."LeavingDate" is null';
+    knex.raw(query).then(function (persons) {
+        var records = [];
+        var addresses = [];
+        var phoneNumbers = [];
+        var accounts = [];
+        var lastMemberId;
+        var currentPersonObj;
+        _.each(persons.rows, function (p) {
+            if (p.MembershipNumber != lastMemberId) {
+                lastMemberId = p.MembershipNumber;
+                currentPersonObj = new Object();
+                records.push(currentPersonObj);
+                currentPersonObj.id = p.Person_id;
+                currentPersonObj.membershipNumber = p.MembershipNumber;
+                currentPersonObj.salutation = p.Salutation;
+                currentPersonObj.firstname = p.Firstname;
+                currentPersonObj.lastname = p.Lastname;
+                currentPersonObj.suffix = p.Suffix;
+                currentPersonObj.birthday = p.Birthday;
+                currentPersonObj.entryDate = p.EntryDate;
+                currentPersonObj.birthday_formatted = model.formatDate(p.Birthday);
+                currentPersonObj.entryDate_formatted = model.formatDate(p.EntryDate);
+                currentPersonObj.leavingDate = p.LeavingDate;
+                currentPersonObj.passiveSince = p.PassiveSince;
+                currentPersonObj.livingElsewhereSince = p.LivingElsewhereSince;
+                currentPersonObj.leavingReasonName = p.LeavingReasonName;
+                currentPersonObj.membershipFeeName = p.MembershipFeeName;
+                currentPersonObj.membershipFeeAmount = p.MembershipFeeAmount;
+                currentPersonObj.addresses = [];
+                currentPersonObj.phoneNumbers = [];
+                currentPersonObj.accounts = [];
             }
-
-        })
-        .catch(function (error) {
-            console.log("Error while reading persons with contact data from database: " + error);
-            res.statusCode = 500;
-            return res.send('Error 500: reading of persons from database failed');
-        });
-};
-
-module.exports.list = function (req, res) {
-
-    knex.select('Salutation', 'Firstname', 'Lastname', 'Suffix', 'Birthday',
-        'PersonItems.Person_id as Person_id',
-        'PersonContactDatas.id as PersonContactData_id', 'PersonContactDatas.Usage as PersonContactDataUsage',
-        'PersonContactTypes.Name as PersonContactTypeName', 'PersonContactTypes.Description as PersonContactTypeDescription',
-        'Memberships.MembershipNumber',
-        'MembershipItems.EntryDate', 'MembershipItems.LeavingDate', 'MembershipItems.PassiveSince', 'MembershipItems.LivingElsewhereSince',
-        'LeavingReasons.Name as LeavingReasonName',
-        'MembershipFees.Name as MembershipFeeName', 'MembershipFees.Amount as MembershipFeeAmount',
-        'PersonContactDataAddresses.Street', 'PersonContactDataAddresses.StreetNumber', 'PersonContactDataAddresses.Postalcode',
-        'PersonContactDataAddresses.City',
-        'PersonContactDataPhonenumbers.Number as PersonContactDataPhoneNumber',
-        'PersonContactDataAccounts.Account as PersonContactDataAccount'
-    ).from('Persons')
-        .join('Memberships', 'Memberships.Person_id', 'Persons.id')
-        .join('MembershipItems', 'MembershipItems.Membership_id', 'Memberships.id')
-        .leftJoin('LeavingReasons', 'LeavingReasons.id', 'MembershipItems.LeavingReason_id')
-        .leftJoin('MembershipFees', 'MembershipFees.id', 'MembershipItems.MembershipFee_id')
-        .join('PersonItems', 'Persons.id', 'PersonItems.Person_id')
-        .leftJoin('PersonContactDatas', 'PersonContactDatas.Person_id', 'Persons.id')
-        .innerJoin('PersonContactTypes', 'PersonContactDatas.PersonContactType_id', 'PersonContactTypes.id')
-        .leftJoin('PersonContactDataAddresses', 'PersonContactDataAddresses.PersonContactData_id', 'PersonContactDatas.id')
-        .leftJoin('PersonContactDataPhonenumbers', 'PersonContactDataPhonenumbers.PersonContactData_id', 'PersonContactDatas.id')
-        .leftJoin('PersonContactDataAccounts', 'PersonContactDataAccounts.PersonContactData_id', 'PersonContactDatas.id')
-        .where({
-            'PersonItems.valid_end': null,
-            'PersonContactTypes.Deleted': false,
-            'PersonContactDataAddresses.valid_end': null,
-            'PersonContactDataPhonenumbers.valid_end': null,
-            'PersonContactDataAccounts.valid_end': null,
-            'MembershipItems.valid_end': null,
-            'MembershipItems.LeavingDate': null
-        })
-        .orderBy('PersonItems.Lastname', 'ASC')
-        .orderBy('Persons.id', 'ASC')
-        .then(function (persons) {
-            var records = [];
-            var addresses = [];
-            var phoneNumbers = [];
-            var accounts = [];
-            var lastMemberId;
-            var currentPersonObj;
-            _.each(persons, function (p) {
-                if (p.MembershipNumber != lastMemberId) {
-                    lastMemberId = p.MembershipNumber;
-                    currentPersonObj = new Object();
-                    records.push(currentPersonObj);
-                    currentPersonObj.id = p.Person_id;
-                    currentPersonObj.membershipNumber = p.MembershipNumber;
-                    currentPersonObj.salutation = p.Salutation;
-                    currentPersonObj.firstname = p.Firstname;
-                    currentPersonObj.lastname = p.Lastname;
-                    currentPersonObj.suffix = p.Suffix;
-                    currentPersonObj.birthday = p.Birthday;
-                    currentPersonObj.entryDate = p.EntryDate;
-                    currentPersonObj.birthday_formatted = model.formatDate(p.Birthday);
-                    currentPersonObj.entryDate_formatted = model.formatDate(p.EntryDate);
-                    currentPersonObj.addresses = [];
-                    currentPersonObj.phoneNumbers = [];
-                    currentPersonObj.accounts = [];
-                }
-                switch (p.PersonContactTypeName) {
+            switch (p.PersonContactTypeName) {
                 case 'address':
-                    addresses.push({
-                        id: p.PersonContactData_id,
-                        street: p.Street,
-                        streetNumber: p.StreetNumber,
-                        postalcode: p.Postalcode,
-                        city: p.City,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.addresses.push(p.PersonContactData_id);
+                    if (p.PersonContactDataAddressesId) {
+                        addresses.push({
+                            id: p.PersonContactData_id,
+                            street: p.Street,
+                            streetNumber: p.StreetNumber,
+                            postalcode: p.Postalcode,
+                            city: p.City,
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription
+                        });
+                        currentPersonObj.addresses.push(p.PersonContactData_id);
+                    }
                     break;
                 case 'phone':
-                    phoneNumbers.push({
-                        id: p.PersonContactData_id,
-                        number: p.PersonContactDataPhoneNumber,
-                        number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription});
-                    currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
+                    if (p.PersonContactDataPhonenumbersId) {
+                        phoneNumbers.push({
+                            id: p.PersonContactData_id,
+                            number: p.PersonContactDataPhoneNumber,
+                            number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription});
+                        currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
+                    }
                     break;
                 default:
-                    accounts.push({
-                        id: p.PersonContactData_id,
-                        account: p.PersonContactDataAccount,
-                        usage: p.PersonContactDataUsage,
-                        type: p.PersonContactTypeDescription
-                    });
-                    currentPersonObj.accounts.push(p.PersonContactData_id);
-                }
-            });
+                    if (p.PersonContactDataAccountsId) {
+                        accounts.push({
+                            id: p.PersonContactData_id,
+                            account: p.PersonContactDataAccount,
+                            usage: p.PersonContactDataUsage,
+                            type: p.PersonContactTypeDescription
+                        });
+                        currentPersonObj.accounts.push(p.PersonContactData_id);
+                    }
+            }
+        });
 
+        if (records.length > 0) {
+            res.setHeader('X-CSRF-Token', req.csrfToken());
             res.json(
                 {
                     members: records,
@@ -236,13 +116,115 @@ module.exports.list = function (req, res) {
                     accounts: accounts
                 }
             );
+        } else {
+            res.statusCode = 404;
+            res.send('Error 404: Person with id ' + personId + ' not found');
+        }
 
-        })
-        .catch(function (error) {
-            console.log("Error while reading persons with contact data from database: " + error);
-            res.statusCode = 500;
-            return res.send('Error 500: reading of persons from database failed');
+    }).catch(function (error) {
+        console.log("Error while reading persons with contact data from database: " + error);
+        res.statusCode = 500;
+        return res.send('Error 500: reading of persons from database failed');
+    });
+};
+
+module.exports.listQuery = 'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "Birthday", "PersonItems"."Person_id" as "Person_id",' +
+    '"PersonContactDataAddresses"."PersonContactData_id" as "PersonContactDataAddressesId",' +
+    '"PersonContactDataPhonenumbers"."PersonContactData_id" as "PersonContactDataPhonenumbersId",' +
+    '"PersonContactDataAccounts"."PersonContactData_id" as "PersonContactDataAccountsId",' +
+    '"PersonContactDatas"."id" as "PersonContactData_id",' +
+    '"PersonContactDatas"."Usage" as "PersonContactDataUsage",' +
+    '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
+    '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
+    '"MembershipItems"."PassiveSince", "MembershipItems"."LivingElsewhereSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
+    '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
+    '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
+    ' from "Persons"' +
+    ' inner join "PersonItems" on "Persons"."id" = "PersonItems"."Person_id"' +
+    ' inner join "Memberships" on "Memberships"."Person_id" = "Persons"."id"' +
+    ' inner join "MembershipItems" on "MembershipItems"."Membership_id" = "Memberships"."id"' +
+    ' left join "LeavingReasons" on "LeavingReasons"."id" = "MembershipItems"."LeavingReason_id"' +
+    ' left join "MembershipFees" on "MembershipFees"."id" = "MembershipItems"."MembershipFee_id"' +
+    ' left join "PersonContactDatas" on "PersonContactDatas"."Person_id" = "Persons"."id"' +
+    ' inner join "PersonContactTypes" on "PersonContactDatas"."PersonContactType_id" = "PersonContactTypes"."id"' +
+    ' left join "PersonContactDataAddresses" on ("PersonContactDataAddresses"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAddresses"."valid_end" is  null)' +
+    ' left join "PersonContactDataPhonenumbers" on ("PersonContactDataPhonenumbers"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataPhonenumbers"."valid_end" is  null)' +
+    ' left join "PersonContactDataAccounts" on ("PersonContactDataAccounts"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAccounts"."valid_end" is  null)' +
+    ' where "PersonItems"."valid_end" is null' +
+    ' and "PersonContactTypes"."Deleted" = false' +
+    ' and "MembershipItems"."valid_end" is null' +
+    ' and "MembershipItems"."LeavingDate" is null' +
+    ' order by "PersonItems"."Lastname" ASC, "PersonItems"."Person_id" ASC';
+
+module.exports.list = function (req, res) {
+
+    knex.raw(module.exports.listQuery).then(function (persons) {
+        var records = [];
+        var lastMemberId;
+        var currentPersonObj;
+        _.each(persons.rows, function (p) {
+            if (p.MembershipNumber != lastMemberId) {
+                lastMemberId = p.MembershipNumber;
+                currentPersonObj = new Object();
+                records.push(currentPersonObj);
+                currentPersonObj.id = p.Person_id;
+                currentPersonObj.MembershipNumber = p.MembershipNumber;
+                currentPersonObj.Salutation = p.Salutation;
+                currentPersonObj.Firstname = p.Firstname;
+                currentPersonObj.Lastname = p.Lastname;
+                currentPersonObj.Suffix = p.Suffix;
+                currentPersonObj.Birthday = model.formatDate(p.Birthday);
+                currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
+                currentPersonObj.Addresses = [];
+                currentPersonObj.PhoneNumbers = [];
+                currentPersonObj.Accounts = [];
+            }
+            switch (p.PersonContactTypeName) {
+                case 'address':
+                    if (p.PersonContactDataAddressesId) {
+                        currentPersonObj.Addresses.push({
+                            Street: p.Street,
+                            StreetNumber: p.StreetNumber,
+                            Postalcode: p.Postalcode,
+                            City: p.City,
+                            Usage: p.PersonContactDataUsage,
+                            Type: p.PersonContactTypeDescription
+                        });
+                    }
+                    break;
+                case 'phone':
+                    if (p.PersonContactDataPhonenumbersId) {
+                        currentPersonObj.PhoneNumbers.push({
+                            Number: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
+                            Usage: p.PersonContactDataUsage,
+                            Type: p.PersonContactTypeDescription});
+                    }
+                    break;
+                default:
+                    if (p.PersonContactDataAccountsId) {
+                        currentPersonObj.Accounts.push({
+                            Account: p.PersonContactDataAccount,
+                            Usage: p.PersonContactDataUsage,
+                            Type: p.PersonContactTypeDescription
+                        });
+                    }
+            }
         });
+
+        res.json(
+            {
+                members: records,
+                addresses: addresses,
+                phoneNumbers: phoneNumbers,
+                accounts: accounts
+            }
+        );
+
+    }).catch(function (error) {
+        console.log("Error while reading persons with contact data from database: " + error);
+        res.statusCode = 500;
+        return res.send('Error 500: reading of persons from database failed');
+    });
 };
 
 module.exports.put = function (req, res) {
