@@ -145,10 +145,10 @@
 
     <div class="row">
         {{#each a in addresses}}
-        <div class="col-md-12">
-            <span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteAddress" a }} />&nbsp;<strong>Adresse ({{a.usage}}):</strong>
-        </div>
         <form class="form-horizontal" role="form">
+            <div class="form-group col-md-12">
+                <label class="form-control-static col-md-12"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "address" a }}></span>&nbsp;Adresse ({{a.usage}}):</label>
+            </div>
             <div class="form-group">
                 <label for="streetaddress" class="control-label col-md-3">Straße, Nr.:</label>
 
@@ -184,8 +184,8 @@
                     <span class="glyphicon glyphicon-plus-sign"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createAddress" "Privat"}}>Privat</a></li>
-                    <li><a href="#" {{action "createAddress" "Arbeit"}}>Arbeit</a></li>
+                    <li><a href="#" {{action "createContactItem" "address" "Privat"}}>Privat</a></li>
+                    <li><a href="#" {{action "createContactItem" "address" "Arbeit"}}>Arbeit</a></li>
                 </ul>
             </div>
         </div>
@@ -200,9 +200,8 @@
             {{#each p in phoneNumbers}}
             <form class="form-horizontal" role="form">
 
-
                 <div class="form-group has-feedback">
-                    <label for="phonenumber" class="control-label col-md-3">{{p.usage}}:</label>
+                    <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p }}>&nbsp;</span>{{p.usage}}:</label>
 
                     <div class="col-md-9" id="phonenumber">
                         {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
@@ -217,11 +216,11 @@
                     <span class="glyphicon glyphicon-plus-sign"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createPhone" "Privat"}} >Privat</a></li>
-                    <li><a href="#" {{action "createPhone" "Mobil"}} >Mobil</a></li>
-                    <li><a href="#" {{action "createPhone" "Mobil Arbeit"}} >Mobil Arbeit</a></li>
-                    <li><a href="#" {{action "createPhone" "Mobil 2"}} >Mobil 2</a></li>
-                    <li><a href="#" {{action "createPhone" "Arbeit"}} >Arbeit</a></li>
+                    <li><a href="#" {{action "createContactItem" "phone" "Privat"}} >Privat</a></li>
+                    <li><a href="#" {{action "createContactItem" "phone" "Mobil"}} >Mobil</a></li>
+                    <li><a href="#" {{action "createContactItem" "phone" "Mobil Arbeit"}} >Mobil Arbeit</a></li>
+                    <li><a href="#" {{action "createContactItem" "phone" "Mobil 2"}} >Mobil 2</a></li>
+                    <li><a href="#" {{action "createContactItem" "phone" "Arbeit"}} >Arbeit</a></li>
                 </ul>
             </div>
         </div>
@@ -237,7 +236,7 @@
             {{#each a in accounts}}
             <form class="form-horizontal" role="form">
                 <div class="form-group has-feedback">
-                    <label for="accountname" class="control-label col-md-3">{{a.type}}&nbsp;({{a.usage}}):</label>
+                    <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" p }}>&nbsp;</span>{{a.usage}}:</label>
 
                     <div class="col-md-9" id="accountname">
                         {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
@@ -252,13 +251,13 @@
                     <span class="glyphicon glyphicon-plus-sign"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createAccount" "Email"}}>Email</a></li>
-                    <li><a href="#" {{action "createAccount" "Email 2"}}>Email 2</a></li>
-                    <li><a href="#" {{action "createAccount" "Email Arbeit"}}>Email Arbeit</a></li>
-                    <li><a href="#" {{action "createAccount" "Twitter"}}>Twitter</a></li>
-                    <li><a href="#" {{action "createAccount" "Facebook"}}>Facebook</a></li>
-                    <li><a href="#" {{action "createAccount" "Email"}}>Google</a></li>
-                    <li><a href="#" {{action "createAccount" "Email"}}>Windows Live</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Email"}}>Email</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Email 2"}}>Email 2</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Email Arbeit"}}>Email Arbeit</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Twitter"}}>Twitter</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Facebook"}}>Facebook</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Google"}}>Google</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Windows"}}>Windows Live</a></li>
                 </ul>
             </div>
         </div>

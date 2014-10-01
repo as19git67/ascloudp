@@ -82,15 +82,16 @@ MembersApp.Router.map(function () {
 
 
 MembersApp.MemberController = Ember.ObjectController.extend({
+    deletedItems: Ember.A([]),
     isNotDirty: Ember.computed('content.isDirty',
         'model.addresses',
         'model.addresses.@each.isDirty',
         'model.phoneNumbers.@each.isDirty',
         'model.accounts.@each.isDirty',
-        'deletedAddresses.length', function () {
+        'deletedItems.length', function () {
             var contentIsDirty = this.get('content.isDirty');
             var modelCollectionsAreDirty = false;
-            if (this.deletedAddresses.length > 0) {
+            if (this.deletedItems.length > 0) {
                 modelCollectionsAreDirty = true;
             } else {
                 var model = this.get('model');
@@ -137,7 +138,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
     setId: function (id) {
         var self = this;
         self.set('errorMessage', "");
-        self.deletedAddresses.clear();
+        self.deletedItems.clear();
         this.store.findById('member', id).then(function (person) {
             if (person) {
                 self.set('model', person);
@@ -168,10 +169,26 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
         });
     },
-    deletedAddresses: Ember.A([]),
+    getItemCollection: function (contactType) {
+        var itemCollection;
+        switch (contactType) {
+            case 'address':
+                itemCollection = this.model.get('addresses');
+                break;
+            case 'phone':
+                itemCollection = this.model.get('phoneNumbers');
+                break;
+            case 'account':
+                itemCollection = this.model.get('accounts');
+                break;
+        }
+        return itemCollection;
+    },
     actions: {
         discardChanges: function () {
             this.get('model').rollback();
+
+            // todo also for phoen and accounts
             var addresses = this.model.get('addresses');
             var newAddresses = addresses.filterBy('isNew');
             var changedAddresses = addresses.filterBy('isDirty');
@@ -182,60 +199,58 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 address.rollback();
             });
 
-            this.deletedAddresses.forEach(function (addressMarkedDelete) {
-                addressMarkedDelete.rollback();
-                addresses.pushObject(addressMarkedDelete);
+            this.deletedItems.forEach(function (itemMarkedDelete) {
+                itemMarkedDelete.rollback();
+                if (itemMarkedDelete instanceof MembersApp.Address) {
+                    addresses.pushObject(itemMarkedDelete);
+                }
             });
-            this.deletedAddresses.clear();
+            this.deletedItems.clear();
         },
-        createAddress: function (usage) {
-            console.log("createAddress (MemberController) clicked");
+        createContactItem: function (contactType, usage) {
+            console.log("createContactItem (MemberController) clicked");
             var personId = this.model.get('id');
-            var addresses = this.model.get('addresses');
-            var newAddress = addresses.createRecord({
-                Person_id: personId,
-                usage: usage
-            });
+            var itemCollection = this.getItemCollection(contactType);
+            if (itemCollection) {
+                itemCollection.createRecord({
+                    Person_id: personId,
+                    usage: usage
+                });
+            }
         },
-        deleteAddress: function (addressToDelete) {
-            console.log("deleteAddress (MemberController) for " + addressToDelete.get('id') + " clicked");
-            var addresses = this.model.get('addresses');
+        deleteContactItem: function (contactType, itemToDelete) {
+            console.log("deleteContactItem (MemberController) for " + itemToDelete.get('id') + " clicked");
             var self = this;
-            var addressesToDelete = addresses.filterBy('id', addressToDelete.get('id'));
-            addressesToDelete.forEach(function (address) {
-                address.deleteRecord();
-                self.deletedAddresses.pushObject(address);
-            });
-        },
-        createPhone: function (usage) {
-            console.log("createPhone (MemberController) clicked");
-            var personId = this.model.get('id');
-            var phoneNumbers = this.model.get('phoneNumbers');
-            var newPhoneNumbers = phoneNumbers.createRecord({
-                Person_id: personId,
-                usage: usage
-            });
+            var itemCollection = this.getItemCollection(contactType);
+            if (itemCollection) {
+                var itemsToDelete = itemCollection.filterBy('id', itemToDelete.get('id'));
+                itemsToDelete.forEach(function (item) {
+                    item.deleteRecord();
+                    self.deletedItems.pushObject(item);
+                });
+            }
         },
         save: function (controller) {
             var mod = this.get('model');
 
-            var addressesToSavePromises = [];
+            var itemsToSavePromises = [];
 
             // save all addresses that are marked for deletion
-            //var deletedAddressesArray = Ember.A(this.deletedAddresses);
-            this.deletedAddresses.forEach(function (addressMarkedDelete) {
-                addressesToSavePromises.push(addressMarkedDelete.save());
+            this.deletedItems.forEach(function (itemMarkedDelete) {
+                itemsToSavePromises.push(itemMarkedDelete.save());
             });
-            this.deletedAddresses.clear();
+            this.deletedItems.clear();
 
-            var addresses = mod.get('addresses');
-            addresses.forEach(function (address) {
-                if (address.get('isNew') || address.get('isDirty')) {
-                    addressesToSavePromises.push(address.save());   // add promise from save to array
-                }
+            var modelCollections = Ember.A([mod.get('addresses'), mod.get('phoneNumbers'), mod.get('accounts') ]);
+            modelCollections.forEach(function (modelCollection) {
+                modelCollection.forEach(function (model) {
+                    if (model.get('isNew') || model.get('isDirty')) {
+                        itemsToSavePromises.push(model.save());   // add promise from save to array
+                    }
+                });
             });
 
-            Ember.RSVP.allSettled(addressesToSavePromises).then(function (array) {
+            Ember.RSVP.allSettled(itemsToSavePromises).then(function (array) {
                 // array == [
                 //   { state: 'fulfilled', value: 1 },
                 //   { state: 'rejected', reason: Error },
@@ -262,14 +277,12 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 });
 
                 if (haveError) {
-                    errorMessage = "Error while saving addresses: " + errorMessage;
+                    errorMessage = "Error while saving contact data: " + errorMessage;
                     console.log(errorMessage);
                     controller.set('errorMessage', errorMessage);
                 }
                 else {
-                    console.log("All new or changed addresses saved. Addresses marked for deletion were deleted.");
-
-                    // todo: check array for rejected promises
+                    console.log("All new or changed contact items saved. Items marked for deletion were deleted.");
 
                     if (mod.get('isDirty')) {
                         mod.save()
@@ -290,7 +303,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                     }
                     else {
                         $('#editMember').modal('hide');
-                        if (addressesToSavePromises.length > 0) {
+                        if (itemsToSavePromises.length > 0) {
                             location.reload();
                         } else {
                             // nothing changed - just close modal dialog
@@ -305,6 +318,8 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
         },
         delete: function (controller) {
+
+            // todo
 
             // remove recipient from group
             var members = controller.content.get('members');
