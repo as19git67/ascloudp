@@ -82,6 +82,28 @@ MembersApp.Router.map(function () {
 
 
 MembersApp.MemberController = Ember.ObjectController.extend({
+    isNotDirty: Ember.computed('content.isDirty', 'model.addresses', 'deletedAddresses.length', function () {
+        var contentIsDirty = this.get('content.isDirty');
+        var addressesAreDirty = false;
+        if (this.deletedAddresses.length > 0) {
+            addressesAreDirty = true;
+        } else {
+            var model = this.get('model');
+            if (model) {
+                var addresses = model.get('addresses');
+                addresses.forEach(function (address) {
+                    if (address.get('isNew')) {
+                        addressesAreDirty = true;
+                    } else {
+                        if (address.get('isDirty')) {
+                            addressesAreDirty = true;
+                        }
+                    }
+                });
+            }
+        }
+        return !(contentIsDirty || addressesAreDirty);
+    }),
     errorMessage: '',
     previouslySelectedElement: null,
     haveAddresses: function () {
@@ -138,7 +160,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
         });
     },
-    deletedAddresses: [],
+    deletedAddresses: Ember.A([]),
     actions: {
         discardChanges: function () {
             this.get('model').rollback();
@@ -153,11 +175,13 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 }
             });
 
-            var deletedAddressesArray = Ember.A(this.deletedAddresses);
-            deletedAddressesArray.forEach(function(addressMarkedDelete){
+            //var deletedAddressesArray = Ember.A(this.deletedAddresses);
+            //deletedAddressesArray.forEach(function(addressMarkedDelete){
+            this.deletedAddresses.forEach(function (addressMarkedDelete) {
                 addressMarkedDelete.rollback();
             });
-            this.deletedAddresses = [];
+            //this.set('deletedAddresses', []);
+            this.deletedAddresses.clear();
         },
         createAddress: function (usage) {
             console.log("createAddress (MemberController) clicked");
@@ -172,11 +196,10 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             console.log("deleteAddress (MemberController) for " + addressToDelete.get('id') + " clicked");
             var addresses = this.model.get('addresses');
             var self = this;
-            addresses.forEach(function (address) {
-                if (address.get('id') == addressToDelete.get('id')) {
-                    address.deleteRecord();
-                    self.deletedAddresses.push(address);
-                }
+            var addressesToDelete = addresses.filterBy('id', addressToDelete.get('id'));
+            addressesToDelete.forEach(function (address) {
+                address.deleteRecord();
+                self.deletedAddresses.pushObject(address);
             });
         },
         save: function (controller) {
@@ -185,11 +208,11 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             var addressesToSavePromises = [];
 
             // save all addresses that are marked for deletion
-            var deletedAddressesArray = Ember.A(this.deletedAddresses);
-            deletedAddressesArray.forEach(function(addressMarkedDelete){
+            //var deletedAddressesArray = Ember.A(this.deletedAddresses);
+            this.deletedAddresses.forEach(function (addressMarkedDelete) {
                 addressesToSavePromises.push(addressMarkedDelete.save());
             });
-            this.deletedAddresses = [];
+            this.deletedAddresses.clear();
 
             var addresses = mod.get('addresses');
             addresses.forEach(function (address) {
