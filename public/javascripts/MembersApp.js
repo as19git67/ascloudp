@@ -82,28 +82,35 @@ MembersApp.Router.map(function () {
 
 
 MembersApp.MemberController = Ember.ObjectController.extend({
-    isNotDirty: Ember.computed('content.isDirty', 'model.addresses', 'deletedAddresses.length', function () {
-        var contentIsDirty = this.get('content.isDirty');
-        var addressesAreDirty = false;
-        if (this.deletedAddresses.length > 0) {
-            addressesAreDirty = true;
-        } else {
-            var model = this.get('model');
-            if (model) {
-                var addresses = model.get('addresses');
-                addresses.forEach(function (address) {
-                    if (address.get('isNew')) {
-                        addressesAreDirty = true;
-                    } else {
-                        if (address.get('isDirty')) {
-                            addressesAreDirty = true;
-                        }
-                    }
-                });
+    isNotDirty: Ember.computed('content.isDirty',
+        'model.addresses',
+        'model.addresses.@each.isDirty',
+        'model.phoneNumbers.@each.isDirty',
+        'model.accounts.@each.isDirty',
+        'deletedAddresses.length', function () {
+            var contentIsDirty = this.get('content.isDirty');
+            var modelCollectionsAreDirty = false;
+            if (this.deletedAddresses.length > 0) {
+                modelCollectionsAreDirty = true;
+            } else {
+                var model = this.get('model');
+                if (model) {
+                    var modelCollections = Ember.A([model.get('addresses'), model.get('phoneNumbers'), model.get('accounts') ]);
+                    modelCollections.forEach(function (modelCollection) {
+                        modelCollection.forEach(function (model) {
+                            if (model.get('isNew')) {
+                                modelCollectionsAreDirty = true;
+                            } else {
+                                if (model.get('isDirty')) {
+                                    modelCollectionsAreDirty = true;
+                                }
+                            }
+                        });
+                    });
+                }
             }
-        }
-        return !(contentIsDirty || addressesAreDirty);
-    }),
+            return !(contentIsDirty || modelCollectionsAreDirty);
+        }),
     errorMessage: '',
     previouslySelectedElement: null,
     haveAddresses: function () {
@@ -166,14 +173,13 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         discardChanges: function () {
             this.get('model').rollback();
             var addresses = this.model.get('addresses');
-            addresses.forEach(function (address) {
-                if (address.get('isNew')) {
-                    address.deleteRecord();
-                } else {
-                    if (address.get('isDirty')) {
-                        address.rollback();
-                    }
-                }
+            var newAddresses = addresses.filterBy('isNew');
+            var changedAddresses = addresses.filterBy('isDirty');
+            newAddresses.forEach(function (address) {
+                address.deleteRecord();
+            });
+            changedAddresses.forEach(function (address) {
+                address.rollback();
             });
 
             this.deletedAddresses.forEach(function (addressMarkedDelete) {
@@ -199,6 +205,15 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             addressesToDelete.forEach(function (address) {
                 address.deleteRecord();
                 self.deletedAddresses.pushObject(address);
+            });
+        },
+        createPhone: function (usage) {
+            console.log("createPhone (MemberController) clicked");
+            var personId = this.model.get('id');
+            var phoneNumbers = this.model.get('phoneNumbers');
+            var newPhoneNumbers = phoneNumbers.createRecord({
+                Person_id: personId,
+                usage: usage
             });
         },
         save: function (controller) {
