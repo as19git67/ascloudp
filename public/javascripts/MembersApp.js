@@ -130,6 +130,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
     setId: function (id) {
         var self = this;
         self.set('errorMessage', "");
+        self.deletedAddresses.clear();
         this.store.findById('member', id).then(function (person) {
             if (person) {
                 self.set('model', person);
@@ -175,12 +176,10 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 }
             });
 
-            //var deletedAddressesArray = Ember.A(this.deletedAddresses);
-            //deletedAddressesArray.forEach(function(addressMarkedDelete){
             this.deletedAddresses.forEach(function (addressMarkedDelete) {
                 addressMarkedDelete.rollback();
+                addresses.pushObject(addressMarkedDelete);
             });
-            //this.set('deletedAddresses', []);
             this.deletedAddresses.clear();
         },
         createAddress: function (usage) {
