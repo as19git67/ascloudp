@@ -32,7 +32,7 @@ var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
 var apiMembers = require('./routes/api/v1/members');
-var apiAddresses = require('./routes/api/v1/addresses');
+var apiCommunicationData = require('./routes/api/v1/communicationData');
 
 moment.locale("de"); // todo: use language from configuration or browser setting
 var app = express();
@@ -88,9 +88,15 @@ app.use('/loginManageAccount', loginManageAccount);
 app.get('/api/v1/members', apiMembers.list);
 app.get('/api/v1/members/:id', apiMembers.get);
 app.put('/api/v1/members/:id', apiMembers.put);
-app.post('/api/v1/addresses', apiAddresses.post);
-app.put('/api/v1/addresses/:id', apiAddresses.put);
-app.delete('/api/v1/addresses/:id', apiAddresses.delete);
+app.post('/api/v1/addresses', apiCommunicationData.postAddress);
+app.put('/api/v1/addresses/:id', apiCommunicationData.putAddress);
+app.delete('/api/v1/addresses/:id', apiCommunicationData.deleteAddress);
+app.post('/api/v1/phoneNumbers', apiCommunicationData.postPhoneNumber);
+app.put('/api/v1/phoneNumbers/:id', apiCommunicationData.putPhoneNumber);
+app.delete('/api/v1/phoneNumbers/:id', apiCommunicationData.deletePhoneNumber);
+app.post('/api/v1/accounts', apiCommunicationData.postAccount);
+app.put('/api/v1/accounts/:id', apiCommunicationData.putAccount);
+app.delete('/api/v1/accounts/:id', apiCommunicationData.deleteAccount);
 
 app.use(function (req, res, next) {
 

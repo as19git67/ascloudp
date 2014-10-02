@@ -135,6 +135,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             return false;
         }
     }.property('model.accounts').cacheable(),
+
     setId: function (id) {
         var self = this;
         self.set('errorMessage', "");
@@ -152,6 +153,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         });
 
     },
+
     init: function () {
         var self = this;
         $(".memberListItem").click(function () {
@@ -169,6 +171,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
         });
     },
+
     getItemCollection: function (contactType) {
         var itemCollection;
         switch (contactType) {
@@ -184,25 +187,55 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         }
         return itemCollection;
     },
+
     actions: {
         discardChanges: function () {
             this.get('model').rollback();
 
-            // todo also for phoen and accounts
             var addresses = this.model.get('addresses');
+            var phoneNumbers = this.model.get('phoneNumbers');
+            var accounts = this.model.get('accounts');
+
             var newAddresses = addresses.filterBy('isNew');
+            var newPhoneNumbers = phoneNumbers.filterBy('isNew');
+            var newAccounts = accounts.filterBy('isNew');
+
             var changedAddresses = addresses.filterBy('isDirty');
-            newAddresses.forEach(function (address) {
-                address.deleteRecord();
+            var changedPhoneNumbers = phoneNumbers.filterBy('isDirty');
+            var changedAccounts = accounts.filterBy('isDirty');
+
+            newAddresses.forEach(function (item) {
+                item.deleteRecord();
             });
-            changedAddresses.forEach(function (address) {
-                address.rollback();
+            newPhoneNumbers.forEach(function (item) {
+                item.deleteRecord();
+            });
+            newAccounts.forEach(function (item) {
+                item.deleteRecord();
+            });
+
+            changedAddresses.forEach(function (item) {
+                item.rollback();
+            });
+            changedPhoneNumbers.forEach(function (item) {
+                item.rollback();
+            });
+            changedAccounts.forEach(function (item) {
+                item.rollback();
             });
 
             this.deletedItems.forEach(function (itemMarkedDelete) {
                 itemMarkedDelete.rollback();
                 if (itemMarkedDelete instanceof MembersApp.Address) {
                     addresses.pushObject(itemMarkedDelete);
+                } else {
+                    if (itemMarkedDelete instanceof MembersApp.PhoneNumber) {
+                        phoneNumbers.pushObject(itemMarkedDelete);
+                    } else {
+                        if (itemMarkedDelete instanceof MembersApp.Account) {
+                            accounts.pushObject(itemMarkedDelete);
+                        }
+                    }
                 }
             });
             this.deletedItems.clear();
