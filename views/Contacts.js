@@ -68,10 +68,11 @@ module.exports.getContactDataForPerson = function (personItemModel, personContac
                     qb.innerJoin('PersonContactTypes', 'PersonContactTypes.id', 'PersonContactDatas.PersonContactType_id');
                     qb.where({
                         'Person_id': personItemModel.get('Person_id'),
-                        'valid_end': null
-                    });
-                    qb.where({'PersonContactType_id': personContactTypeEmail})
-                        .orWhere({'PersonContactType_id': personContactTypeTwitter});
+                        'valid_end': null}).where(
+                        function () {
+                            this.where('PersonContactType_id', personContactTypeEmail)
+                                .orWhere('PersonContactType_id', personContactTypeTwitter)
+                        });
                     qb.select(['PersonContactDatas.Usage', 'PersonContactTypes.Description']);
                 }).fetchAll().then(function (personContactAccount) {
                     personContactAccount.forEach(function (personContactAccount) {
@@ -90,9 +91,11 @@ module.exports.getContactDataForPerson = function (personItemModel, personContac
             rejectPersonItem(error);
         });
     });
-}
+};
 
 module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
+
+    // todo convert to one knex query
 
     new PersonItem().query(function (qb) {
         qb.leftJoin('Persons', 'Persons.id', 'PersonItems.Person_id');
