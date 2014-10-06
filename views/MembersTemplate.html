@@ -236,7 +236,7 @@
             {{#each a in accounts}}
             <form class="form-horizontal" role="form">
                 <div class="form-group has-feedback">
-                    <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" p }}>&nbsp;</span>{{a.usage}}:</label>
+                    <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a }}>&nbsp;</span>{{a.usage}}:</label>
 
                     <div class="col-md-9" id="accountname">
                         {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
@@ -251,13 +251,13 @@
                     <span class="glyphicon glyphicon-plus-sign"></span>
                 </button>
                 <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createContactItem" "account" "Email"}}>Email</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Email 2"}}>Email 2</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Email Arbeit"}}>Email Arbeit</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Twitter"}}>Twitter</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Facebook"}}>Facebook</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Google"}}>Google</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Windows"}}>Windows Live</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Email" "email"}}>Email</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Email 2" "email"}}>Email 2</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Email Arbeit" "email"}}>Email Arbeit</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Twitter" "twitter"}}>Twitter</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Facebook" "facebook"}}>Facebook</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Google" "google"}}>Google</a></li>
+                    <li><a href="#" {{action "createContactItem" "account" "Microsoft" "microsoft"}}>Windows Live</a></li>
                 </ul>
             </div>
         </div>

@@ -79,7 +79,8 @@ module.exports.get = function (req, res) {
                             postalcode: p.Postalcode,
                             city: p.City,
                             usage: p.PersonContactDataUsage,
-                            type: p.PersonContactTypeDescription
+                            type: p.PersonContactTypeName,
+                            typeDescription: p.PersonContactTypeDescription
                         });
                         currentPersonObj.addresses.push(p.PersonContactData_id);
                     }
@@ -91,7 +92,9 @@ module.exports.get = function (req, res) {
                             number: p.PersonContactDataPhoneNumber,
                             number_formatted: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
                             usage: p.PersonContactDataUsage,
-                            type: p.PersonContactTypeDescription});
+                            type: p.PersonContactTypeName,
+                            typeDescription: p.PersonContactTypeDescription
+                        });
                         currentPersonObj.phoneNumbers.push(p.PersonContactData_id);
                     }
                     break;
@@ -101,7 +104,8 @@ module.exports.get = function (req, res) {
                             id: p.PersonContactData_id,
                             account: p.PersonContactDataAccount,
                             usage: p.PersonContactDataUsage,
-                            type: p.PersonContactTypeDescription
+                            type: p.PersonContactTypeName,
+                            typeDescription: p.PersonContactTypeDescription
                         });
                         currentPersonObj.accounts.push(p.PersonContactData_id);
                     }
@@ -156,7 +160,7 @@ module.exports.listQuery = 'select "Salutation", "Firstname", "PersonItems"."Las
     ' and "PersonContactTypes"."Deleted" = false' +
     ' and "MembershipItems"."valid_end" is null' +
     ' and "MembershipItems"."LeavingDate" is null' +
-    ' order by "PersonItems"."Lastname" ASC, "PersonItems"."Person_id" ASC';
+    ' order by "PersonItems"."Lastname" ASC, "PersonItems"."Person_id" ASC, "PersonContactTypes"."Description", "PersonContactDatas"."Usage"';
 
 module.exports.list = function (req, res) {
 

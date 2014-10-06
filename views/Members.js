@@ -39,7 +39,8 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                             Postalcode: p.Postalcode,
                             City: p.City,
                             Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
+                            Type: p.PersonContactTypeName,
+                            TypeDescription: p.PersonContactTypeDescription
                         });
                     }
                     break;
@@ -48,7 +49,9 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                         currentPersonObj.PhoneNumbers.push({
                             Number: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
                             Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription});
+                            Type: p.PersonContactTypeName,
+                            TypeDescription: p.PersonContactTypeDescription
+                        });
                     }
                     break;
                 default:
@@ -56,7 +59,8 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                         currentPersonObj.Accounts.push({
                             Account: p.PersonContactDataAccount,
                             Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
+                            Type: p.PersonContactTypeName,
+                            TypeDescription: p.PersonContactTypeDescription
                         });
                     }
             }

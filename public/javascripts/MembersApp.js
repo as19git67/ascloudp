@@ -240,15 +240,23 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             });
             this.deletedItems.clear();
         },
-        createContactItem: function (contactType, usage) {
+        createContactItem: function (contactType, usage, accountType) {
             console.log("createContactItem (MemberController) clicked");
             var personId = this.model.get('id');
             var itemCollection = this.getItemCollection(contactType);
             if (itemCollection) {
-                itemCollection.createRecord({
-                    Person_id: personId,
-                    usage: usage
-                });
+                if (contactType == 'account') {
+                    itemCollection.createRecord({
+                        Person_id: personId,
+                        usage: usage,
+                        type: accountType
+                    });
+                } else {
+                    itemCollection.createRecord({
+                        Person_id: personId,
+                        usage: usage
+                    });
+                }
             }
         },
         deleteContactItem: function (contactType, itemToDelete) {

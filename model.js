@@ -985,6 +985,8 @@ exports.createSchema = function () {
                         {Name: "phone", Description: "Telefon"},
                         {Name: "twitter", Description: "Twitter"},
                         {Name: "facebook", Description: "Facebook"},
+                        {Name: "microsoft", Description: "Microsoft"},
+                        {Name: "google", Description: "Google"},
                         {Name: "applepush", Description: "Apple Push"},
                         {Name: "googlepush", Description: "Google Push"},
                         {Name: "mspush", Description: "Microsoft Push"}
