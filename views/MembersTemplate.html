@@ -2,273 +2,258 @@
 <script type="text/x-handlebars" data-template-name="member">
 
 <!-- Modal -->
-<div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-     aria-hidden="true">
-<div class="modal-dialog">
-<div class="modal-content">
-<div class="modal-header">
-    <button type="button" class="btn btn-primary" {{action "save" controller}} {{bind-attr disabled="isNotDirty"}} >Speichern und Zurück</button>
-    <button type="button" class="btn btn-default pull-right" data-dismiss="modal" {{action "discardChanges"}} >Abbrechen</button>
-</div>
-<div class="modal-body">
-    <div {{bind-attr class="errorMessage::hidden"}} >
-        <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
-    </div>
-    <form class="form" role="form">
-        <div class="row">
-            <div class="form-group col-md-3">
-                {{#if personImageUrl}}
-                <img src='{{personImageUrl}}' style="max-width:100%;">
-                {{else}}
-                <div class="text-center"><br><br>
-                    <small class="text-center">kein Foto</small>
-                </div>
-                {{/if}}
+<div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="btn btn-primary"
+                {{action "save" controller}} {{bind-attr disabled="isNotDirty"}} >Speichern und Zurück</button>
+                <button type="button" class="btn btn-default pull-right" data-dismiss="modal"
+                {{action "discardChanges"}} >Abbrechen</button>
             </div>
-            <div class="col-md-9" style="border-left: 1px solid lightgray;">
-                <div class="form-group">
-
-                    <label for="salutation" class="sr-only">Anrede</label>
-
-                    <div id="salutation">
-                        {{input type="text" class="form-control" value=salutation
-                        placeholder="Anrede"}}
-                    </div>
-
+            <div class="modal-body">
+                <div {{bind-attr class="errorMessage::hidden"}} >
+                    <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
                 </div>
-                <div class="form-group">
-
-                    <label for="firstname" class="sr-only">Vorname</label>
-
-                    <div id="firstname">
-                        {{input type="text" class="form-control" value=firstname
-                        placeholder="Vorname"}}
+                <form class="form" role="form">
+                    <div class="form-group col-md-3">
+                        {{#if personImageUrl}}
+                        <img src='{{personImageUrl}}' style="max-width:100%;">
+                        {{else}}
+                        <div class="text-center"><br><br>
+                            <small class="text-center">kein Foto</small>
+                        </div>
+                        {{/if}}
                     </div>
+                    <div class="col-md-9" style="border-left: 1px solid lightgray;">
+                        <div class="form-group">
 
+                            <label for="salutation" class="sr-only">Anrede</label>
+
+                            <div id="salutation">
+                                {{input type="text" class="form-control" value=salutation
+                                placeholder="Anrede"}}
+                            </div>
+
+                        </div>
+                        <div class="form-group">
+
+                            <label for="firstname" class="sr-only">Vorname</label>
+
+                            <div id="firstname">
+                                {{input type="text" class="form-control" value=firstname
+                                placeholder="Vorname"}}
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group has-feedback">
+                            <label class="sr-only">Nachname</label>
+
+                            {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+
+                        </div>
+
+                        <div class="form-group">
+                            <label for="suffix" class="sr-only">Namenszusatz</label>
+
+                            <div id="suffix">
+                                {{input type="text" class="form-control" value=suffix
+                                placeholder="Namenszusatz"}}
+                            </div>
+                        </div>
+                    </div>
+                </form>
+                <hr>
+                <div class="col-md-6">
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group">
+                            <label for="birthday" class="col-md-4 control-label">Geboren:</label>
+
+                            <div class="col-md-8" id="birthday">
+                                {{input type="text" class="form-control" value=birthday placeholder="Geburtsdatum"}}
+                            </div>
+                        </div>
+                    </form>
                 </div>
+                <hr>
+                <div class="col-md-6" style="border-right: 1px solid lightgray;">
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group has-feedback">
+                            <label for="entryDate" class="col-md-4 control-label">Eintritt:</label>
 
+                            <div class="col-md-8" id="entryDate">
+                                {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
 
-                <div class="form-group has-feedback">
-                    <label class="sr-only">Nachname</label>
+                            <div class="col-md-8" id="leavingDate">
+                                {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
+                            </div>
+                        </div>
 
-                    {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
-                    <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                        <div class="form-group">
+                            <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
 
+                            <div class="col-md-8" id="LeavingReasonName">
+                                {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
+                            </div>
+                        </div>
+                    </form>
                 </div>
+                <div class="col-md-6">
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group has-feedback">
+                            <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
 
-                <div class="form-group">
-                    <label for="suffix" class="sr-only">Namenszusatz</label>
+                            <div class="col-md-8" id="membershipNumber">
+                                {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                        </div>
+                        <div class="form-group has-feedback">
+                            <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
 
-                    <div id="suffix">
-                        {{input type="text" class="form-control" value=suffix
-                        placeholder="Namenszusatz"}}
-                    </div>
+                            <div class="col-md-8" id="membershipFeeName">
+                                {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
+
+                            <div class="col-md-8" id="membershipFeeAmount">
+                                {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
+                            </div>
+                        </div>
+                    </form>
                 </div>
-            </div>
-        </div>
-    </form>
-    <hr>
-
-    <div class="row">
-        <div class="col-md-6">
-            <form class="form-horizontal" role="form">
-                <div class="form-group">
-                    <label for="birthday" class="col-md-4 control-label">Geboren:</label>
-
-                    <div class="col-md-8" id="birthday">
-                        {{input type="text" class="form-control" value=birthday placeholder="Geburtsdatum"}}
+                <hr>
+                {{#each a in addresses}}
+                <form class="form-horizontal" role="form">
+                    <div class="form-group col-md-12">
+                        <label class="form-control-static col-md-12"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "address" a.usage }}></span>&nbsp;Adresse
+                            ({{a.usage}}):</label>
                     </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    <hr>
+                    <div class="form-group">
+                        <label for="streetaddress" class="control-label col-md-3">Straße, Nr.:</label>
 
-    <div class="row">
-        <div class="col-md-6" style="border-right: 1px solid lightgray;">
-            <form class="form-horizontal" role="form">
-                <div class="form-group has-feedback">
-                    <label for="entryDate" class="col-md-4 control-label">Eintritt:</label>
-
-                    <div class="col-md-8" id="entryDate">
-                        {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                        <div class="col-md-9" id="streetaddress">
+                            <div class="col-md-9 ">
+                                {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
+                            </div>
+                            <div class="col-md-3">
+                                {{input type="text" class="form-control" value=a.streetNumber placeholder="#"}}
+                            </div>
+                        </div>
                     </div>
-                </div>
-                <div class="form-group">
-                    <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
+                    <div class="form-group has-feedback">
+                        <label for="cityaddress" class="control-label col-md-3">Plz., Ort:</label>
 
-                    <div class="col-md-8" id="leavingDate">
-                        {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
+                        <div id="cityaddress" class="col-md-9">
+                            <div class="col-md-4">
+                                {{input type="text" class="form-control" value=a.postalcode placeholder="PLZ"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                            <div class="col-md-8">
+                                {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                        </div>
                     </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
-
-                    <div class="col-md-8" id="LeavingReasonName">
-                        {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
-                    </div>
-                </div>
-            </form>
-        </div>
-        <div class="col-md-6">
-            <form class="form-horizontal" role="form">
-                <div class="form-group has-feedback">
-                    <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
-
-                    <div class="col-md-8" id="membershipNumber">
-                        {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                    </div>
-                </div>
-                <div class="form-group has-feedback">
-                    <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
-
-                    <div class="col-md-8" id="membershipFeeName">
-                        {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
-
-                    <div class="col-md-8" id="membershipFeeAmount">
-                        {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
-                    </div>
-                </div>
-            </form>
-        </div>
-    </div>
-    <hr>
-
-    <div class="row">
-        {{#each a in addresses}}
-        <form class="form-horizontal" role="form">
-            <div class="form-group col-md-12">
-                <label class="form-control-static col-md-12"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "address" a.usage }}></span>&nbsp;Adresse ({{a.usage}}):</label>
-            </div>
-            <div class="form-group">
-                <label for="streetaddress" class="control-label col-md-3">Straße, Nr.:</label>
-
-                <div class="col-md-9" id="streetaddress">
-                    <div class="col-md-9 ">
-                        {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
-                    </div>
-                    <div class="col-md-3">
-                        {{input type="text" class="form-control" value=a.streetNumber placeholder="#"}}
-                    </div>
-                </div>
-            </div>
-            <div class="form-group has-feedback">
-                <label for="cityaddress" class="control-label col-md-3">Plz., Ort:</label>
-
-                <div id="cityaddress" class="col-md-9">
-                    <div class="col-md-4">
-                        {{input type="text" class="form-control" value=a.postalcode placeholder="PLZ"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                    </div>
-                    <div class="col-md-8">
-                        {{input type="text" class="form-control" value=a.city placeholder="Ort"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                    </div>
-                </div>
-            </div>
-        </form>
-        {{/each}}
-        <div class="col-md-12">
-            <div class="dropdown">
-                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAddresses" data-toggle="dropdown">
-                    Neue Adresse
-                    <span class="glyphicon glyphicon-plus-sign"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createContactItem" "address" "Privat"}}>Privat</a></li>
-                    <li><a href="#" {{action "createContactItem" "address" "Arbeit"}}>Arbeit</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-    <hr>
-
-    <div class="row">
-        <div class="col-md-12">
-            {{#if havePhoneNumbers}}
-            <strong>Telefonnummern:</strong>
-            {{/if}}
-            {{#each p in phoneNumbers}}
-            <form class="form-horizontal" role="form">
-
-                <div class="form-group has-feedback">
-                    <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p.usage }}>&nbsp;</span>{{p.usage}}:</label>
-
-                    <div class="col-md-9" id="phonenumber">
-                        {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                </form>
+                {{/each}}
+                <div class="col-md-12">
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAddresses" data-toggle="dropdown">
+                            Neue Adresse
+                            <span class="glyphicon glyphicon-plus-sign"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#" {{action "createContactItem" "address" "Privat"}}>Privat</a></li>
+                            <li><a href="#" {{action "createContactItem" "address" "Arbeit"}}>Arbeit</a></li>
+                        </ul>
                     </div>
                 </div>
-            </form>
-            {{/each}}
-            <div class="dropdown">
-                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuPhoneNumbers" data-toggle="dropdown">
-                    Neue Telefonnummer
-                    <span class="glyphicon glyphicon-plus-sign"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createContactItem" "phone" "Privat"}} >Privat</a></li>
-                    <li><a href="#" {{action "createContactItem" "phone" "Mobil"}} >Mobil</a></li>
-                    <li><a href="#" {{action "createContactItem" "phone" "Mobil Arbeit"}} >Mobil Arbeit</a></li>
-                    <li><a href="#" {{action "createContactItem" "phone" "Mobil 2"}} >Mobil 2</a></li>
-                    <li><a href="#" {{action "createContactItem" "phone" "Arbeit"}} >Arbeit</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
+                <hr>
+                <div class="col-md-12">
+                    {{#if havePhoneNumbers}}
+                    <strong>Telefonnummern:</strong>
+                    {{/if}}
+                    {{#each p in phoneNumbers}}
+                    <form class="form-horizontal" role="form">
 
-    <hr>
+                        <div class="form-group has-feedback">
+                            <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p.usage }}>&nbsp;</span>
+                                {{p.usage}}:</label>
 
-    <div class="row">
-        <div class="col-md-12">
-            {{#if haveAccounts}}
-            <strong>Email und Social-Media Konten:</strong>
-            {{/if}}
-            {{#each a in accounts}}
-            <form class="form-horizontal" role="form">
-                <div class="form-group has-feedback">
-                    <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a.usage }}>&nbsp;</span>{{a.usage}}:</label>
-
-                    <div class="col-md-9" id="accountname">
-                        {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
-                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            <div class="col-md-9" id="phonenumber">
+                                {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                        </div>
+                    </form>
+                    {{/each}}
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuPhoneNumbers" data-toggle="dropdown">
+                            Neue Telefonnummer
+                            <span class="glyphicon glyphicon-plus-sign"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#" {{action "createContactItem" "phone" "Privat"}} >Privat</a></li>
+                            <li><a href="#" {{action "createContactItem" "phone" "Mobil"}} >Mobil</a></li>
+                            <li><a href="#" {{action "createContactItem" "phone" "Mobil Arbeit"}} >Mobil Arbeit</a></li>
+                            <li><a href="#" {{action "createContactItem" "phone" "Mobil 2"}} >Mobil 2</a></li>
+                            <li><a href="#" {{action "createContactItem" "phone" "Arbeit"}} >Arbeit</a></li>
+                        </ul>
                     </div>
                 </div>
-            </form>
-            {{/each}}
-            <div class="dropdown">
-                <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAccounts" data-toggle="dropdown">
-                    Neues Konto
-                    <span class="glyphicon glyphicon-plus-sign"></span>
-                </button>
-                <ul class="dropdown-menu" role="menu">
-                    <li><a href="#" {{action "createContactItem" "account" "Email" "email"}}>Email</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Email 2" "email"}}>Email 2</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Email Arbeit" "email"}}>Email Arbeit</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Twitter" "twitter"}}>Twitter</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Facebook" "facebook"}}>Facebook</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Google" "google"}}>Google</a></li>
-                    <li><a href="#" {{action "createContactItem" "account" "Microsoft" "microsoft"}}>Windows Live</a></li>
-                </ul>
+                <hr>
+                <div class="col-md-12">
+                    {{#if haveAccounts}}
+                    <strong>Email und Social-Media Konten:</strong>
+                    {{/if}}
+                    {{#each a in accounts}}
+                    <form class="form-horizontal" role="form">
+                        <div class="form-group has-feedback">
+                            <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a.usage
+                                }}>&nbsp;</span>{{a.usage}}:</label>
+
+                            <div class="col-md-9" id="accountname">
+                                {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
+                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                            </div>
+                        </div>
+                    </form>
+                    {{/each}}
+                    <div class="dropdown">
+                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAccounts" data-toggle="dropdown">
+                            Neues Konto
+                            <span class="glyphicon glyphicon-plus-sign"></span>
+                        </button>
+                        <ul class="dropdown-menu" role="menu">
+                            <li><a href="#" {{action "createContactItem" "account" "Email" "email"}}>Email</a></li>
+                            <li><a href="#" {{action "createContactItem" "account" "Email 2" "email"}}>Email 2</a></li>
+                            <li><a href="#" {{action "createContactItem" "account" "Email Arbeit" "email"}}>Email Arbeit</a></li>
+                            <li><a href="#" {{action "createContactItem" "account" "Twitter" "twitter"}}>Twitter</a></li>
+                            <li><a href="#" {{action "createContactItem" "account" "Facebook" "facebook"}}>Facebook</a></li>
+                            <li><a href="#" {{action "createContactItem" "account" "Google" "google"}}>Google</a></li>
+                            <li><a href="#" {{action "createContactItem" "account" "Microsoft" "microsoft"}}>Windows Live</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="modal-footer"></div>
             </div>
         </div>
-    </div>
-
-    </div>
-
-    <div class="modal-footer"></div>
-    </div>
     </div>
 </div>
+
 </script>
 
 </div>
