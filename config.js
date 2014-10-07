@@ -6,7 +6,6 @@ nconf.defaults({
     "appName": "ASCloud",
     "adminUser": undefined,
     "initialAdminPassword": undefined,
-    "cookieKey": "top secret",
     "cookieSecret": "super duper",
     "cookieSessionTimeoutInMinutes": 30,
     "authGoogleClientId": undefined,
