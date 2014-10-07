@@ -49,12 +49,21 @@ var cookieKey = config.get('cookieKey');
 var cookieSecret = config.get('cookieSecret');
 var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
 app.use(cookieParser(cookieSecret));
+
+/*
 app.use(cookieSession({
     key: cookieKey,
     secret: cookieSecret,
     cookie: {
-        maxAge: sessionTimeout
+        maxage: sessionTimeout
     }
+}));
+*/
+
+app.use(cookieSession({
+    name: config.get('appName'),
+    secret: cookieSecret,
+    maxage: sessionTimeout
 }));
 
 // required for passport
