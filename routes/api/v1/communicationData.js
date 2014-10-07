@@ -50,13 +50,13 @@ function makeResponseObject(contactType, newPersonContactDataItem, personContact
     return responseObject;
 }
 
-function makePersonContactData(personContactData_id, now, contactType, contactItemDataObject) {
+function makePersonContactData(personContactData_id, now, contactTypeName, contactItemDataObject) {
     var personContactData = {
         PersonContactData_id: personContactData_id,
         valid_start: now
     };
 
-    switch (contactType.get('Name')) {
+    switch (contactTypeName) {
         case 'address':
             personContactData = _.extend(personContactData, {
                 Street: contactItemDataObject.street,
@@ -127,10 +127,10 @@ function putContactData(req, res, contactType, personContactData, contactItemDat
         });
         Promise.all(savePromises).then(function (allSavedContactItems) {
             console.log("Invalidated " + allSavedContactItems.length + " " + entityClassName + " before adding new record.");
-            var personContactData = makePersonContactData(personContactData_id, now, contactType, contactItemDataObject);
+            var personContactData = makePersonContactData(personContactData_id, now, contactTypeName, contactItemDataObject);
             // add new PersonContactDataXXXXX record where valid_end is null
             new model.models[entityClassName](personContactData).save().then(function (newPersonContactDataItem) {
-                console.log("New " + contactType.get('Name') + " with PersonContactData_id " + newPersonContactDataItem.get('PersonContactData_id') + " saved");
+                console.log("New " + contactTypeName + " with PersonContactData_id " + newPersonContactDataItem.get('PersonContactData_id') + " saved");
                 res.setHeader('X-CSRF-Token', req.csrfToken());
                 var responseObject = makeResponseObject(contactType, newPersonContactDataItem, personContactData);
                 res.json(responseObject);
@@ -203,9 +203,9 @@ function addPersonContactItem(req, res, bodyObjectName, resourceName, contactTyp
             res.send('Error 500: Reading PersonContactType failed');
         });
     } else {
-        console.log('Error in addresses.post: request body does not have ' + bodyObjectName + ' array');
+        console.log('Error in put: request body does not have ' + bodyObjectName + ' object');
         res.statusCode = 400;
-        res.send('Error 400: addresses in request missing');
+        res.send('Error 400: ' + bodyObjectName + ' in request missing');
     }
 }
 
@@ -249,82 +249,133 @@ function markPersonContactDataItemAsDeleted(req, res, entityClassName) {
     });
 }
 
-function updatePersonContactDataItem(req, res, entityClassName) {
+function checkItemIsDirty(itemWithoutValidEnd, contactTypeName, requestDataObject) {
+    var itemIsDirty = false;
+    switch (contactTypeName) {
+        case 'address':
+            if (itemWithoutValidEnd.get('Street') != requestDataObject.street ||
+                itemWithoutValidEnd.get('StreetNumber') != requestDataObject.streetNumber ||
+                itemWithoutValidEnd.get('Postalcode') != requestDataObject.postalcode ||
+                itemWithoutValidEnd.get('City') != requestDataObject.city) {
+                itemIsDirty = true;
+            }
+            break;
+        case 'phone':
+            if (itemWithoutValidEnd.get('Number') != requestDataObject.number) {
+                itemIsDirty = true;
+            }
+            break;
+        case 'email':
+        case 'twitter':
+        case 'facebook':
+        case 'google':
+        case 'microsoft':
+        case 'applepush':
+        case 'googlepush':
+        case 'mspush':
+            if (itemWithoutValidEnd.get('Account') != requestDataObject.account) {
+                itemIsDirty = true;
+            }
+            break;
+        default:
+            console.log("Error: unknown contactTypeName: " + contactTypeName);
+            break;
+    }
+
+    return itemIsDirty;
+}
+
+function updatePersonContactDataItem(req, res, bodyObjectName, resourceName, contactTypeName, entityClassName) {
     var personContactData_id = req.params.id;
-    var address = req.body.address;
     var now = new Date();
 
-    new model.models[entityClassName]().query(function (qb) {
-        qb.where({ 'PersonContactData_id': personContactData_id})
-            .andWhere({'valid_end': null});
-        qb.orderBy('valid_start', 'DESC')
-    }).fetchAll().then(function (allAddresses) {
-        if (allAddresses.length > 0) {
-            console.log("Must set valid_end for " + allAddresses.length + " PersonContactDataAddress records.");
-            var savePromises = [];
-            var firstRecord = true;
-            var addressIsDirty = false;
-            allAddresses.forEach(function (addressWithoutValidEnd) {
-                if (firstRecord) {
-                    if (addressWithoutValidEnd.get('Street') != address.street ||
-                        addressWithoutValidEnd.get('StreetNumber') != address.streetNumber ||
-                        addressWithoutValidEnd.get('Postalcode') != address.postalcode ||
-                        addressWithoutValidEnd.get('City') != address.city) {
-                        addressWithoutValidEnd.set('valid_end', now);
-                        savePromises.push(addressWithoutValidEnd.save());
-                        addressIsDirty = true;
+    if (req.body[bodyObjectName]) {
+        var requestDataObject = req.body[bodyObjectName];
+        console.log("Updating " + resourceName + " for PersonContactData " + personContactData_id);
+
+        new model.models[entityClassName]().query(function (qb) {
+            qb.where({ 'PersonContactData_id': personContactData_id}).andWhere({'valid_end': null});
+            qb.orderBy('valid_start', 'DESC')
+        }).fetchAll().then(function (allExistingContactItems) {
+            if (allExistingContactItems.length > 0) {
+                console.log("Must set valid_end for " + allExistingContactItems.length + " " + entityClassName + " records.");
+
+                var savePromises = [];
+                var firstRecord = true;
+                var itemIsDirty = false;
+                allExistingContactItems.forEach(function (itemWithoutValidEnd) {
+                    if (firstRecord) {
+                        itemIsDirty = checkItemIsDirty(itemWithoutValidEnd, contactTypeName, requestDataObject);
+                        // if the latest contact item has been changed set the valid_end to now and add the new data as a new record
+                        // otherwise only set the valid_end to now on the remaining records.
+                        if (itemIsDirty) {
+                            itemWithoutValidEnd.set('valid_end', now);
+                            savePromises.push(itemWithoutValidEnd.save());
+                        }
+                    } else {
+                        itemWithoutValidEnd.set('valid_end', now);
+                        savePromises.push(itemWithoutValidEnd.save());
                     }
-                } else {
-                    addressWithoutValidEnd.set('valid_end', now);
-                    savePromises.push(addressWithoutValidEnd.save());
-                }
-                firstRecord = false;
-            });
-            Promise.all(savePromises).then(function (allSavedAddresses) {
-                console.log("Invalidated " + allSavedAddresses.length + " PersonContactDataAddresses before adding new record.");
+                    firstRecord = false;
+                });
+                Promise.all(savePromises).then(function (allSavedContactItems) {
+                    console.log("Invalidated " + allSavedContactItems.length + " " + entityClassName + " before adding new record.");
 
-                // todo: use a transaction for all database writes
+                    // todo: use a transaction for all database writes
 
-                if (addressIsDirty) {
-                    // create new record with updated values
-                    new model.models[entityClassName]({
-                        PersonContactData_id: personContactData_id,
-                        Street: address.street,
-                        StreetNumber: address.streetNumber,
-                        Postalcode: address.postalcode,
-                        City: address.city,
-                        valid_start: now
-                    }).save().then(function (savedPersonContactDataAddress) {
-                            res.statusCode = 200;
-                            res.end();
+                    if (itemIsDirty) {
+                        new PersonContactType({Name: contactTypeName}).fetch().then(function (contactType) {
+                            if (contactType) {
+                                var personContactData = makePersonContactData(personContactData_id, now, contactTypeName, requestDataObject);
+                                // add new PersonContactDataXXXXX record where valid_end is null and attributes are updated
+                                new model.models[entityClassName](personContactData).save().then(function (newPersonContactDataItem) {
+                                    console.log("New " + contactTypeName + " with PersonContactData_id " + newPersonContactDataItem.get('PersonContactData_id') + " saved");
+                                    res.setHeader('X-CSRF-Token', req.csrfToken());
+                                    var responseObject = makeResponseObject(contactType, newPersonContactDataItem, personContactData);
+                                    res.json(responseObject);
+                                }).catch(function (error) {
+                                    console.log("Saving " + entityClassName + " failed: " + error);
+                                    // todo: delete already created PersonContactData or use transaction
+                                    //newPersonContactData.delete();
+                                    res.statusCode = 500;
+                                    res.send('Error 500: Saving   failed');
+                                });
+                            } else {
+                                res.statusCode = 404;
+                                res.send("Error 404: PersonContactType '" + contactTypeName + "' not found");
+                            }
                         }).catch(function (error) {
-                            var errMsg = "Failed to create new PersonContactDataAddress";
-                            console.log(errMsg + ": " + error);
+                            console.log("Reading PersonContactType failed: " + error);
                             res.statusCode = 500;
-                            res.send("Error 500: " + errMsg);
+                            res.send('Error 500: Reading PersonContactType failed');
                         });
-                }
-                else {
-                    // values did not change - not saving
-                    res.statusCode = 304;
-                    res.end();
-                }
-            }).catch(function (error) {
-                var errMsg = "Failed to mark PersonContactDataAddress old";
-                console.log(errMsg + ": " + error);
-                res.statusCode = 500;
-                res.send("Error 500: " + errMsg);
-            });
-        } else {
-            console.log("Can't delete PersonContactDataAddress with PersonContactData_id=" + personContactData_id + ": not existing");
-            res.statusCode = 404;
-            res.send('Error 404: PersonContactDataAddress not found');
-        }
-    }).catch(function (error) {
-        console.log("Reading PersonContactDataAddress failed: " + error);
-        res.statusCode = 500;
-        res.send('Error 500: Reading PersonContactDataAddress failed');
-    });
+                    }
+                    else {
+                        // values did not change - not saving
+                        res.statusCode = 304;
+                        res.end();
+                    }
+                }).catch(function (error) {
+                    var errMsg = "Failed to mark " + entityClassName + " old";
+                    console.log(errMsg + ": " + error);
+                    res.statusCode = 500;
+                    res.send("Error 500: " + errMsg);
+                });
+            } else {
+                console.log("Can't update " + entityClassName + " with PersonContactData_id=" + personContactData_id + ": not existing");
+                res.statusCode = 404;
+                res.send("Error 404: " + entityClassName + " not found");
+            }
+        }).catch(function (error) {
+            console.log("Error while reading " + entityClassName + " for PersonContactData_id where valid_end is null: " + personContactData_id + ": " + error);
+            res.statusCode = 500;
+            res.send('Error 500: Reading ' + entityClassName + ' failed');
+        });
+    } else {
+        console.log('Error in put: request body does not have ' + bodyObjectName + ' object');
+        res.statusCode = 400;
+        res.send('Error 400: ' + bodyObjectName + ' in request missing');
+    }
 }
 
 
@@ -356,17 +407,26 @@ module.exports.postAccount = function (req, res) {
 
 module.exports.putAddress = function (req, res) {
     var entityClassName = "PersonContactDataAddress";
-    updatePersonContactDataItem.call(this, req, res, entityClassName);
+    var bodyObjectName = 'address';
+    var resourceName = 'Address';
+    var contactTypeName = req.body[bodyObjectName].type;
+    updatePersonContactDataItem.call(this, req, res, bodyObjectName, resourceName, contactTypeName, entityClassName);
 };
 
 module.exports.putPhoneNumber = function (req, res) {
     var entityClassName = "PersonContactDataPhonenumber";
-    updatePersonContactDataItem.call(this, req, res, entityClassName);
+    var bodyObjectName = 'phoneNumber';
+    var resourceName = 'Phone Number';
+    var contactTypeName = req.body[bodyObjectName].type;
+    updatePersonContactDataItem.call(this, req, res, bodyObjectName, resourceName, contactTypeName, entityClassName);
 };
 
 module.exports.putAccount = function (req, res) {
     var entityClassName = "PersonContactDataAccount";
-    updatePersonContactDataItem.call(this, req, res, entityClassName);
+    var bodyObjectName = 'account';
+    var resourceName = 'Account';
+    var contactTypeName = req.body[bodyObjectName].type;
+    updatePersonContactDataItem.call(this, req, res, bodyObjectName, resourceName, contactTypeName, entityClassName);
 };
 
 // DELETE

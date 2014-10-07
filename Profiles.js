@@ -84,6 +84,18 @@ module.exports = function () {
                 resources: ["/admin/usermanagementroleedit", "/admin/userManagementRoles"],
                 permissions: ["get", "post"],
                 menus: ["admin.role", "admin.roles"]
+            },
+            api_member_read: {
+                description: "RESTAPI: Mitgliedsdaten anzeigen",
+                resources: ["/api/v1/members", "/api/v1/addresses", "/api/v1/phoneNumbers", "/api/v1/accounts"],
+                permissions: ["get"],
+                menus: []
+            },
+            api_member_edit: {
+                description: "RESTAPI: Mitgliedsdaten ändern",
+                resources: ["/api/v1/members", "/api/v1/addresses", "/api/v1/phoneNumbers", "/api/v1/accounts"],
+                permissions: ["put", "post"],
+                menus: []
             }
         };
 

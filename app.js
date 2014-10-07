@@ -74,19 +74,20 @@ app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
 
-//app.get('/api/v1/members', passport.authenticate('bearer', { session: false }), apiMembers.list);
-app.get('/api/v1/members', apiMembers.list);
-app.get('/api/v1/members/:id', apiMembers.get);
-app.put('/api/v1/members/:id', apiMembers.put);
-app.post('/api/v1/addresses', apiCommunicationData.postAddress);
-app.put('/api/v1/addresses/:id', apiCommunicationData.putAddress);
-app.delete('/api/v1/addresses/:id', apiCommunicationData.deleteAddress);
-app.post('/api/v1/phoneNumbers', apiCommunicationData.postPhoneNumber);
-app.put('/api/v1/phoneNumbers/:id', apiCommunicationData.putPhoneNumber);
-app.delete('/api/v1/phoneNumbers/:id', apiCommunicationData.deletePhoneNumber);
-app.post('/api/v1/accounts', apiCommunicationData.postAccount);
-app.put('/api/v1/accounts/:id', apiCommunicationData.putAccount);
-app.delete('/api/v1/accounts/:id', apiCommunicationData.deleteAccount);
+var rp = new rolePermissions(model.models);
+
+app.get('/api/v1/members', passportStrategies.ensureAuthenticated, rp.middleware(), apiMembers.list);
+app.get('/api/v1/members/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiMembers.get);
+app.put('/api/v1/members/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiMembers.put);
+app.post('/api/v1/addresses', passportStrategies.ensureAuthenticated, rp.middleware(), apiCommunicationData.postAddress);
+app.put('/api/v1/addresses/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiCommunicationData.putAddress);
+app.delete('/api/v1/addresses/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiCommunicationData.deleteAddress);
+app.post('/api/v1/phoneNumbers', passportStrategies.ensureAuthenticated, rp.middleware(), apiCommunicationData.postPhoneNumber);
+app.put('/api/v1/phoneNumbers/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiCommunicationData.putPhoneNumber);
+app.delete('/api/v1/phoneNumbers/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiCommunicationData.deletePhoneNumber);
+app.post('/api/v1/accounts', passportStrategies.ensureAuthenticated, rp.middleware(), apiCommunicationData.postAccount);
+app.put('/api/v1/accounts/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiCommunicationData.putAccount);
+app.delete('/api/v1/accounts/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiCommunicationData.deleteAccount);
 
 app.use(function (req, res, next) {
 
@@ -100,7 +101,6 @@ app.use(function (req, res, next) {
         url = url.substring(0, idx);
     }
 
-    var rp = new rolePermissions(model.models);
     rp.canPost(req).then(function (canPost) {
 
         model.getPagesForUser(req.user).then(function (pages) {

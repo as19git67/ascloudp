@@ -147,7 +147,7 @@
         {{#each a in addresses}}
         <form class="form-horizontal" role="form">
             <div class="form-group col-md-12">
-                <label class="form-control-static col-md-12"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "address" a }}></span>&nbsp;Adresse ({{a.usage}}):</label>
+                <label class="form-control-static col-md-12"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "address" a.usage }}></span>&nbsp;Adresse ({{a.usage}}):</label>
             </div>
             <div class="form-group">
                 <label for="streetaddress" class="control-label col-md-3">Straße, Nr.:</label>
@@ -201,7 +201,7 @@
             <form class="form-horizontal" role="form">
 
                 <div class="form-group has-feedback">
-                    <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p }}>&nbsp;</span>{{p.usage}}:</label>
+                    <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p.usage }}>&nbsp;</span>{{p.usage}}:</label>
 
                     <div class="col-md-9" id="phonenumber">
                         {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
@@ -236,7 +236,7 @@
             {{#each a in accounts}}
             <form class="form-horizontal" role="form">
                 <div class="form-group has-feedback">
-                    <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a }}>&nbsp;</span>{{a.usage}}:</label>
+                    <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a.usage }}>&nbsp;</span>{{a.usage}}:</label>
 
                     <div class="col-md-9" id="accountname">
                         {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}

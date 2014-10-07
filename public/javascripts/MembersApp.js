@@ -146,7 +146,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             }
         }).catch(function (error) {
             var errorMessage = error.statusText;
-            if (error.responseText) {
+            if (error.responseText && error.responseText.substr(0, 14) != "<!DOCTYPE html") {
                 errorMessage += " (" + error.responseText + ")"
             }
             self.set('errorMessage', errorMessage);
@@ -259,12 +259,12 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 }
             }
         },
-        deleteContactItem: function (contactType, itemToDelete) {
-            console.log("deleteContactItem (MemberController) for " + itemToDelete.get('id') + " clicked");
+        deleteContactItem: function (contactType, usage) {
+            console.log("deleteContactItem (MemberController) for " + usage + " clicked");
             var self = this;
             var itemCollection = this.getItemCollection(contactType);
             if (itemCollection) {
-                var itemsToDelete = itemCollection.filterBy('id', itemToDelete.get('id'));
+                var itemsToDelete = itemCollection.filterBy('usage', usage);
                 itemsToDelete.forEach(function (item) {
                     item.deleteRecord();
                     self.deletedItems.pushObject(item);
