@@ -134,7 +134,8 @@ module.exports.get = function (req, res) {
     });
 };
 
-module.exports.listQuery = 'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "Birthday", "PersonItems"."Person_id" as "Person_id",' +
+module.exports.listQuerySelectFrom =
+    'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "Birthday", "PersonItems"."Person_id" as "Person_id",' +
     '"PersonContactDataAddresses"."PersonContactData_id" as "PersonContactDataAddressesId",' +
     '"PersonContactDataPhonenumbers"."PersonContactData_id" as "PersonContactDataPhonenumbersId",' +
     '"PersonContactDataAccounts"."PersonContactData_id" as "PersonContactDataAccountsId",' +
@@ -145,7 +146,8 @@ module.exports.listQuery = 'select "Salutation", "Firstname", "PersonItems"."Las
     '"MembershipItems"."PassiveSince", "MembershipItems"."LivingElsewhereSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
     '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
     '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
-    ' from "Persons"' +
+    ' from "Persons"';
+module.exports.listQueryJoins =
     ' inner join "PersonItems" on "Persons"."id" = "PersonItems"."Person_id"' +
     ' inner join "Memberships" on "Memberships"."Person_id" = "Persons"."id"' +
     ' inner join "MembershipItems" on "MembershipItems"."Membership_id" = "Memberships"."id"' +
@@ -155,68 +157,88 @@ module.exports.listQuery = 'select "Salutation", "Firstname", "PersonItems"."Las
     ' inner join "PersonContactTypes" on "PersonContactDatas"."PersonContactType_id" = "PersonContactTypes"."id"' +
     ' left join "PersonContactDataAddresses" on ("PersonContactDataAddresses"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAddresses"."valid_end" is  null)' +
     ' left join "PersonContactDataPhonenumbers" on ("PersonContactDataPhonenumbers"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataPhonenumbers"."valid_end" is  null)' +
-    ' left join "PersonContactDataAccounts" on ("PersonContactDataAccounts"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAccounts"."valid_end" is  null)' +
+    ' left join "PersonContactDataAccounts" on ("PersonContactDataAccounts"."PersonContactData_id" = "PersonContactDatas"."id" and "PersonContactDataAccounts"."valid_end" is  null)';
+module.exports.listQueryWhereClauses =
     ' where "PersonItems"."valid_end" is null' +
     ' and "PersonContactTypes"."Deleted" = false' +
     ' and "MembershipItems"."valid_end" is null' +
-    ' and "MembershipItems"."LeavingDate" is null' +
+    ' and "MembershipItems"."LeavingDate" is null';
+module.exports.listQueryOrderByClause =
     ' order by "PersonItems"."Lastname" ASC, "PersonItems"."Person_id" ASC, "PersonContactTypes"."Description", "PersonContactDatas"."Usage"';
+
+module.exports.listQuery =
+    module.exports.listQuerySelectFrom +
+    module.exports.listQueryJoins +
+    module.exports.listQueryWhereClauses +
+    module.exports.listQueryOrderByClause;
+
+var addPersonContactData = function (personData, currentPersonObj) {
+    switch (personData.PersonContactTypeName) {
+        case 'address':
+            if (personData.PersonContactDataAddressesId) {
+                currentPersonObj.Addresses.push({
+                    Street: personData.Street,
+                    StreetNumber: personData.StreetNumber,
+                    Postalcode: personData.Postalcode,
+                    City: personData.City,
+                    Usage: personData.PersonContactDataUsage,
+                    Type: personData.PersonContactTypeDescription
+                });
+            }
+            break;
+        case 'phone':
+            if (personData.PersonContactDataPhonenumbersId) {
+                currentPersonObj.PhoneNumbers.push({
+                    Number: model.formatPhoneNumber(personData.PersonContactDataPhoneNumber),
+                    Usage: personData.PersonContactDataUsage,
+                    Type: personData.PersonContactTypeDescription});
+            }
+            break;
+        default:
+            if (personData.PersonContactDataAccountsId) {
+                currentPersonObj.Accounts.push({
+                    Account: personData.PersonContactDataAccount,
+                    Usage: personData.PersonContactDataUsage,
+                    Type: personData.PersonContactTypeDescription
+                });
+            }
+    }
+};
+
+/*
+ Make a hirarchical object structure from a sorted array of person models, which
+ are the results of a query on several joined tables.
+ */
+module.exports.makeHierarchicalObjectStructureFromPersonResultRecords = function (persons) {
+    var records = [];
+    var lastMemberId;
+    var currentPersonObj;
+    _.each(persons.rows, function (p) {
+        if (p.MembershipNumber != lastMemberId) {
+            lastMemberId = p.MembershipNumber;
+            currentPersonObj = new Object();
+            records.push(currentPersonObj);
+            currentPersonObj.id = p.Person_id;
+            currentPersonObj.MembershipNumber = p.MembershipNumber;
+            currentPersonObj.Salutation = p.Salutation;
+            currentPersonObj.Firstname = p.Firstname;
+            currentPersonObj.Lastname = p.Lastname;
+            currentPersonObj.Suffix = p.Suffix;
+            currentPersonObj.Birthday = model.formatDate(p.Birthday);
+            currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
+            currentPersonObj.Addresses = [];
+            currentPersonObj.PhoneNumbers = [];
+            currentPersonObj.Accounts = [];
+        }
+        addPersonContactData(p, currentPersonObj);
+    });
+    return records;
+};
 
 module.exports.list = function (req, res) {
 
     knex.raw(module.exports.listQuery).then(function (persons) {
-        var records = [];
-        var lastMemberId;
-        var currentPersonObj;
-        _.each(persons.rows, function (p) {
-            if (p.MembershipNumber != lastMemberId) {
-                lastMemberId = p.MembershipNumber;
-                currentPersonObj = new Object();
-                records.push(currentPersonObj);
-                currentPersonObj.id = p.Person_id;
-                currentPersonObj.MembershipNumber = p.MembershipNumber;
-                currentPersonObj.Salutation = p.Salutation;
-                currentPersonObj.Firstname = p.Firstname;
-                currentPersonObj.Lastname = p.Lastname;
-                currentPersonObj.Suffix = p.Suffix;
-                currentPersonObj.Birthday = model.formatDate(p.Birthday);
-                currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
-                currentPersonObj.Addresses = [];
-                currentPersonObj.PhoneNumbers = [];
-                currentPersonObj.Accounts = [];
-            }
-            switch (p.PersonContactTypeName) {
-                case 'address':
-                    if (p.PersonContactDataAddressesId) {
-                        currentPersonObj.Addresses.push({
-                            Street: p.Street,
-                            StreetNumber: p.StreetNumber,
-                            Postalcode: p.Postalcode,
-                            City: p.City,
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
-                        });
-                    }
-                    break;
-                case 'phone':
-                    if (p.PersonContactDataPhonenumbersId) {
-                        currentPersonObj.PhoneNumbers.push({
-                            Number: model.formatPhoneNumber(p.PersonContactDataPhoneNumber),
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription});
-                    }
-                    break;
-                default:
-                    if (p.PersonContactDataAccountsId) {
-                        currentPersonObj.Accounts.push({
-                            Account: p.PersonContactDataAccount,
-                            Usage: p.PersonContactDataUsage,
-                            Type: p.PersonContactTypeDescription
-                        });
-                    }
-            }
-        });
-
+        var records = module.exports.makeHierarchicalObjectStructureFromPersonResultRecords(persons);
         res.json(
             {
                 members: records,
