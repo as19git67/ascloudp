@@ -227,13 +227,20 @@ app.use(function (req, res, next) {
                     next(err);
                 }
             } else {
-                /// catch 404 and forward to error handler
-                var err = new Error('Not Found');
-                err.status = 404;
-                next(err);
+                if (req.user) {
+                    /// catch 404 and forward to error handler
+                    var err = new Error('Not Found');
+                    err.status = 404;
+                    next(err);
+                } else {
+                    // not authenticated
+                    if (req.originalUrl != '/') {
+                        console.log("User is not authenticated. Redirecting to /");
+                        res.redirect('/');
+                    }
+                }
             }
         });
-
     }).catch(function (error) {
         var errMsg = "Error while checking role permissions for url " + url;
         console.log(errMsg + ": " + error);
@@ -241,7 +248,6 @@ app.use(function (req, res, next) {
         err.status = 500;
         next(err);
     });
-
 });
 
 /// error handlers

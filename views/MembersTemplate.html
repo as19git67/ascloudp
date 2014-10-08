@@ -6,134 +6,139 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="btn btn-primary"
-                {{action "save" controller}} {{bind-attr disabled="isNotDirty"}} >Speichern und Zurück</button>
-                <button type="button" class="btn btn-default pull-right" data-dismiss="modal"
-                {{action "discardChanges"}} >Abbrechen</button>
+                <button type="button" class="btn btn-primary" {{action "save" controller}} {{bind-attr disabled="isNotDirty"}} >Speichern und Zurück</button>
+                <button type="button" class="btn btn-default pull-right" data-dismiss="modal" {{action "discardChanges"}} >Abbrechen</button>
             </div>
             <div class="modal-body">
                 <div {{bind-attr class="errorMessage::hidden"}} >
                     <div class="alert alert-danger" role="alert">{{errorMessage}}</div>
                 </div>
-                <form class="form" role="form">
-                    <div class="form-group col-md-3">
-                        {{#if personImageUrl}}
-                        <img src='{{personImageUrl}}' style="max-width:100%;">
-                        {{else}}
-                        <div class="text-center"><br><br>
-                            <small class="text-center">kein Foto</small>
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                            <div class="row">
+                                <form class="form" role="form">
+                                    <div class="form-group col-md-3 hidden-xs hidden-sm">
+                                        {{#if personImageUrl}}
+                                        <img src='{{personImageUrl}}' style="max-width:100%;">
+                                        {{else}}
+                                        <div class="text-center"><br><br>
+                                            <small class="text-center">kein Foto</small>
+                                        </div>
+                                        {{/if}}
+                                    </div>
+                                    <div class="col-md-9 ascloud-left-border-md">
+                                        <div class="form-group">
+                                            <label for="salutation" class="sr-only">Anrede</label>
+                                            <div id="salutation">
+                                                {{input type="text" class="form-control" value=salutation
+                                                placeholder="Anrede"}}
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+
+                                            <label for="firstname" class="sr-only">Vorname</label>
+
+                                            <div id="firstname">
+                                                {{input type="text" class="form-control" value=firstname
+                                                placeholder="Vorname"}}
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="form-group has-feedback">
+                                            <label class="sr-only">Nachname</label>
+
+                                            {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
+                                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label for="suffix" class="sr-only">Namenszusatz</label>
+
+                                            <div id="suffix">
+                                                {{input type="text" class="form-control" value=suffix
+                                                placeholder="Namenszusatz"}}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                            <hr>
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <form class="form-horizontal" role="form">
+                                        <div class="form-group">
+                                            <label for="birthday" class="col-md-3 control-label">Geboren:</label>
+
+                                            <div class="col-md-9" id="birthday">
+                                                {{input type="text" class="form-control" value=birthday placeholder="Geburtsdatum"}}
+                                            </div>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                            <hr class="visible-xs">
                         </div>
-                        {{/if}}
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
+                            <div class="row">
+                                <div class="col-xs-12">
+                                    <form class="form-horizontal" role="form">
+                                    <div class="form-group has-feedback">
+                                        <label for="entryDate" class="col-md-4 control-label">Eintritt:</label>
+
+                                        <div class="col-md-8" id="entryDate">
+                                            {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
+                                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
+
+                                        <div class="col-md-8" id="leavingDate">
+                                            {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
+                                        </div>
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
+
+                                        <div class="col-md-8" id="LeavingReasonName">
+                                            {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
+                                        </div>
+                                    </div>
+                                    <div class="form-group has-feedback">
+                                        <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
+
+                                        <div class="col-md-8" id="membershipNumber">
+                                            {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
+                                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                        </div>
+                                    </div>
+                                    <div class="form-group has-feedback">
+                                        <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
+
+                                        <div class="col-md-8" id="membershipFeeName">
+                                            {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
+                                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
+
+                                        <div class="col-md-8" id="membershipFeeAmount">
+                                            {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
+                                        </div>
+                                    </div>
+                                </form>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-9" style="border-left: 1px solid lightgray;">
-                        <div class="form-group">
-
-                            <label for="salutation" class="sr-only">Anrede</label>
-
-                            <div id="salutation">
-                                {{input type="text" class="form-control" value=salutation
-                                placeholder="Anrede"}}
-                            </div>
-
-                        </div>
-                        <div class="form-group">
-
-                            <label for="firstname" class="sr-only">Vorname</label>
-
-                            <div id="firstname">
-                                {{input type="text" class="form-control" value=firstname
-                                placeholder="Vorname"}}
-                            </div>
-
-                        </div>
-
-
-                        <div class="form-group has-feedback">
-                            <label class="sr-only">Nachname</label>
-
-                            {{input type="text" class="form-control" value=lastname placeholder="Nachname"}}
-                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-
-                        </div>
-
-                        <div class="form-group">
-                            <label for="suffix" class="sr-only">Namenszusatz</label>
-
-                            <div id="suffix">
-                                {{input type="text" class="form-control" value=suffix
-                                placeholder="Namenszusatz"}}
-                            </div>
-                        </div>
-                    </div>
-                </form>
-                <hr>
-                <div class="col-md-6">
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <label for="birthday" class="col-md-4 control-label">Geboren:</label>
-
-                            <div class="col-md-8" id="birthday">
-                                {{input type="text" class="form-control" value=birthday placeholder="Geburtsdatum"}}
-                            </div>
-                        </div>
-                    </form>
                 </div>
-                <hr>
-                <div class="col-md-6" style="border-right: 1px solid lightgray;">
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group has-feedback">
-                            <label for="entryDate" class="col-md-4 control-label">Eintritt:</label>
 
-                            <div class="col-md-8" id="entryDate">
-                                {{input type="text" class="form-control" value=entryDate placeholder="Eintrittsdatum"}}
-                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
-
-                            <div class="col-md-8" id="leavingDate">
-                                {{input type="text" class="form-control" value=leavingDate placeholder="Austrittsdatum"}}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
-
-                            <div class="col-md-8" id="LeavingReasonName">
-                                {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
-                            </div>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-md-6">
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group has-feedback">
-                            <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
-
-                            <div class="col-md-8" id="membershipNumber">
-                                {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
-                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                            </div>
-                        </div>
-                        <div class="form-group has-feedback">
-                            <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
-
-                            <div class="col-md-8" id="membershipFeeName">
-                                {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
-                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
-
-                            <div class="col-md-8" id="membershipFeeAmount">
-                                {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
-                            </div>
-                        </div>
-                    </form>
-                </div>
                 <hr>
                 {{#each a in addresses}}
                 <form class="form-horizontal" role="form">
@@ -248,7 +253,6 @@
                         </ul>
                     </div>
                 </div>
-                <div class="modal-footer"></div>
             </div>
         </div>
     </div>
