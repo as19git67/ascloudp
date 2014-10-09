@@ -17,6 +17,7 @@ function showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu) {
     }
     return haveOtherMenuItems;
 }
+
 function adjustMaxWidthOfLeftNavbar() {
     var rightNavbarWidth = $('.adjusted-nav-right').width();
     var p = $('.adjusted-nav-left').parent();
@@ -26,7 +27,7 @@ function adjustMaxWidthOfLeftNavbar() {
     if (otherMenu) {
         otherMenuWidth = otherMenu.width();
     }
-    var maxWidth = (pWidth - rightNavbarWidth - 10);
+    var maxWidth = (pWidth - rightNavbarWidth - 5);
 
     var leftNavBarToAdjust = $('.adjusted-nav-left');
 
@@ -53,5 +54,8 @@ $(function () {
 var resizeTimer;
 $(window).resize(function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(adjustMaxWidthOfLeftNavbar, 100);
+    resizeTimer = setTimeout(function() {
+        adjustMaxWidthOfLeftNavbar();
+        adjustMaxWidthOfLeftNavbar(); // call second time to resolve some buggy behaviour where it resizes not correctly
+    }, 100);
 });
