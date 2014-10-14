@@ -71,23 +71,15 @@
                                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                     <form class="form-horizontal" role="form">
                                         <div class="form-group">
-                                            <label for="birthday" class="col-xs-3 control-label">Geboren:</label>
-
-                                            <div class="col-xs-9" id="birthday">
-                                                {{input type="text" class="form-control" value=birthday placeholder="Geburtsdatum"}}
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="birthday" class="col-xs-3 control-label">Geboren:</label>
+                                            <label for="datetimepicker1" class="col-xs-3 control-label">Geboren:</label>
 
                                             <div class="col-xs-9">
-                                                {{input type="text" class="form-control" value=birthday id="datetimepicker0"}}
-                                                <div id="datetimepicker" class="input-append date">
-                                                    <input type="text"></input>
-                                                      <span class="add-on">
-                                                        <i data-time-icon="icon-time" data-date-icon="icon-calendar"></i>
-                                                      </span>
-                                                </div>
+                                                <div class='input-group date' id='datetimepicker1'>
+                                                    {{input type="text" class="form-control" value=birthday }}
+                                                    <span class="input-group-addon">
+                                                        <span class="glyphicon glyphicon-calendar"></span>
+                                                    </span>
+                                               </div>
                                             </div>
                                         </div>
                                     </form>
