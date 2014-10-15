@@ -39,11 +39,13 @@ MembersApp.Member = DS.Model.extend({
     lastname: DS.attr('string'),
     suffix: DS.attr('string'),
     birthday: DS.attr('date'),
+//    birthday_formatted: DS.attr('string'),
     entryDate: DS.attr('date'),
-    birthday_formatted: DS.attr('string'),
-    entryDate_formatted: DS.attr('string'),
+//    entryDate_formatted: DS.attr('string'),
     leavingDate: DS.attr('date'),
+//    leavingDate_formatted: DS.attr('string'),
     passiveSince: DS.attr('date'),
+//    passiveSince_formatted: DS.attr('string'),
     leavingReasonName: DS.attr('string'),
     membershipFeeName: DS.attr('string'),
     membershipFeeAmount: DS.attr('string'),
@@ -143,9 +145,29 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         this.store.findById('member', id).then(function (person) {
             if (person) {
                 self.set('model', person);
-                var bd = person.get('birthday');
-                $('#datetimepicker1').datetimepicker({language: 'de', pickTime: false});
-                $('#datetimepicker1').data("DateTimePicker").setDate(bd);
+                var pickers = ['birthday','entryDate'];
+                for (var idx = 0; idx < pickers.length; idx++) {
+                    var datePickerName = pickers[idx];
+                    var currentDate = person.get(datePickerName);
+                    var dtp = $('#datetimepicker' + '_' + datePickerName);
+                    dtp.datetimepicker({language: 'de', pickTime: false});
+                    dtp.data("DateTimePicker").setDate(currentDate);
+                    dtp.on("dp.change", function (e) {
+                        for (var idx = 0; idx < pickers.length; idx++) {
+                            var datePickerName = pickers[idx];
+                            if (e.target.id == 'datetimepicker' + '_' + datePickerName) {
+                                var changedDate = $('#datetimepicker' + '_' + datePickerName).data("DateTimePicker").getDate();
+                                if (moment.isMoment(changedDate)) {
+                                    changedDate = changedDate.toDate();
+                                }
+                                self.store.findById('member', id).then(function (person) {
+                                    person.set(datePickerName, changedDate);
+                                });
+                                break;
+                            }
+                        }
+                    });
+                }
             }
         }).catch(function (error) {
             var errorMessage = error.statusText;

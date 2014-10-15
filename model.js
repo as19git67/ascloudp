@@ -211,7 +211,8 @@ exports.importTestDataFFW = function () {
                                                 LeavingDate: ld,
                                                 //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
                                                 PassiveSince: value.Übergang_Passiv,
-                                                LivingElsewhereSince: value.verzogenDatum,
+                                                //LivingElsewhereSince: value.verzogenDatum,
+                                                // todo: if value.verzogenDatum { set PersonContactDataAddress.valid_end with value.verzogenDatum }
                                                 valid_start: now
                                             }).save()
                                                 .then(function (newMemberItem) {
@@ -1074,7 +1075,6 @@ exports.createSchema = function () {
                     t.dateTime('LeavingDate').index();
                     t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
                     t.dateTime('PassiveSince').index();
-                    t.dateTime('LivingElsewhereSince').index();
                     t.integer('MembershipFee_id').references('id').inTable('MembershipFees');
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
@@ -1864,34 +1864,75 @@ var getPagesForUser = function (user) {
 };
 
 var formatDateTime = function (date) {
-    return moment(date).format('D. MMMM YYYY  HH:mm');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('D. MMMM YYYY  HH:mm');
+    } else {
+        return "";
+    }
 };
+
 var formatDateTimeShort = function (date) {
-    return moment(date).format('L HH:mm');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('L HH:mm');
+    } else {
+        return "";
+    }
 };
 
 var formatDateTimeLong = function (date) {
-    return moment(date).format('dddd, D. MMMM YYYY  HH:mm');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('dddd, D. MMMM YYYY  HH:mm');
+    } else {
+        return "";
+    }
 };
 
 var formatDate = function (date) {
-    return moment(date).format('D. MMMM YYYY');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('D. MMMM YYYY');
+    } else {
+        return "";
+    }
 };
 
 var formatDateShort = function (date) {
-    return moment(date).format('L');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('L');
+    } else {
+        return "";
+    }
 };
 
 var formatDateLong = function (date) {
-    return moment(date).format('dddd, D. MMMM YYYY');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('dddd, D. MMMM YYYY');
+    } else {
+        return "";
+    }
 };
 
 var formatTime = function (date) {
-    return moment(date).format('HH:mm');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('HH:mm');
+    } else {
+        return "";
+    }
 };
 
 var formatTimeLong = function (date) {
-    return moment(date).format('HH:mm:ss');
+    var mDate = moment(date);
+    if (mDate.isValid()) {
+        return mDate.format('HH:mm:ss');
+    } else {
+        return "";
+    }
 };
 
 var formatPhoneNumber = function (phoneNumber) {
@@ -2384,7 +2425,7 @@ var ffwMitgliederFunktionen = [
     {"IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null}
 ];
 
-var gesternStart = moment().subtract(1, 'days').subtract(3,'hours').utc().toDate();
+var gesternStart = moment().subtract(1, 'days').subtract(3, 'hours').utc().toDate();
 var gesternEnd = moment().subtract(1, 'days').utc().toDate();
 
 var ffwEvents = [

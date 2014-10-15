@@ -18,7 +18,7 @@ module.exports.get = function (req, res) {
         '"PersonContactDatas"."Usage" as "PersonContactDataUsage",' +
         '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
         '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
-        '"MembershipItems"."PassiveSince", "MembershipItems"."LivingElsewhereSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
+        '"MembershipItems"."PassiveSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
         '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
         '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
         ' from "Persons"' +
@@ -56,12 +56,13 @@ module.exports.get = function (req, res) {
                 currentPersonObj.lastname = p.Lastname;
                 currentPersonObj.suffix = p.Suffix;
                 currentPersonObj.birthday = p.Birthday;
+//                currentPersonObj.birthday_formatted = model.formatDateShort(p.Birthday);
                 currentPersonObj.entryDate = p.EntryDate;
-                currentPersonObj.birthday_formatted = model.formatDate(p.Birthday);
-                currentPersonObj.entryDate_formatted = model.formatDate(p.EntryDate);
+//                currentPersonObj.entryDate_formatted = model.formatDateShort(p.EntryDate);
                 currentPersonObj.leavingDate = p.LeavingDate;
+//                currentPersonObj.leavingDate_formatted = model.formatDateShort(p.LeavingDate);
                 currentPersonObj.passiveSince = p.PassiveSince;
-                currentPersonObj.livingElsewhereSince = p.LivingElsewhereSince;
+//                currentPersonObj.passiveSince_formatted = model.formatDateShort(p.PassiveSince);
                 currentPersonObj.leavingReasonName = p.LeavingReasonName;
                 currentPersonObj.membershipFeeName = p.MembershipFeeName;
                 currentPersonObj.membershipFeeAmount = p.MembershipFeeAmount;
@@ -143,7 +144,7 @@ module.exports.listQuerySelectFrom =
     '"PersonContactDatas"."Usage" as "PersonContactDataUsage",' +
     '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
     '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
-    '"MembershipItems"."PassiveSince", "MembershipItems"."LivingElsewhereSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
+    '"MembershipItems"."PassiveSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
     '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
     '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
     ' from "Persons"';
@@ -277,12 +278,13 @@ module.exports.put = function (req, res) {
                     // console.log("pBirthday: " + pBirthday.format('LLLL'));
                     // console.log("mBirthday: " + mBirthday.format('LLLL'));
                 }
-                if (
+                if (pBirthday && mBirthday && (
                     pBirthday.isSame(mBirthday) == false ||
                     person.get('Firstname') != member.firstname ||
                     person.get('Lastname') != member.lastname ||
                     person.get('Suffix') != member.suffix ||
-                    person.get('Salutation') != member.salutation) {
+                    person.get('Salutation') != member.salutation
+                    )) {
 
                     var now = new Date();
                     person.set('valid_end', now);
@@ -293,7 +295,6 @@ module.exports.put = function (req, res) {
                             new PersonItem({
                                 'Person_id': personId,
                                 'Birthday': member.birthday,
-                                'Birthday_utc': member.birthday,
                                 'Firstname': member.firstname,
                                 'Lastname': member.lastname,
                                 'Suffix': member.suffix,
