@@ -293,6 +293,7 @@ module.exports.put = function (req, res) {
                             new PersonItem({
                                 'Person_id': personId,
                                 'Birthday': member.birthday,
+                                'Birthday_utc': member.birthday,
                                 'Firstname': member.firstname,
                                 'Lastname': member.lastname,
                                 'Suffix': member.suffix,

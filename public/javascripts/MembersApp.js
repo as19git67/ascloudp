@@ -143,7 +143,9 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         this.store.findById('member', id).then(function (person) {
             if (person) {
                 self.set('model', person);
-                $('#datetimepicker1').datetimepicker();
+                var bd = person.get('birthday');
+                $('#datetimepicker1').datetimepicker({language: 'de', pickTime: false});
+               // $('#datetimepicker1').data("DateTimePicker").setDate(bd);
             }
         }).catch(function (error) {
             var errorMessage = error.statusText;
