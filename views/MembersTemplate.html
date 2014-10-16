@@ -105,10 +105,13 @@
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="leavingDate" class="col-md-4 control-label">Austritt:</label>
+                                        <label for="datetimepicker_leavingDate" class="col-md-4 control-label">Austritt:</label>
 
-                                        <div class="col-md-8" id="leavingDate">
-                                            {{input type="text" class="form-control" value=leavingDate_formatted placeholder="Austrittsdatum"}}
+                                        <div class="col-md-8">
+                                            <div class='input-group date' id="datetimepicker_leavingDate">
+                                                <input type="text" class="form-control" placeholder="Austrittsdatum">
+                                                <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                            </div>
                                         </div>
                                     </div>
 
