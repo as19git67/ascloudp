@@ -3,9 +3,9 @@
 
 <!-- Modal -->
 <div class="modal fade" id="editMember" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
+    <div class="modal-dialog modal-dialog-full">
+        <div class="modal-content modal-content-full">
+            <div class="modal-header modal-header-full">
                 <button type="button" class="btn btn-primary" {{action "save" controller}} {{bind-attr disabled="isNotDirty"}} >Speichern und Zurück</button>
                 <button type="button" class="btn btn-default pull-right" data-dismiss="modal" {{action "discardChanges"}} >Abbrechen</button>
             </div>
@@ -70,11 +70,8 @@
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                     <form class="form-horizontal" role="form">
-                                        <div {{bind-attr date="birthday_formatted"}} >
-                                        </div>
                                         <div class="form-group">
                                             <label for="datetimepicker_birthday" class="col-xs-3 control-label">Geboren:</label>
-
                                             <div class="col-xs-9">
                                                 <div class='input-group date' id='datetimepicker_birthday' >
                                                     <input type="text" class="form-control" >
@@ -95,7 +92,6 @@
                                     <form class="form-horizontal" role="form">
                                     <div class="form-group has-feedback">
                                         <label for="datetimepicker_entryDate" class="col-md-4 control-label">Eintritt:</label>
-
                                         <div class="col-md-8">
                                             <div class='input-group date' id="datetimepicker_entryDate">
                                                 <input type="text" class="form-control" placeholder="Eintrittsdatum">
@@ -106,7 +102,6 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="datetimepicker_leavingDate" class="col-md-4 control-label">Austritt:</label>
-
                                         <div class="col-md-8">
                                             <div class='input-group date' id="datetimepicker_leavingDate">
                                                 <input type="text" class="form-control" placeholder="Austrittsdatum">
@@ -117,14 +112,12 @@
 
                                     <div class="form-group">
                                         <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
-
                                         <div class="col-md-8" id="LeavingReasonName">
                                             {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
                                         </div>
                                     </div>
                                     <div class="form-group has-feedback">
                                         <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
-
                                         <div class="col-md-8" id="membershipNumber">
                                             {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
                                             <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
@@ -132,7 +125,6 @@
                                     </div>
                                     <div class="form-group has-feedback">
                                         <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
-
                                         <div class="col-md-8" id="membershipFeeName">
                                             {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
                                             <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
@@ -140,7 +132,6 @@
                                     </div>
                                     <div class="form-group">
                                         <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
-
                                         <div class="col-md-8" id="membershipFeeAmount">
                                             {{input type="text" class="form-control" value=leavingReasonName placeholder="Beitrag (€)"}}
                                         </div>
@@ -163,7 +154,6 @@
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <label for="streetaddress" class="control-label col-xs-3">Straße, Nr.:</label>
-
                                     <div class="col-xs-9" id="streetaddress">
                                         <div class="col-xs-9 ">
                                             {{input type="text" class="form-control" value=a.street placeholder="Straße"}}
@@ -175,7 +165,6 @@
                                 </div>
                                 <div class="form-group has-feedback">
                                     <label for="cityaddress" class="control-label col-xs-3">Plz., Ort:</label>
-
                                     <div id="cityaddress" class="col-xs-9">
                                         <div class="col-xs-4">
                                             {{input type="text" class="form-control" value=a.postalcode placeholder="PLZ"}}
@@ -211,81 +200,89 @@
                 </div>
 
                 <hr>
-
-
-                <div class="col-md-12">
-                </div>
-                <hr>
-                <div class="col-md-12">
-                    {{#if havePhoneNumbers}}
-                    <strong>Telefonnummern:</strong>
+                <div class="row">
+                    {{#if haveMorePhoneNumbersThanAccounts }}
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-right-border-sm">
+                    {{else}}
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
                     {{/if}}
-                    {{#each p in phoneNumbers}}
-                    <form class="form-horizontal" role="form">
-
-                        <div class="form-group has-feedback">
-                            <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p.usage }}>&nbsp;</span>
-                                {{p.usage}}:</label>
-
-                            <div class="col-md-9" id="phonenumber">
-                                {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
-                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                {{#if havePhoneNumbers}}
+                                    <strong>Telefonnummern:</strong>
+                                {{/if}}
+                                {{#each p in phoneNumbers}}
+                                <form class="form-horizontal" role="form">
+                                    <div class="form-group has-feedback">
+                                        <label for="phonenumber" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "phone" p.usage }}>&nbsp;</span>
+                                            {{p.usage}}:</label>
+                                        <div class="col-md-9" id="phonenumber">
+                                            {{input type="text" class="form-control" value=p.number placeholder="Telefonnummer"}}
+                                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                        </div>
+                                    </div>
+                                </form>
+                                {{/each}}
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuPhoneNumbers" data-toggle="dropdown">
+                                        Neue Telefonnummer
+                                        <span class="glyphicon glyphicon-plus-sign"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="#" {{action "createContactItem" "phone" "Privat"}} >Privat</a></li>
+                                        <li><a href="#" {{action "createContactItem" "phone" "Mobil"}} >Mobil</a></li>
+                                        <li><a href="#" {{action "createContactItem" "phone" "Mobil Arbeit"}} >Mobil Arbeit</a></li>
+                                        <li><a href="#" {{action "createContactItem" "phone" "Mobil 2"}} >Mobil 2</a></li>
+                                        <li><a href="#" {{action "createContactItem" "phone" "Arbeit"}} >Arbeit</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </form>
-                    {{/each}}
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuPhoneNumbers" data-toggle="dropdown">
-                            Neue Telefonnummer
-                            <span class="glyphicon glyphicon-plus-sign"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="#" {{action "createContactItem" "phone" "Privat"}} >Privat</a></li>
-                            <li><a href="#" {{action "createContactItem" "phone" "Mobil"}} >Mobil</a></li>
-                            <li><a href="#" {{action "createContactItem" "phone" "Mobil Arbeit"}} >Mobil Arbeit</a></li>
-                            <li><a href="#" {{action "createContactItem" "phone" "Mobil 2"}} >Mobil 2</a></li>
-                            <li><a href="#" {{action "createContactItem" "phone" "Arbeit"}} >Arbeit</a></li>
-                        </ul>
                     </div>
-                </div>
-                <hr>
-                <div class="col-md-12">
-                    {{#if haveAccounts}}
-                    <strong>Email und Social-Media Konten:</strong>
+                    {{#if !haveMorePhoneNumbersThanAccounts }}
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
+                    {{else}}
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
                     {{/if}}
-                    {{#each a in accounts}}
-                    <form class="form-horizontal" role="form">
-                        <div class="form-group has-feedback">
-                            <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a.usage
-                                }}>&nbsp;</span>{{a.usage}}:</label>
-
-                            <div class="col-md-9" id="accountname">
-                                {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
-                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                        <div class="row">
+                            <div class="col-xs-12">
+                                {{#if haveAccounts}}
+                                    <strong>Email und Social-Media Konten:</strong>
+                                {{/if}}
+                                {{#each a in accounts}}
+                                <form class="form-horizontal" role="form">
+                                    <div class="form-group has-feedback">
+                                        <label for="accountname" class="control-label col-md-3"><span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;" {{action "deleteContactItem" "account" a.usage }}>&nbsp;</span>{{a.usage}}:</label>
+                                        <div class="col-md-9" id="accountname">
+                                            {{input type="text" class="form-control" value=a.account placeholder="Name des Benutzerkontos"}}
+                                            <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                        </div>
+                                    </div>
+                                </form>
+                                {{/each}}
+                                <div class="dropdown">
+                                    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAccounts" data-toggle="dropdown">
+                                        Neues Konto
+                                        <span class="glyphicon glyphicon-plus-sign"></span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="#" {{action "createContactItem" "account" "Email" "email"}}>Email</a></li>
+                                        <li><a href="#" {{action "createContactItem" "account" "Email 2" "email"}}>Email 2</a></li>
+                                        <li><a href="#" {{action "createContactItem" "account" "Email Arbeit" "email"}}>Email Arbeit</a></li>
+                                        <li><a href="#" {{action "createContactItem" "account" "Twitter" "twitter"}}>Twitter</a></li>
+                                        <li><a href="#" {{action "createContactItem" "account" "Facebook" "facebook"}}>Facebook</a></li>
+                                        <li><a href="#" {{action "createContactItem" "account" "Google" "google"}}>Google</a></li>
+                                        <li><a href="#" {{action "createContactItem" "account" "Microsoft" "microsoft"}}>Windows Live</a></li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
-                    </form>
-                    {{/each}}
-                    <div class="dropdown">
-                        <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenuAccounts" data-toggle="dropdown">
-                            Neues Konto
-                            <span class="glyphicon glyphicon-plus-sign"></span>
-                        </button>
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="#" {{action "createContactItem" "account" "Email" "email"}}>Email</a></li>
-                            <li><a href="#" {{action "createContactItem" "account" "Email 2" "email"}}>Email 2</a></li>
-                            <li><a href="#" {{action "createContactItem" "account" "Email Arbeit" "email"}}>Email Arbeit</a></li>
-                            <li><a href="#" {{action "createContactItem" "account" "Twitter" "twitter"}}>Twitter</a></li>
-                            <li><a href="#" {{action "createContactItem" "account" "Facebook" "facebook"}}>Facebook</a></li>
-                            <li><a href="#" {{action "createContactItem" "account" "Google" "google"}}>Google</a></li>
-                            <li><a href="#" {{action "createContactItem" "account" "Microsoft" "microsoft"}}>Windows Live</a></li>
-                        </ul>
                     </div>
                 </div>
+
             </div>
         </div>
     </div>
-</div>
 
 </script>
 

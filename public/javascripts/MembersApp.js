@@ -137,7 +137,13 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             return false;
         }
     }.property('model.accounts').cacheable(),
-
+    haveMorePhoneNumbersThanAccounts: function () {
+        if (this.model) {
+            return this.model.get('phoneNumbers').content.length > this.model.get('accounts').content.length;
+        } else {
+            return false;
+        }
+    }.property('model.phoneNumbers', 'model.accounts').cacheable(),
     setId: function (id) {
         var self = this;
         self.set('errorMessage', "");

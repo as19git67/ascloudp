@@ -94,7 +94,7 @@ module.exports = function () {
             api_member_edit: {
                 description: "RESTAPI: Mitgliedsdaten ändern",
                 resources: ["/api/v1/members", "/api/v1/addresses", "/api/v1/phoneNumbers", "/api/v1/accounts"],
-                permissions: ["put", "post"],
+                permissions: ["put", "post", "delete"],
                 menus: []
             }
         };
