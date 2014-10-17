@@ -70,13 +70,7 @@
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                     <form class="form-horizontal" role="form">
-                                        <div class="form-group">
-                                            <label for="datetimepicker_birthday" class="col-xs-3 control-label">Geboren:</label>
-                                            <div class="col-xs-9" id="datetimepicker_birthday">
-                                                {{view MembersApp.DateTimePicker class="form-control" data-attribute="birthday" value=birthday
-                                                placeholder="Geburtsdatum"}}
-                                            </div>
-                                        </div>
+                                        {{form-field label="Birthday" value=birthday placeholder="Geburtsdatum"}}
                                     </form>
                                 </div>
                             </div>
@@ -281,9 +275,15 @@
     </div>
 
 </script>
-<script type="text/x-handlebars" data-template-name="datepicker">
-    <input type="text" class="form-control" placeholder={{view.placeholder}}>
-    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+<script type="text/x-handlebars" data-template-name="components/form-field">
+    <div class="form-group">
+        <label {{bind-attr for=label}} class="col-md-3 control-label" >{{label}}:</label>
+        <div class="col-md-9">
+            <div class='input-group date' {{bind-attr id=label}}>
+                <input type="text" class="form-control" {{bind-attr value=value}} {{bind-attr placeholder=placeholder}} >
+                <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+            </div>
+        </div>
+    </div>
 </script>
-
 </div>

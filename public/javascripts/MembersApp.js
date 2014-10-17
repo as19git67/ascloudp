@@ -429,9 +429,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 });
 
 MembersApp.DateTimePicker = Ember.View.extend({
-    templateName: 'datepicker',
-    classNames: ['input-group', 'date'],
-    placeholder: "Geboren"
+    templateName: 'datepicker2'
 });
 
 MembersApp.AddressesController = Ember.ArrayController.extend({
