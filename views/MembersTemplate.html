@@ -72,13 +72,9 @@
                                     <form class="form-horizontal" role="form">
                                         <div class="form-group">
                                             <label for="datetimepicker_birthday" class="col-xs-3 control-label">Geboren:</label>
-                                            <div class="col-xs-9">
-                                                <div class='input-group date' id='datetimepicker_birthday' >
-                                                    <input type="text" class="form-control" >
-                                                    <span class="input-group-addon">
-                                                        <span class="glyphicon glyphicon-calendar"></span>
-                                                    </span>
-                                               </div>
+                                            <div class="col-xs-9" id="datetimepicker_birthday">
+                                                {{view MembersApp.DateTimePicker class="form-control" data-attribute="birthday" value=birthday
+                                                placeholder="Geburtsdatum"}}
                                             </div>
                                         </div>
                                     </form>
@@ -239,10 +235,10 @@
                             </div>
                         </div>
                     </div>
-                    {{#if !haveMorePhoneNumbersThanAccounts }}
-                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
-                    {{else}}
+                    {{#if haveMorePhoneNumbersThanAccounts }}
                         <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                    {{else}}
+                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
                     {{/if}}
                         <div class="row">
                             <div class="col-xs-12">
@@ -284,6 +280,10 @@
         </div>
     </div>
 
+</script>
+<script type="text/x-handlebars" data-template-name="datepicker">
+    <input type="text" class="form-control" placeholder={{view.placeholder}}>
+    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
 </script>
 
 </div>
