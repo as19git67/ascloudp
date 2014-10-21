@@ -56,13 +56,9 @@ module.exports.get = function (req, res) {
                 currentPersonObj.lastname = p.Lastname;
                 currentPersonObj.suffix = p.Suffix;
                 currentPersonObj.birthday = p.Birthday;
-//                currentPersonObj.birthday_formatted = model.formatDateShort(p.Birthday);
                 currentPersonObj.entryDate = p.EntryDate;
-//                currentPersonObj.entryDate_formatted = model.formatDateShort(p.EntryDate);
                 currentPersonObj.leavingDate = p.LeavingDate;
-//                currentPersonObj.leavingDate_formatted = model.formatDateShort(p.LeavingDate);
                 currentPersonObj.passiveSince = p.PassiveSince;
-//                currentPersonObj.passiveSince_formatted = model.formatDateShort(p.PassiveSince);
                 currentPersonObj.leavingReasonName = p.LeavingReasonName;
                 currentPersonObj.membershipFeeName = p.MembershipFeeName;
                 currentPersonObj.membershipFeeAmount = p.MembershipFeeAmount;
@@ -256,6 +252,28 @@ module.exports.list = function (req, res) {
     });
 };
 
+function isDateDifferent(member, sentDateName, person, modelDateName) {
+    var pModelDate;
+    var mSentDate;
+
+    if (member[sentDateName] && person.get(modelDateName)) {
+        pModelDate = moment(person.get(modelDateName));
+        if (pModelDate.isValid() == false) {
+            pModelDate = undefined;
+        }
+        mSentDate = moment(member[sentDateName]);
+        if (mSentDate.isValid() == false) {
+            mSentDate = undefined;
+        }
+    }
+    if (pModelDate && mSentDate && ( pModelDate.isSame(mSentDate) == false)) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
 module.exports.put = function (req, res) {
     var personId = req.params.id;
 
@@ -264,27 +282,16 @@ module.exports.put = function (req, res) {
         console.log("Saving PersonItem with Person_id " + personId);
         new PersonItem({Person_id: personId}).fetch().then(function (person) {
             if (person) {
-                var pBirthday;
-                var mBirthday;
-                if (member.birthday && person.get('Birthday')) {
-                    pBirthday = moment(person.get('Birthday'));
-                    if (pBirthday.isValid() == false) {
-                        pBirthday = undefined;
-                    }
-                    mBirthday = moment(member.birthday);
-                    if (mBirthday.isValid() == false) {
-                        mBirthday = undefined;
-                    }
-                    // console.log("pBirthday: " + pBirthday.format('LLLL'));
-                    // console.log("mBirthday: " + mBirthday.format('LLLL'));
-                }
-                if (pBirthday && mBirthday && (
-                    pBirthday.isSame(mBirthday) == false ||
+                var birthdayIsDifferent = isDateDifferent(member, "birthday", person, "Birthday");
+                var entryDateIsDifferent = isDateDifferent(member, "entryDate", person, "EntryDate");
+                var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", person, "LeavingDate");
+                var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", person, "PassiveSince");
+                if (birthdayIsDifferent || entryDateIsDifferent || leavingDateIsDifferent || passiveSinceIsDifferent ||
                     person.get('Firstname') != member.firstname ||
                     person.get('Lastname') != member.lastname ||
                     person.get('Suffix') != member.suffix ||
                     person.get('Salutation') != member.salutation
-                    )) {
+                    ) {
 
                     var now = new Date();
                     person.set('valid_end', now);

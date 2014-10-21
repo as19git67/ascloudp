@@ -151,41 +151,46 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         self.deletedItems.clear();
         this.store.findById('member', id).then(function (person) {
             if (person) {
-                person.set('birthday_formatted', person.get('birthday') ? moment(person.get('birthday')).format('L') : '');
+//                person.set('birthday_formatted', person.get('birthday') ? moment(person.get('birthday')).format('L') : '');
+//                person.set('entryDate_formatted', person.get('entryDate') ? moment(person.get('entryDate')).format('L') : '');
+//                person.set('leavingDate_formatted', person.get('leavngDate') ? moment(person.get('leavngDate')).format('L') : '');
                 self.set('model', person);
-                var idPrefix = "datetimepicker_";
-                var pickerElements = $('.input-group.date');
-                var pickerSuffixes = [];
-                for (var idx = 0; idx < pickerElements.length; idx++) {
-                    var pickerElement = pickerElements[idx];
-                    var pickerElementId = pickerElement.id;
-                    if (pickerElementId && pickerElementId.length > idPrefix.length) {
-                        if (pickerElementId.substr(0, idPrefix.length) == idPrefix) {
-                            var datePickerName = pickerElementId.substr(idPrefix.length);
-                            pickerSuffixes.push(datePickerName);
-                            console.log("Found datepicker " + datePickerName);
-                            var currentDate = person.get(datePickerName);
-                            var dtp = $('#datetimepicker' + '_' + datePickerName);
-                            dtp.datetimepicker({language: 'de', pickTime: false});
-                            dtp.data("DateTimePicker").setDate(currentDate);
-                            dtp.on("dp.change", function (e) {
-                                for (var idx = 0; idx < pickerSuffixes.length; idx++) {
-                                    var datePickerName = pickerSuffixes[idx];
-                                    if (e.target.id == 'datetimepicker' + '_' + datePickerName) {
-                                        var changedDate = $('#datetimepicker' + '_' + datePickerName).data("DateTimePicker").getDate();
-                                        if (moment.isMoment(changedDate)) {
-                                            changedDate = changedDate.toDate();
-                                        }
-                                        self.store.findById('member', id).then(function (person) {
-                                            person.set(datePickerName, changedDate);
-                                        });
-                                        break;
-                                    }
-                                }
-                            });
-                        }
-                    }
-                }
+
+                /*
+                 var idPrefix = "datetimepicker_";
+                 var pickerElements = $('.input-group.date');
+                 var pickerSuffixes = [];
+                 for (var idx = 0; idx < pickerElements.length; idx++) {
+                 var pickerElement = pickerElements[idx];
+                 var pickerElementId = pickerElement.id;
+                 if (pickerElementId && pickerElementId.length > idPrefix.length) {
+                 if (pickerElementId.substr(0, idPrefix.length) == idPrefix) {
+                 var datePickerName = pickerElementId.substr(idPrefix.length);
+                 pickerSuffixes.push(datePickerName);
+                 console.log("Found datepicker " + datePickerName);
+                 var currentDate = person.get(datePickerName);
+                 var dtp = $('#datetimepicker' + '_' + datePickerName);
+                 dtp.datetimepicker({language: 'de', pickTime: false});
+                 dtp.data("DateTimePicker").setDate(currentDate);
+                 dtp.on("dp.change", function (e) {
+                 for (var idx = 0; idx < pickerSuffixes.length; idx++) {
+                 var datePickerName = pickerSuffixes[idx];
+                 if (e.target.id == 'datetimepicker' + '_' + datePickerName) {
+                 var changedDate = $('#datetimepicker' + '_' + datePickerName).data("DateTimePicker").getDate();
+                 if (moment.isMoment(changedDate)) {
+                 changedDate = changedDate.toDate();
+                 }
+                 self.store.findById('member', id).then(function (person) {
+                 person.set(datePickerName, changedDate);
+                 });
+                 break;
+                 }
+                 }
+                 });
+                 }
+                 }
+                 }
+                 */
             }
         }).catch(function (error) {
             var errorMessage = error.statusText;
@@ -432,20 +437,37 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 });
 
 MembersApp.DatePickerComponent = Ember.Component.extend({
-    init: function () {
-        this._super();
+    picker: null,
+    didInsertElement: function () {
         var id = this.elementId;
-        var dtps = $('#' + id).find('.input-group.date');
-        if (dtps && dtps.length > 0) {
-            var dtp = dtps[0];
-            dtp.datetimepicker({language: 'de', pickTime: false});
+        var datePickers = $('#' + id).find('.input-group.date');
+        if (datePickers && datePickers.length > 0) {
+            this.picker = $(datePickers[0]);
+            this.picker.datetimepicker({language: 'de', pickTime: false});
+            var self = this;
+            this.picker.on("dp.change", function (e) {
+                var changedDate = e.date;
+                // check whether the changed date differs to the date in self.value
+                var old = self.get('value');
+                if (old) {
+                    var mOld = moment(old);
+                    if (mOld.isValid()) {
+                        if (!mOld.isSame(changedDate)) {
+                            self.set('value', changedDate.toDate());
+                        }
+                    }
+                }
+            });
         }
-    }
+    },
+    valueObserver: function () {
+        // Executes whenever the "value" property changes
+        if (this.value) {
+            this.picker.data("DateTimePicker").setDate(this.value);
+        }
+    }.observes('value')
 });
 
-MembersApp.DateTimePicker = Ember.View.extend({
-    templateName: 'datepicker2'
-});
 
 MembersApp.AddressesController = Ember.ArrayController.extend({
     actions: {

@@ -70,7 +70,7 @@
                             <div class="row">
                                 <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                     <form class="form-horizontal" role="form">
-                                        {{date-picker label="Birthday" value=birthday_formatted placeholder="Geburtsdatum"}}
+                                        {{date-picker label="Birthday" value=birthday placeholder="Geburtsdatum"}}
                                     </form>
                                 </div>
                             </div>
@@ -80,25 +80,8 @@
                             <div class="row">
                                 <div class="col-xs-12">
                                     <form class="form-horizontal" role="form">
-                                    <div class="form-group has-feedback">
-                                        <label for="datetimepicker_entryDate" class="col-md-4 control-label">Eintritt:</label>
-                                        <div class="col-md-8">
-                                            <div class='input-group date' id="datetimepicker_entryDate">
-                                                <input type="text" class="form-control" placeholder="Eintrittsdatum">
-                                                <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                                                <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="datetimepicker_leavingDate" class="col-md-4 control-label">Austritt:</label>
-                                        <div class="col-md-8">
-                                            <div class='input-group date' id="datetimepicker_leavingDate">
-                                                <input type="text" class="form-control" placeholder="Austrittsdatum">
-                                                <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
-                                            </div>
-                                        </div>
-                                    </div>
+                                        {{date-picker label="Eintritt" value=entryDate placeholder="Eintrittsdatum"}}
+                                        {{date-picker label="Austritt" value=leavingDate placeholder="Austrittsdatum"}}
 
                                     <div class="form-group">
                                         <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
@@ -280,7 +263,7 @@
         <label {{bind-attr for=label}} class="col-md-3 control-label" >{{label}}:</label>
         <div class="col-md-9">
             <div class='input-group date' {{bind-attr id=label}}>
-                <input type="text" class="form-control" {{bind-attr value=value}} {{bind-attr placeholder=placeholder}} >
+                <input type="text" class="form-control" {{bind-attr placeholder=placeholder}} >
                 <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
             </div>
         </div>
