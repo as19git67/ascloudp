@@ -1,6 +1,7 @@
 MembersApp = Em.Application.create({
     LOG_TRANSITIONS: true,
-    rootElement: '#memberDetail'
+    rootElement: '#memberDetail',
+    lang: navigator.language || navigator.userLanguage
 });
 
 MembersApp.ApplicationAdapter = DS.RESTAdapter.extend({
@@ -150,6 +151,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         self.deletedItems.clear();
         this.store.findById('member', id).then(function (person) {
             if (person) {
+                person.set('birthday_formatted', person.get('birthday') ? moment(person.get('birthday')).format('L') : '');
                 self.set('model', person);
                 var idPrefix = "datetimepicker_";
                 var pickerElements = $('.input-group.date');
@@ -196,6 +198,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
     },
 
     init: function () {
+        moment.locale(MembersApp.lang);
         var self = this;
         $(".memberListItem").click(function () {
             var clickedElement = $(this);
@@ -424,6 +427,18 @@ MembersApp.MemberController = Ember.ObjectController.extend({
                 }
             );
 
+        }
+    }
+});
+
+MembersApp.DatePickerComponent = Ember.Component.extend({
+    init: function () {
+        this._super();
+        var id = this.elementId;
+        var dtps = $('#' + id).find('.input-group.date');
+        if (dtps && dtps.length > 0) {
+            var dtp = dtps[0];
+            dtp.datetimepicker({language: 'de', pickTime: false});
         }
     }
 });
