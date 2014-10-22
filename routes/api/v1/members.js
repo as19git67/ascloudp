@@ -1,4 +1,5 @@
 var _ = require('underscore');
+var Promise = require('bluebird/js/main/promise')();
 var model = require('../../../model');
 var moment = require('moment');
 var PersonItem = model.models.PersonItem;
@@ -274,11 +275,9 @@ function isDateDifferent(member, sentDateName, person, modelDateName) {
     }
 }
 
-module.exports.put = function (req, res) {
-    var personId = req.params.id;
+function updatePersonItem(personId, member) {
+    return new Promise(function (resolve, reject) {
 
-    if (req.body.member) {
-        var member = req.body.member;
         console.log("Saving PersonItem with Person_id " + personId);
         new PersonItem({Person_id: personId}).fetch().then(function (person) {
             if (person) {
@@ -309,33 +308,49 @@ module.exports.put = function (req, res) {
                                 'valid_start': now
                             }).save().then(function (savedPerson) {
                                     console.log("PersonItem saved");
-                                    // return put data again back to caller
-                                    module.exports.get(req, res);
+                                    resolve(savedPerson);
                                 }).catch(function (error) {
                                     console.log("Error while saving new PersonItem with Person_id " + personId + ": " + error);
-                                    res.statusCode = 500;
-                                    res.send("Error 500: saving new PersonItem with Person_id " + personId + " failed");
+                                    reject({statusCode: 500, message: "Error 500: saving new PersonItem with Person_id " + personId + " failed"});
                                 });
                         }).catch(function (error) {
                             console.log("Error while updating PersonItem with Person_id " + personId + ": " + error);
-                            res.statusCode = 500;
-                            res.send("Error 500: updating PersonItem with Person_id " + personId + " failed");
+                            reject({statusCode: 500, message: "Error 500: updating PersonItem with Person_id " + personId + " failed"})
                         });
                 }
                 else {
                     console.log("Not saving PersonItem because nothing changed.");
-                    res.statusCode = 304;   // not changed
-                    res.send("304: PersonItem not changed");
+                    resolve(undefined);
                 }
             } else {
-                res.statusCode = 404;
-                res.send('Error 404: PersonItem with Person_id ' + personId + ' not found');
+                reject({statusCode: 404, message: "Error 404: PersonItem with Person_id " + personId + " not found"});
             }
         }).catch(function (error) {
             console.log("Error while reading PersonItem with Person_id " + personId + " from the database: " + error);
-            res.statusCode = 500;
-            res.send("Error 500: reading PersonItem with Person_id " + personId + " failed");
+            reject({statusCode: 500, message: "Error 500: reading PersonItem with Person_id " + personId + " failed"});
         });
+    });
+}
+
+module.exports.put = function (req, res) {
+    var personId = req.params.id;
+
+    if (req.body.member) {
+        var member = req.body.member;
+
+        updatePersonItem(personId, member).then(function (savedPerson) {
+            if (savedPerson) {
+                // return put data again back to caller
+                module.exports.get(req, res);
+            } else {
+                res.statusCode = 304;   // not changed
+                res.send("304: PersonItem not changed");
+            }
+        }).catch(function (error) {
+            res.statusCode = error.statusCode;
+            res.send(error.message);
+        });
+
     } else {
         console.log('Error in member.put: request body does not have members array');
         res.statusCode = 400;
