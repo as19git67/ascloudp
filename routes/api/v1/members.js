@@ -3,10 +3,9 @@ var Promise = require('bluebird/js/main/promise')();
 var model = require('../../../model');
 var moment = require('moment');
 var PersonItem = model.models.PersonItem;
+var MembershipItem = model.models.MembershipItem;
 
 var knex = model.bookshelf.knex;
-
-// todo check user + role
 
 module.exports.get = function (req, res) {
     var personId = req.params.id;
@@ -214,7 +213,7 @@ module.exports.makeHierarchicalObjectStructureFromPersonResultRecords = function
     _.each(persons.rows, function (p) {
         if (p.MembershipNumber != lastMemberId) {
             lastMemberId = p.MembershipNumber;
-            currentPersonObj = new Object();
+            currentPersonObj = {};
             records.push(currentPersonObj);
             currentPersonObj.id = p.Person_id;
             currentPersonObj.MembershipNumber = p.MembershipNumber;
@@ -267,12 +266,7 @@ function isDateDifferent(member, sentDateName, person, modelDateName) {
             mSentDate = undefined;
         }
     }
-    if (pModelDate && mSentDate && ( pModelDate.isSame(mSentDate) == false)) {
-        return true;
-    }
-    else {
-        return false;
-    }
+    return pModelDate && mSentDate && ( pModelDate.isSame(mSentDate) == false);
 }
 
 function updatePersonItem(personId, member) {
@@ -332,6 +326,67 @@ function updatePersonItem(personId, member) {
     });
 }
 
+function updateMembershipItem(personId, member) {
+    return new Promise(function (resolve, reject) {
+
+        console.log("Saving MembershipItem that belongs to Person with Person_id " + personId);
+        new MembershipItem().query(function (qb) {
+            qb.innerJoin('Memberships', 'Memberships.id', 'MembershipItems.Membership_id');
+            qb.where({'Memberships.Person_id': personId})
+                .andWhere('MembershipItems.valid_end', null)
+        }).fetchAll().then(function (membershipItem) {
+            if (membershipItem) {
+                var membershipItemId = membershipItem.get('id');
+                var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", membershipItem, "LeavingDate");
+                var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", membershipItem, "PassiveSince");
+                if (leavingDateIsDifferent || passiveSinceIsDifferent ||
+                    membershipItem.get('EntryDate') != member.entryDate ||
+                    membershipItem.get('LeavingDate') != member.leavingDate ||
+                    membershipItem.get('PassiveSince') != member.passiveSince ||
+                    membershipItem.get('LeavingReason_id') != member.leavingReason_id ||
+                    membershipItem.get('MembershipFee_id') != member.membershipFee_id
+                    ) {
+
+                    var now = new Date();
+                    membershipItem.set('valid_end', now);
+
+                    membershipItem.save()
+                        .then(function (savedMembershipHistory) {
+                            console.log("MembershipItem saved for history");
+                            new MembershipItem({
+                                'Membership_id': membershipItemId,
+                                'EntryDate': member.entryDate,
+                                'LeavingDate': member.leavingDate,
+                                'PassiveSince': member.passiveSince,
+                                'LeavingReason_id': member.leavingReason_id,
+                                'MembershipFee_id': member.membershipFee_id,
+                                'valid_start': now
+                            }).save().then(function (savedMembershipItem) {
+                                    console.log("MembershipItem saved");
+                                    resolve(savedMembershipItem);
+                                }).catch(function (error) {
+                                    console.log("Error while saving new MembershipItem with Membership_id " + membershipItemId + ": " + error);
+                                    reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipItemId + " failed"});
+                                });
+                        }).catch(function (error) {
+                            console.log("Error while updating MembershipItem with Membership_id " + membershipItemId + ": " + error);
+                            reject({statusCode: 500, message: "Error 500: updating MembershipItem with Membership_id " + membershipItemId + " failed"})
+                        });
+                }
+                else {
+                    console.log("Not saving MembershipItem because nothing changed.");
+                    resolve(undefined);
+                }
+            } else {
+                reject({statusCode: 404, message: "Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found"});
+            }
+        }).catch(function (error) {
+            console.log("Error while reading MembershipItem that belongs to Person with Person_id " + personId + " from the database: " + error);
+            reject({statusCode: 500, message: "Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed"});
+        });
+    });
+}
+
 module.exports.put = function (req, res) {
     var personId = req.params.id;
 
@@ -340,11 +395,22 @@ module.exports.put = function (req, res) {
 
         updatePersonItem(personId, member).then(function (savedPerson) {
             if (savedPerson) {
-                // return put data again back to caller
-                module.exports.get(req, res);
+                updateMembershipItem(personId, member).then(function (savedMembership) {
+                    // return put data again back to caller
+                    module.exports.get(req, res);
+                });
             } else {
-                res.statusCode = 304;   // not changed
-                res.send("304: PersonItem not changed");
+                // update membership if necessary
+                updateMembershipItem(personId, member).then(function (savedMembership) {
+                    if (savedMembership) {
+                        // return put data again back to caller
+                        module.exports.get(req, res);
+                    }
+                    else {
+                        res.statusCode = 304;   // not changed
+                        res.send("304: Person and Membership information not changed");
+                    }
+                });
             }
         }).catch(function (error) {
             res.statusCode = error.statusCode;
