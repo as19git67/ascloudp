@@ -78,7 +78,7 @@ MembersApp.Account = DS.Model.extend({
 });
 
 MembersApp.Router.map(function () {
-    this.resource('member', { path: '/' });
+    this.resource('member', {path: '/'});
 });
 
 
@@ -97,7 +97,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             } else {
                 var model = this.get('model');
                 if (model) {
-                    var modelCollections = Ember.A([model.get('addresses'), model.get('phoneNumbers'), model.get('accounts') ]);
+                    var modelCollections = Ember.A([model.get('addresses'), model.get('phoneNumbers'), model.get('accounts')]);
                     modelCollections.forEach(function (modelCollection) {
                         modelCollection.forEach(function (model) {
                             if (model.get('isNew')) {
@@ -290,7 +290,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
             });
             this.deletedItems.clear();
 
-            var modelCollections = Ember.A([mod.get('addresses'), mod.get('phoneNumbers'), mod.get('accounts') ]);
+            var modelCollections = Ember.A([mod.get('addresses'), mod.get('phoneNumbers'), mod.get('accounts')]);
             modelCollections.forEach(function (modelCollection) {
                 modelCollection.forEach(function (model) {
                     if (model.get('isNew') || model.get('isDirty')) {
@@ -414,6 +414,10 @@ MembersApp.DatePickerComponent = Ember.Component.extend({
                         if (!mOld.isSame(changedDate)) {
                             self.set('value', changedDate.toDate());
                         }
+                    }
+                } else {
+                    if (changedDate) {
+                        self.set('value', changedDate.toDate());
                     }
                 }
             });

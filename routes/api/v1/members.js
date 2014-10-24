@@ -340,7 +340,7 @@ function updateMembershipItem(personId, member) {
                 .andWhere('MembershipItems.valid_end', null)
         }).fetch().then(function (membershipItem) {
             if (membershipItem) {
-                var membershipId = membershipItem.get('id');
+                var membershipId = membershipItem.get('Membership_id');
                 var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", membershipItem, "LeavingDate");
                 var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", membershipItem, "PassiveSince");
                 if (leavingDateIsDifferent || passiveSinceIsDifferent ||
