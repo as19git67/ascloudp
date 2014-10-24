@@ -20,7 +20,7 @@ nconf.defaults({
     "tokenLifetime": '120',
     "httpPort": 0,
     "httpsPort": 0,
-    "databaseClient": "postgress",
+    "databaseClient": "postgres",
     "connectionString": "postgres://*USERNAME*:*PASSWORD*@*HOST*:*PORT*/*DATABASE*"
     /*
      "databaseConnection": {
