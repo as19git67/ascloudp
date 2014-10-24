@@ -19,6 +19,7 @@ module.exports.get = function (req, res) {
         '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
         '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
         '"MembershipItems"."PassiveSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
+        '"MembershipItems"."LeavingReason_id", "MembershipItems"."MembershipFee_id",' +
         '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
         '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
         ' from "Persons"' +
@@ -60,7 +61,9 @@ module.exports.get = function (req, res) {
                 currentPersonObj.leavingDate = p.LeavingDate;
                 currentPersonObj.passiveSince = p.PassiveSince;
                 currentPersonObj.leavingReasonName = p.LeavingReasonName;
+                currentPersonObj.leavingReason_id = p.LeavingReason_id;
                 currentPersonObj.membershipFeeName = p.MembershipFeeName;
+                currentPersonObj.membershipFee_id = p.MembershipFee_id;
                 currentPersonObj.membershipFeeAmount = p.MembershipFeeAmount;
                 currentPersonObj.addresses = [];
                 currentPersonObj.phoneNumbers = [];
@@ -141,6 +144,7 @@ module.exports.listQuerySelectFrom =
     '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
     '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
     '"MembershipItems"."PassiveSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
+    '"MembershipItems"."LeavingReason_id", "MembershipItems"."MembershipFee_id",' +
     '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
     '"PersonContactDataAddresses"."City", "PersonContactDataPhonenumbers"."Number" as "PersonContactDataPhoneNumber", "PersonContactDataAccounts"."Account" as "PersonContactDataAccount"' +
     ' from "Persons"';
@@ -305,11 +309,11 @@ function updatePersonItem(personId, member) {
                                     resolve(savedPerson);
                                 }).catch(function (error) {
                                     console.log("Error while saving new PersonItem with Person_id " + personId + ": " + error);
-                                    reject({statusCode: 500, message: "Error 500: saving new PersonItem with Person_id " + personId + " failed"});
+                                    reject(new Error({statusCode: 500, message: "Error 500: saving new PersonItem with Person_id " + personId + " failed"}));
                                 });
                         }).catch(function (error) {
                             console.log("Error while updating PersonItem with Person_id " + personId + ": " + error);
-                            reject({statusCode: 500, message: "Error 500: updating PersonItem with Person_id " + personId + " failed"})
+                            reject(new Error({statusCode: 500, message: "Error 500: updating PersonItem with Person_id " + personId + " failed"}));
                         });
                 }
                 else {
@@ -317,11 +321,11 @@ function updatePersonItem(personId, member) {
                     resolve(undefined);
                 }
             } else {
-                reject({statusCode: 404, message: "Error 404: PersonItem with Person_id " + personId + " not found"});
+                reject(new Error({statusCode: 404, message: "Error 404: PersonItem with Person_id " + personId + " not found"}));
             }
         }).catch(function (error) {
             console.log("Error while reading PersonItem with Person_id " + personId + " from the database: " + error);
-            reject({statusCode: 500, message: "Error 500: reading PersonItem with Person_id " + personId + " failed"});
+            reject(new Error({statusCode: 500, message: "Error 500: reading PersonItem with Person_id " + personId + " failed"}));
         });
     });
 }
@@ -334,9 +338,9 @@ function updateMembershipItem(personId, member) {
             qb.innerJoin('Memberships', 'Memberships.id', 'MembershipItems.Membership_id');
             qb.where({'Memberships.Person_id': personId})
                 .andWhere('MembershipItems.valid_end', null)
-        }).fetchAll().then(function (membershipItem) {
+        }).fetch().then(function (membershipItem) {
             if (membershipItem) {
-                var membershipItemId = membershipItem.get('id');
+                var membershipId = membershipItem.get('id');
                 var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", membershipItem, "LeavingDate");
                 var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", membershipItem, "PassiveSince");
                 if (leavingDateIsDifferent || passiveSinceIsDifferent ||
@@ -354,7 +358,7 @@ function updateMembershipItem(personId, member) {
                         .then(function (savedMembershipHistory) {
                             console.log("MembershipItem saved for history");
                             new MembershipItem({
-                                'Membership_id': membershipItemId,
+                                'Membership_id': membershipId,
                                 'EntryDate': member.entryDate,
                                 'LeavingDate': member.leavingDate,
                                 'PassiveSince': member.passiveSince,
@@ -365,12 +369,13 @@ function updateMembershipItem(personId, member) {
                                     console.log("MembershipItem saved");
                                     resolve(savedMembershipItem);
                                 }).catch(function (error) {
-                                    console.log("Error while saving new MembershipItem with Membership_id " + membershipItemId + ": " + error);
-                                    reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipItemId + " failed"});
+                                    console.log("Error while saving new MembershipItem with Membership_id " + membershipId + ": " + error);
+//                                    reject(new Error({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipItemId + " failed"}));
+                                    reject(new Error("Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"));
                                 });
                         }).catch(function (error) {
-                            console.log("Error while updating MembershipItem with Membership_id " + membershipItemId + ": " + error);
-                            reject({statusCode: 500, message: "Error 500: updating MembershipItem with Membership_id " + membershipItemId + " failed"})
+                            console.log("Error while updating MembershipItem with Membership_id " + membershipId + ": " + error);
+                            reject(new Error({statusCode: 500, message: "Error 500: updating MembershipItem with Membership_id " + membershipId + " failed"}));
                         });
                 }
                 else {
@@ -378,11 +383,11 @@ function updateMembershipItem(personId, member) {
                     resolve(undefined);
                 }
             } else {
-                reject({statusCode: 404, message: "Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found"});
+                reject(new Error({statusCode: 404, message: "Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found"}));
             }
         }).catch(function (error) {
             console.log("Error while reading MembershipItem that belongs to Person with Person_id " + personId + " from the database: " + error);
-            reject({statusCode: 500, message: "Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed"});
+            reject(new Error({statusCode: 500, message: "Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed"}));
         });
     });
 }

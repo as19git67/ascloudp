@@ -43,7 +43,9 @@ MembersApp.Member = DS.Model.extend({
     entryDate: DS.attr('date'),
     leavingDate: DS.attr('date'),
     passiveSince: DS.attr('date'),
+    leavingReason_id: DS.attr('number'),
     leavingReasonName: DS.attr('string'),
+    membershipFee_id: DS.attr('number'),
     membershipFeeName: DS.attr('string'),
     membershipFeeAmount: DS.attr('string'),
     addresses: DS.hasMany(MembersApp.Address),
@@ -147,46 +149,7 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         self.deletedItems.clear();
         this.store.findById('member', id).then(function (person) {
             if (person) {
-//                person.set('birthday_formatted', person.get('birthday') ? moment(person.get('birthday')).format('L') : '');
-//                person.set('entryDate_formatted', person.get('entryDate') ? moment(person.get('entryDate')).format('L') : '');
-//                person.set('leavingDate_formatted', person.get('leavngDate') ? moment(person.get('leavngDate')).format('L') : '');
                 self.set('model', person);
-
-                /*
-                 var idPrefix = "datetimepicker_";
-                 var pickerElements = $('.input-group.date');
-                 var pickerSuffixes = [];
-                 for (var idx = 0; idx < pickerElements.length; idx++) {
-                 var pickerElement = pickerElements[idx];
-                 var pickerElementId = pickerElement.id;
-                 if (pickerElementId && pickerElementId.length > idPrefix.length) {
-                 if (pickerElementId.substr(0, idPrefix.length) == idPrefix) {
-                 var datePickerName = pickerElementId.substr(idPrefix.length);
-                 pickerSuffixes.push(datePickerName);
-                 console.log("Found datepicker " + datePickerName);
-                 var currentDate = person.get(datePickerName);
-                 var dtp = $('#datetimepicker' + '_' + datePickerName);
-                 dtp.datetimepicker({language: 'de', pickTime: false});
-                 dtp.data("DateTimePicker").setDate(currentDate);
-                 dtp.on("dp.change", function (e) {
-                 for (var idx = 0; idx < pickerSuffixes.length; idx++) {
-                 var datePickerName = pickerSuffixes[idx];
-                 if (e.target.id == 'datetimepicker' + '_' + datePickerName) {
-                 var changedDate = $('#datetimepicker' + '_' + datePickerName).data("DateTimePicker").getDate();
-                 if (moment.isMoment(changedDate)) {
-                 changedDate = changedDate.toDate();
-                 }
-                 self.store.findById('member', id).then(function (person) {
-                 person.set(datePickerName, changedDate);
-                 });
-                 break;
-                 }
-                 }
-                 });
-                 }
-                 }
-                 }
-                 */
             }
         }).catch(function (error) {
             var errorMessage = error.statusText;
