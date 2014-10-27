@@ -1,5 +1,6 @@
 var _ = require('underscore');
 var Promise = require('bluebird/js/main/promise')();
+var RejectionError = Promise.RejectionError;
 var model = require('../../../model');
 var moment = require('moment');
 var PersonItem = model.models.PersonItem;
@@ -36,8 +37,7 @@ module.exports.get = function (req, res) {
         ' where "PersonItems"."Person_id" = ' + personId +
         ' and "PersonItems"."valid_end" is null' +
         ' and "PersonContactTypes"."Deleted" = false' +
-        ' and "MembershipItems"."valid_end" is null' +
-        ' and "MembershipItems"."LeavingDate" is null';
+        ' and "MembershipItems"."valid_end" is null';
     knex.raw(query).then(function (persons) {
         var records = [];
         var addresses = [];
@@ -162,8 +162,8 @@ module.exports.listQueryJoins =
 module.exports.listQueryWhereClauses =
     ' where "PersonItems"."valid_end" is null' +
     ' and "PersonContactTypes"."Deleted" = false' +
-    ' and "MembershipItems"."valid_end" is null' +
-    ' and "MembershipItems"."LeavingDate" is null';
+    ' and "MembershipItems"."valid_end" is null';
+//    ' and "MembershipItems"."LeavingDate" is null';
 module.exports.listQueryOrderByClause =
     ' order by "PersonItems"."Lastname" ASC, "PersonItems"."Person_id" ASC, "PersonContactTypes"."Description", "PersonContactDatas"."Usage"';
 
@@ -192,7 +192,8 @@ var addPersonContactData = function (personData, currentPersonObj) {
                 currentPersonObj.PhoneNumbers.push({
                     Number: model.formatPhoneNumber(personData.PersonContactDataPhoneNumber),
                     Usage: personData.PersonContactDataUsage,
-                    Type: personData.PersonContactTypeDescription});
+                    Type: personData.PersonContactTypeDescription
+                });
             }
             break;
         default:
@@ -256,6 +257,15 @@ module.exports.list = function (req, res) {
     });
 };
 
+function HttpError(message, httpStatus) {
+    this.constructor.prototype.__proto__ = Error.prototype; // Make this an instanceof Error.
+    Error.call(this); // Does not seem necessary. Perhaps remove this line?
+    Error.captureStackTrace(this, this.constructor); // Creates the this.stack getter
+    this.name = this.constructor.name; // Used to cause messages like "UserError: message" instead of the default "Error: message"
+    this.message = message; // Used to set the message
+    this.statusCode = httpStatus;
+}
+
 function isDateDifferent(member, sentDateName, person, modelDateName) {
     var pModelDate;
     var mSentDate;
@@ -278,7 +288,7 @@ function isDateDifferent(member, sentDateName, person, modelDateName) {
     return !(pModelDate == undefined && mSentDate == undefined);
 }
 
-function updatePersonItem(personId, member) {
+function updatePersonItem(transaction, personId, member) {
     return new Promise(function (resolve, reject) {
 
         console.log("Saving PersonItem with Person_id " + personId);
@@ -290,12 +300,12 @@ function updatePersonItem(personId, member) {
                     person.get('Lastname') != member.lastname ||
                     person.get('Suffix') != member.suffix ||
                     person.get('Salutation') != member.salutation
-                    ) {
+                ) {
 
                     var now = new Date();
                     person.set('valid_end', now);
 
-                    person.save()
+                    person.save(null, {transacting: transaction})
                         .then(function (savedPersonHistory) {
                             console.log("PersonItem saved for history");
                             new PersonItem({
@@ -306,16 +316,16 @@ function updatePersonItem(personId, member) {
                                 'Suffix': member.suffix,
                                 'Salutation': member.salutation,
                                 'valid_start': now
-                            }).save().then(function (savedPerson) {
+                            }).save(null, {transacting: transaction}).then(function (savedPerson) {
                                     console.log("PersonItem saved");
                                     resolve(savedPerson);
                                 }).catch(function (error) {
                                     console.log("Error while saving new PersonItem with Person_id " + personId + ": " + error);
-                                    reject({statusCode: 500, message: "Error 500: saving new PersonItem with Person_id " + personId + " failed"});
+                                    reject(new HttpError("Error 500: saving new PersonItem with Person_id " + personId + " failed", 500));
                                 });
                         }).catch(function (error) {
                             console.log("Error while updating PersonItem with Person_id " + personId + ": " + error);
-                            reject({statusCode: 500, message: "Error 500: updating PersonItem with Person_id " + personId + " failed"});
+                            reject(new HttpError("Error 500: updating PersonItem with Person_id " + personId + " failed", 500));
                         });
                 }
                 else {
@@ -323,17 +333,18 @@ function updatePersonItem(personId, member) {
                     resolve(undefined);
                 }
             } else {
-                reject({statusCode: 404, message: "Error 404: PersonItem with Person_id " + personId + " not found"});
+                reject(new HttpError("Error 404: PersonItem with Person_id " + personId + " not found", 404));
             }
         }).catch(function (error) {
             console.log("Error while reading PersonItem with Person_id " + personId + " from the database: " + error);
-            reject({statusCode: 500, message: "Error 500: reading PersonItem with Person_id " + personId + " failed"});
+            reject(new HttpError("Error 500: reading PersonItem with Person_id " + personId + " failed", 500));
         });
     });
 }
 
-function updateMembershipItem(personId, member) {
+function updateMembershipItem(transaction, personId, member) {
     return new Promise(function (resolve, reject) {
+
 
         console.log("Saving MembershipItem that belongs to Person with Person_id " + personId);
         new MembershipItem().query(function (qb) {
@@ -344,20 +355,22 @@ function updateMembershipItem(personId, member) {
             if (membershipItem) {
                 var membershipId = membershipItem.get('Membership_id');
                 console.log("Updated membershipItem with Membership_id=" + membershipId);
-                var entryDateIsDifferent = isDateDifferent(member, "entryDate", xmembershipItem, "EntryDate");
+                //console.log("MembershipItem loaded: " + JSON.stringify(membershipItem));
+                var entryDateIsDifferent = isDateDifferent(member, "entryDate", membershipItem, "EntryDate");
                 var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", membershipItem, "LeavingDate");
                 var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", membershipItem, "PassiveSince");
                 if (entryDateIsDifferent || leavingDateIsDifferent || passiveSinceIsDifferent ||
                     membershipItem.get('LeavingReason_id') != member.leavingReason_id ||
                     membershipItem.get('MembershipFee_id') != member.membershipFee_id
-                    ) {
+                ) {
 
                     var now = new Date();
                     membershipItem.set('valid_end', now);
 
-                    membershipItem.save()
+                    membershipItem.save(null, {transacting: transaction})
                         .then(function (savedMembershipHistory) {
                             console.log("MembershipItem saved for history");
+                            //console.log("MembershipItem saved for history: " + JSON.stringify(savedMembershipHistory));
                             new MembershipItem({
                                 'Membership_id': membershipId,
                                 'EntryDate': member.entryDate,
@@ -366,17 +379,18 @@ function updateMembershipItem(personId, member) {
                                 'LeavingReason_id': member.leavingReason_id,
                                 'MembershipFee_id': member.membershipFee_id,
                                 'valid_start': now
-                            }).save().then(function (savedMembershipItem) {
+                            }).save(null, {transacting: transaction}).then(function (savedMembershipItem) {
                                     console.log("MembershipItem saved");
+                                    //console.log("MembershipItem saved: "+ JSON.stringify(savedMembershipItem));
                                     resolve(savedMembershipItem);
                                 }).catch(function (error) {
                                     console.log("Error while saving new MembershipItem with Membership_id " + membershipId + ": " + error);
-//                                    reject(new Error({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipItemId + " failed"}));
-                                    reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"});
+                                    reject(new HttpError("Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed", 500));
+                                    //reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"});
                                 });
                         }).catch(function (error) {
                             console.log("Error while updating MembershipItem with Membership_id " + membershipId + ": " + error);
-                            reject({statusCode: 500, message: "Error 500: updating MembershipItem with Membership_id " + membershipId + " failed"});
+                            reject(new HttpError("Error 500: updating MembershipItem with Membership_id " + membershipId + " failed", 500));
                         });
                 }
                 else {
@@ -384,11 +398,11 @@ function updateMembershipItem(personId, member) {
                     resolve(undefined);
                 }
             } else {
-                reject({statusCode: 404, message: "Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found"});
+                reject(new HttpError("Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found", 404));
             }
         }).catch(function (error) {
             console.log("Error while reading MembershipItem that belongs to Person with Person_id " + personId + " from the database: " + error);
-            reject({statusCode: 500, message: "Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed"});
+            reject(new HttpError("Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed", 500));
         });
     });
 }
@@ -399,34 +413,44 @@ module.exports.put = function (req, res) {
     if (req.body.member) {
         var member = req.body.member;
 
-        updatePersonItem(personId, member).then(function (savedPerson) {
-            if (savedPerson) {
-                updateMembershipItem(personId, member).then(function (savedMembership) {
-                    // return put data again back to caller
-                    module.exports.get(req, res);
-                });
+        model.bookshelf.transaction(function (t) {
+            updatePersonItem(t, personId, member).then(function (savedPerson) {
+                if (savedPerson) {
+                    updateMembershipItem(t, personId, member).then(function (savedMembership) {
+                        t.commit(savedMembership);
+                    }).catch(function (error) {
+                        console.log("Roll back transaction");
+                        t.rollback(error);
+                    });
+                } else {
+                    // update membership if necessary
+                    updateMembershipItem(t, personId, member).then(function (savedMembership) {
+                        t.commit(savedMembership);
+                    }).catch(function (error) {
+                        console.log("Roll back transaction");
+                        t.rollback(error);
+                    });
+                }
+            }).catch(function (error) {
+                console.log("Roll back transaction");
+                t.rollback(error);
+            });
+        }).then(function (savedItem) {
+            console.log("Transaction committed");
+            if (savedItem) {
+                // return put data again back to caller
+                module.exports.get(req, res);
             } else {
-                // update membership if necessary
-                updateMembershipItem(personId, member).then(function (savedMembership) {
-                    if (savedMembership) {
-                        // return put data again back to caller
-                        module.exports.get(req, res);
-                    }
-                    else {
-                        res.statusCode = 304;   // not changed
-                        res.send("304: Person and Membership information not changed");
-                    }
-                }).catch(function (error) {
-                    res.statusCode = error.statusCode;
-                    res.send(error.message);
-                });
+                res.statusCode = 304;   // not changed
+                res.send("304: Person and Membership information not changed");
             }
         }).catch(function (error) {
+            console.log("Transaction rolled back");
             res.statusCode = error.statusCode;
             res.send(error.message);
         });
-
-    } else {
+    }
+    else {
         console.log('Error in member.put: request body does not have members array');
         res.statusCode = 400;
         res.send('Error 400: members in request missing');
