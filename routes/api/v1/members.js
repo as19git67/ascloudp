@@ -260,17 +260,22 @@ function isDateDifferent(member, sentDateName, person, modelDateName) {
     var pModelDate;
     var mSentDate;
 
-    if (member[sentDateName] && person.get(modelDateName)) {
+    if (person.get(modelDateName)) {
         pModelDate = moment(person.get(modelDateName));
         if (pModelDate.isValid() == false) {
             pModelDate = undefined;
         }
+    }
+    if (member[sentDateName]) {
         mSentDate = moment(member[sentDateName]);
         if (mSentDate.isValid() == false) {
             mSentDate = undefined;
         }
     }
-    return pModelDate && mSentDate && ( pModelDate.isSame(mSentDate) == false);
+    if (pModelDate && mSentDate) {
+        return pModelDate.isSame(mSentDate) == false;
+    }
+    return !(pModelDate == undefined && mSentDate == undefined);
 }
 
 function updatePersonItem(personId, member) {
@@ -280,10 +285,7 @@ function updatePersonItem(personId, member) {
         new PersonItem({Person_id: personId}).fetch().then(function (person) {
             if (person) {
                 var birthdayIsDifferent = isDateDifferent(member, "birthday", person, "Birthday");
-                var entryDateIsDifferent = isDateDifferent(member, "entryDate", person, "EntryDate");
-                var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", person, "LeavingDate");
-                var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", person, "PassiveSince");
-                if (birthdayIsDifferent || entryDateIsDifferent || leavingDateIsDifferent || passiveSinceIsDifferent ||
+                if (birthdayIsDifferent ||
                     person.get('Firstname') != member.firstname ||
                     person.get('Lastname') != member.lastname ||
                     person.get('Suffix') != member.suffix ||
@@ -309,11 +311,11 @@ function updatePersonItem(personId, member) {
                                     resolve(savedPerson);
                                 }).catch(function (error) {
                                     console.log("Error while saving new PersonItem with Person_id " + personId + ": " + error);
-                                    reject(new Error({statusCode: 500, message: "Error 500: saving new PersonItem with Person_id " + personId + " failed"}));
+                                    reject({statusCode: 500, message: "Error 500: saving new PersonItem with Person_id " + personId + " failed"});
                                 });
                         }).catch(function (error) {
                             console.log("Error while updating PersonItem with Person_id " + personId + ": " + error);
-                            reject(new Error({statusCode: 500, message: "Error 500: updating PersonItem with Person_id " + personId + " failed"}));
+                            reject({statusCode: 500, message: "Error 500: updating PersonItem with Person_id " + personId + " failed"});
                         });
                 }
                 else {
@@ -321,11 +323,11 @@ function updatePersonItem(personId, member) {
                     resolve(undefined);
                 }
             } else {
-                reject(new Error({statusCode: 404, message: "Error 404: PersonItem with Person_id " + personId + " not found"}));
+                reject({statusCode: 404, message: "Error 404: PersonItem with Person_id " + personId + " not found"});
             }
         }).catch(function (error) {
             console.log("Error while reading PersonItem with Person_id " + personId + " from the database: " + error);
-            reject(new Error({statusCode: 500, message: "Error 500: reading PersonItem with Person_id " + personId + " failed"}));
+            reject({statusCode: 500, message: "Error 500: reading PersonItem with Person_id " + personId + " failed"});
         });
     });
 }
@@ -341,12 +343,11 @@ function updateMembershipItem(personId, member) {
         }).fetch().then(function (membershipItem) {
             if (membershipItem) {
                 var membershipId = membershipItem.get('Membership_id');
+                console.log("Updated membershipItem with Membership_id=" + membershipId);
+                var entryDateIsDifferent = isDateDifferent(member, "entryDate", xmembershipItem, "EntryDate");
                 var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", membershipItem, "LeavingDate");
                 var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", membershipItem, "PassiveSince");
-                if (leavingDateIsDifferent || passiveSinceIsDifferent ||
-                    membershipItem.get('EntryDate') != member.entryDate ||
-                    membershipItem.get('LeavingDate') != member.leavingDate ||
-                    membershipItem.get('PassiveSince') != member.passiveSince ||
+                if (entryDateIsDifferent || leavingDateIsDifferent || passiveSinceIsDifferent ||
                     membershipItem.get('LeavingReason_id') != member.leavingReason_id ||
                     membershipItem.get('MembershipFee_id') != member.membershipFee_id
                     ) {
@@ -371,11 +372,11 @@ function updateMembershipItem(personId, member) {
                                 }).catch(function (error) {
                                     console.log("Error while saving new MembershipItem with Membership_id " + membershipId + ": " + error);
 //                                    reject(new Error({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipItemId + " failed"}));
-                                    reject(new Error("Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"));
+                                    reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"});
                                 });
                         }).catch(function (error) {
                             console.log("Error while updating MembershipItem with Membership_id " + membershipId + ": " + error);
-                            reject(new Error({statusCode: 500, message: "Error 500: updating MembershipItem with Membership_id " + membershipId + " failed"}));
+                            reject({statusCode: 500, message: "Error 500: updating MembershipItem with Membership_id " + membershipId + " failed"});
                         });
                 }
                 else {
@@ -383,11 +384,11 @@ function updateMembershipItem(personId, member) {
                     resolve(undefined);
                 }
             } else {
-                reject(new Error({statusCode: 404, message: "Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found"}));
+                reject({statusCode: 404, message: "Error 404: MembershipItem that belongs to Person with Person_id " + personId + " not found"});
             }
         }).catch(function (error) {
             console.log("Error while reading MembershipItem that belongs to Person with Person_id " + personId + " from the database: " + error);
-            reject(new Error({statusCode: 500, message: "Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed"}));
+            reject({statusCode: 500, message: "Error 500: reading MembershipItem that belongs to Person with Person_id " + personId + " failed"});
         });
     });
 }
@@ -415,6 +416,9 @@ module.exports.put = function (req, res) {
                         res.statusCode = 304;   // not changed
                         res.send("304: Person and Membership information not changed");
                     }
+                }).catch(function (error) {
+                    res.statusCode = error.statusCode;
+                    res.send(error.message);
                 });
             }
         }).catch(function (error) {
