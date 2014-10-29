@@ -4,6 +4,7 @@ var RejectionError = Promise.RejectionError;
 var model = require('../../../model');
 var moment = require('moment');
 var PersonItem = model.models.PersonItem;
+var Membership = model.models.Membership;
 var MembershipItem = model.models.MembershipItem;
 
 var knex = model.bookshelf.knex;
@@ -18,7 +19,7 @@ module.exports.get = function (req, res) {
         '"PersonContactDatas"."id" as "PersonContactData_id",' +
         '"PersonContactDatas"."Usage" as "PersonContactDataUsage",' +
         '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
-        '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
+        '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "MembershipItems"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
         '"MembershipItems"."PassiveSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
         '"MembershipItems"."LeavingReason_id", "MembershipItems"."MembershipFee_id",' +
         '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
@@ -142,7 +143,7 @@ module.exports.listQuerySelectFrom =
     '"PersonContactDatas"."id" as "PersonContactData_id",' +
     '"PersonContactDatas"."Usage" as "PersonContactDataUsage",' +
     '"PersonContactTypes"."Name" as "PersonContactTypeName",' +
-    '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "Memberships"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
+    '"PersonContactTypes"."Description" as "PersonContactTypeDescription", "MembershipItems"."MembershipNumber", "MembershipItems"."EntryDate", "MembershipItems"."LeavingDate",' +
     '"MembershipItems"."PassiveSince", "LeavingReasons"."Name" as "LeavingReasonName", "MembershipFees"."Name" as "MembershipFeeName",' +
     '"MembershipItems"."LeavingReason_id", "MembershipItems"."MembershipFee_id",' +
     '"MembershipFees"."Amount" as "MembershipFeeAmount", "PersonContactDataAddresses"."Street", "PersonContactDataAddresses"."StreetNumber", "PersonContactDataAddresses"."Postalcode",' +
@@ -342,9 +343,58 @@ function updatePersonItem(transaction, personId, member) {
     });
 }
 
-function updateMembershipItem(transaction, personId, member) {
+function updateMembership(transaction, personId, member) {
     return new Promise(function (resolve, reject) {
 
+        console.log("Saving Membership with Person_id " + personId);
+        new Membership({Person_id: personId}).fetch().then(function (membership) {
+            if (membership) {
+                if (membership.get('MembershipNumber') != member.membershipNumber) {
+                    membership.set('MembershipNumber', member.membershipNumber);
+
+                    membership.save(null, {transacting: transaction}).then(function (savedMembership) {
+                        console.log("Membership saved");
+                        updateMembershipItem(transaction, personId, member).then(function (savedMembership) {
+                            if (savedMembership) {
+                                console.log("MembershipItem saved");
+                            } else {
+                                console.log("MembershipItem not saved because nothing changed.");
+                            }
+                            resolve(savedMembership);
+                        }).catch(function(error){
+                            reject(new HttpError("Error 500: updating Membership with Person_id " + personId + " failed", 500));
+                        });
+                    }).catch(function (error) {
+                        console.log("Error while updating Membership with Person_id " + personId + ": " + error);
+                        reject(new HttpError("Error 500: updating Membership with Person_id " + personId + " failed", 500));
+                    });
+                }
+                else {
+                    console.log("Not saving Membership because nothing changed.");
+
+                    updateMembershipItem(transaction, personId, member).then(function (savedMembership) {
+                        if (savedMembership) {
+                            console.log("MembershipItem saved");
+                        } else {
+                            console.log("MembershipItem not saved because nothing changed.");
+                        }
+                        resolve(savedMembership);
+                    }).catch(function(error){
+                        reject(new HttpError("Error 500: updating Membership with Person_id " + personId + " failed", 500));
+                    });
+                }
+            } else {
+                reject(new HttpError("Error 404: Membership with Person_id " + personId + " not found", 404));
+            }
+        }).catch(function (error) {
+            console.log("Error while reading Membership with Person_id " + personId + " from the database: " + error);
+            reject(new HttpError("Error 500: reading Membership with Person_id " + personId + " failed", 500));
+        });
+    });
+}
+
+function updateMembershipItem(transaction, personId, member) {
+    return new Promise(function (resolve, reject) {
 
         console.log("Saving MembershipItem that belongs to Person with Person_id " + personId);
         new MembershipItem().query(function (qb) {
@@ -354,12 +404,13 @@ function updateMembershipItem(transaction, personId, member) {
         }).fetch().then(function (membershipItem) {
             if (membershipItem) {
                 var membershipId = membershipItem.get('Membership_id');
-                console.log("Updated membershipItem with Membership_id=" + membershipId);
+                console.log("Updating membershipItem with Membership_id=" + membershipId);
                 //console.log("MembershipItem loaded: " + JSON.stringify(membershipItem));
                 var entryDateIsDifferent = isDateDifferent(member, "entryDate", membershipItem, "EntryDate");
                 var leavingDateIsDifferent = isDateDifferent(member, "leavingDate", membershipItem, "LeavingDate");
                 var passiveSinceIsDifferent = isDateDifferent(member, "passiveSince", membershipItem, "PassiveSince");
                 if (entryDateIsDifferent || leavingDateIsDifferent || passiveSinceIsDifferent ||
+                    membershipItem.get('MembershipNumber') != member.membershipNumber ||
                     membershipItem.get('LeavingReason_id') != member.leavingReason_id ||
                     membershipItem.get('MembershipFee_id') != member.membershipFee_id
                 ) {
@@ -373,6 +424,7 @@ function updateMembershipItem(transaction, personId, member) {
                             //console.log("MembershipItem saved for history: " + JSON.stringify(savedMembershipHistory));
                             new MembershipItem({
                                 'Membership_id': membershipId,
+                                'MembershipNumber': member.membershipNumber,
                                 'EntryDate': member.entryDate,
                                 'LeavingDate': member.leavingDate,
                                 'PassiveSince': member.passiveSince,
@@ -424,7 +476,7 @@ module.exports.put = function (req, res) {
                     });
                 } else {
                     // update membership if necessary
-                    updateMembershipItem(t, personId, member).then(function (savedMembership) {
+                    updateMembership(t, personId, member).then(function (savedMembership) {
                         t.commit(savedMembership);
                     }).catch(function (error) {
                         console.log("Roll back transaction");
