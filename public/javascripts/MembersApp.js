@@ -91,24 +91,26 @@ MembersApp.MemberController = Ember.ObjectController.extend({
         'model.accounts.@each.isDirty',
         'deletedItems.length', function () {
             var contentIsDirty = this.get('content.isDirty');
-            var modelCollectionsAreDirty = false;
-            if (this.deletedItems.length > 0) {
-                modelCollectionsAreDirty = true;
-            } else {
-                var model = this.get('model');
-                if (model) {
-                    var modelCollections = Ember.A([model.get('addresses'), model.get('phoneNumbers'), model.get('accounts')]);
-                    modelCollections.forEach(function (modelCollection) {
-                        modelCollection.forEach(function (model) {
-                            if (model.get('isNew')) {
-                                modelCollectionsAreDirty = true;
-                            } else {
-                                if (model.get('isDirty')) {
+            if (!contentIsDirty) {
+                var modelCollectionsAreDirty = false;
+                if (this.deletedItems.length > 0) {
+                    modelCollectionsAreDirty = true;
+                } else {
+                    var model = this.get('model');
+                    if (model) {
+                        var modelCollections = Ember.A([model.get('addresses'), model.get('phoneNumbers'), model.get('accounts')]);
+                        modelCollections.forEach(function (modelCollection) {
+                            modelCollection.forEach(function (model) {
+                                if (model.get('isNew')) {
                                     modelCollectionsAreDirty = true;
+                                } else {
+                                    if (model.get('isDirty')) {
+                                        modelCollectionsAreDirty = true;
+                                    }
                                 }
-                            }
+                            });
                         });
-                    });
+                    }
                 }
             }
             return !(contentIsDirty || modelCollectionsAreDirty);
@@ -402,7 +404,7 @@ MembersApp.DatePickerComponent = Ember.Component.extend({
         var datePickers = $('#' + id).find('.input-group.date');
         if (datePickers && datePickers.length > 0) {
             this.picker = $(datePickers[0]);
-            this.picker.datetimepicker({language: 'de', pickTime: false});
+            this.picker.datetimepicker({language: MembersApp.lang, pickTime: false});
             var self = this;
             this.picker.on("dp.change", function (e) {
                 var changedDate = e.date;
