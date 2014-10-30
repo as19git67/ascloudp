@@ -200,7 +200,10 @@ MembersApp.MemberController = Ember.ObjectController.extend({
 
     actions: {
         discardChanges: function () {
-            this.get('model').rollback();
+            var m = this.get('model');
+            m.rollback();
+ //           this.store.unloadRecord(m);
+            m.reload();
 
             var addresses = this.model.get('addresses');
             var phoneNumbers = this.model.get('phoneNumbers');
