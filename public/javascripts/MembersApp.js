@@ -423,6 +423,10 @@ MembersApp.DatePickerComponent = Ember.Component.extend({
                     }
                 }
             });
+            this.picker.on("dp.error", function (e){
+                // set date to null if picker raises error event (which will be done if the input field is emptied)
+                self.set('value', null);
+            });
         }
     },
     valueObserver: function () {

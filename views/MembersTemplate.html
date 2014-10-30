@@ -84,29 +84,29 @@
                                         {{date-picker label="Austritt" value=leavingDate placeholder="Austrittsdatum"}}
 
                                     <div class="form-group">
-                                        <label for="LeavingReasonName" class="col-md-4 control-label">Grund:</label>
-                                        <div class="col-md-8" id="LeavingReasonName">
+                                        <label for="LeavingReasonName" class="col-md-3 control-label">Grund:</label>
+                                        <div class="col-md-9" id="LeavingReasonName">
                                             {{input type="text" class="form-control" value=leavingReasonName placeholder="Austrittsgrund"}}
                                         </div>
                                     </div>
                                     <div class="form-group has-feedback">
-                                        <label for="membershipNumber" class="col-md-4 control-label">Mitgliedsnr.:</label>
-                                        <div class="col-md-8" id="membershipNumber">
+                                        <label for="membershipNumber" class="col-md-3 control-label">Mitgliedsnr.:</label>
+                                        <div class="col-md-9" id="membershipNumber">
                                             {{input type="text" class="form-control" value=membershipNumber placeholder="Mitgliedsnummer"}}
                                             <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
                                         </div>
                                     </div>
                                     <div class="form-group has-feedback">
-                                        <label for="membershipFeeName" class="col-md-4 control-label">Beitrag:</label>
-                                        <div class="col-md-8" id="membershipFeeName">
+                                        <label for="membershipFeeName" class="col-md-3 control-label">Beitrag:</label>
+                                        <div class="col-md-9" id="membershipFeeName">
                                             {{input type="text" class="form-control" value=membershipFeeName placeholder="Mitgliedsbeitrag"}}
                                             <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
                                         </div>
                                     </div>
                                     <div class="form-group">
-                                        <label for="membershipFeeAmount" class="col-md-4 control-label">Betrag:</label>
-                                        <div class="col-md-8" id="membershipFeeAmount">
-                                            {{input type="text" class="form-control" value=membershipFeeAmount placeholder="Beitrag (€)"}}
+                                        <label for="membershipFeeAmount" class="col-md-3 control-label">Betrag (€):</label>
+                                        <div class="col-md-9" id="membershipFeeAmount">
+                                            <div class="form-control-static">{{membershipFeeAmount}}</div>
                                         </div>
                                     </div>
                                 </form>
