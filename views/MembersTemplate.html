@@ -174,11 +174,7 @@
 
                 <hr>
                 <div class="row">
-                    {{#if haveMorePhoneNumbersThanAccounts }}
-                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-right-border-sm">
-                    {{else}}
-                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-                    {{/if}}
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" {{bind-attr class="haveMorePhoneNumbersThanAccounts:ascloud-right-border-sm"}} >
                         <div class="row">
                             <div class="col-xs-12">
                                 {{#if havePhoneNumbers}}
@@ -212,12 +208,7 @@
                             </div>
                         </div>
                     </div>
-                            <p>Accounts</p>
-                    {{#if haveMorePhoneNumbersThanAccounts }}
-                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-                    {{else}}
-                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
-                    {{/if}}
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" {{bind-attr class="haveMorePhoneNumbersThanAccounts::ascloud-left-border-sm"}}>
                         <div class="row">
                             <div class="col-xs-12">
                                 {{#if haveAccounts}}

@@ -433,7 +433,6 @@ MembersApp.DatePickerComponent = Ember.Component.extend({
     }.observes('value')
 });
 
-
 MembersApp.AddressesController = Ember.ArrayController.extend({
     actions: {
         createAddress: function (controller, i) {
