@@ -30,6 +30,7 @@
         "bookshelf": "*",
         "pg": "*",
         "rho": "*",
-        "ical-generator": "*"
+        "ical-generator": "*",
+        "bootstrap": "*"
     }
 }
