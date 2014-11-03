@@ -1,0 +1,10 @@
+extends layout
+block content
+    h2= title
+    h4 Rollenliste
+    form(action="/admin/userManagementRoles",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
+        if error
+            p.text-danger #{error}
+        div.form-group
+            div(class="col-xs-12 col-sm-12 table-responsive")
