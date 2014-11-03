@@ -28,6 +28,8 @@ var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
+var settings = require('./routes/settings');
+
 var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
@@ -68,6 +70,7 @@ app.use('/admin/userManagementUserEdit', userManagementUserEdit);
 app.use('/admin/userManagementRoles', userManagementRoles);
 app.use('/admin/userManagementRoleEdit', userManagementRoleEdit);
 app.use('/admin/pageManagementPageList', pageManagementPageList);
+app.use('/admin/settings', settings);
 app.use('/login', login);
 app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);

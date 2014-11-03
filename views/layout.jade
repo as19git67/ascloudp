@@ -94,6 +94,9 @@ html
                                                 a(href="#", id="drop3", role="button", class="dropdown-toggle", data-toggle="dropdown") Verwaltung
                                                     span.caret
                                                 ul(class="dropdown-menu", role="menu", aria-labelledby="drop3")
+                                                    if user.menu.admin.settings
+                                                        li(role="presentation")
+                                                            a(role="menuitem", tabindex="-1", href="/admin/settings") Einstellungen
                                                     if user.menu.admin.users
                                                         li(role="presentation")
                                                             a(role="menuitem", tabindex="-1", href="/admin/usermanagementuserlist") Benutzer
@@ -103,7 +106,7 @@ html
                                                     if user.menu.admin.pages
                                                         li(role="presentation")
                                                             a(role="menuitem", tabindex="-1", href="/admin/pagemanagementpagelist") Seiten
-                                                    if user.menu.admin.databasemanagement && ( user.menu.admin.roles || user.menu.admin.users )
+                                                    if user.menu.admin.databasemanagement && ( user.menu.admin.roles || user.menu.admin.users || user.menu.admin.settings)
                                                         li(role="presentation", class="divider")
                                                     if user.menu.admin.databasemanagement
                                                         li(role="presentation")

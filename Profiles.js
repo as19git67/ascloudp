@@ -13,6 +13,12 @@ module.exports = function () {
                 permissions: ["get"],
                 menus: ["admin"]
             },
+            admin_settingst: {
+                description: "Einstellungen",
+                resources: ["/admin/settings"],
+                permissions: ["get", "post"],
+                menus: ["admin.settings"]
+            },
             admin_databasemanagement: {
                 description: "Datenbankverwaltung",
                 resources: ["/admin/databaseManagement"],
