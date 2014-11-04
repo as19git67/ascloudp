@@ -2,6 +2,7 @@ var express = require('express');
 var router = express.Router();
 var config = require('../config');
 var model = require('../model');
+var modelDataFFW = require('../modelDataFFW');
 var passportStrategies = require('../passportStrategies');
 var rolePermissions = require('../Roles');
 
@@ -21,7 +22,6 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
     var appName = config.get('appName');
 
     if (req.body.dbinit) {
-        var model = require('../model');
         model.createSchema()
             .then(function () {
                 console.log("Database schema created");
@@ -41,8 +41,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
             });
     } else {
         if (req.body.dbloadTestFFW) {
-            var model = require('../model');
-            model.importTestDataFFW()
+            modelDataFFW.importTestDataFFW()
                 .then(function () {
                     console.log("FFW Testdaten importiert");
                     req.logout();
