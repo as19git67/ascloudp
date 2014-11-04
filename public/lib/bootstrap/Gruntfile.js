@@ -20,7 +20,7 @@ module.exports = function (grunt) {
   var npmShrinkwrap = require('npm-shrinkwrap');
   var BsLessdocParser = require('./grunt/bs-lessdoc-parser.js');
   var getLessVarsData = function () {
-    var filePath = path.join(__dirname, 'less/variables.less');
+    var filePath = path.join(__dirname, 'custom_themes/bootstrap/variables.less');
     var fileContent = fs.readFileSync(filePath, { encoding: 'utf8' });
     var parser = new BsLessdocParser(fileContent);
     return { sections: parser.parseFile() };
@@ -34,10 +34,10 @@ module.exports = function (grunt) {
     // Metadata.
     pkg: grunt.file.readJSON('package.json'),
     banner: '/*!\n' +
-            ' * Bootstrap v<%= pkg.version %> (<%= pkg.homepage %>)\n' +
-            ' * Copyright 2011-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
-            ' * Licensed under <%= pkg.license.type %> (<%= pkg.license.url %>)\n' +
-            ' */\n',
+    ' * Bootstrap v<%= pkg.version %> (<%= pkg.homepage %>)\n' +
+    ' * Copyright 2011-<%= grunt.template.today("yyyy") %> <%= pkg.author %>\n' +
+    ' * Licensed under <%= pkg.license.type %> (<%= pkg.license.url %>)\n' +
+    ' */\n',
     // NOTE: This jqueryCheck/jqueryVersionCheck code is duplicated in customizer.js;
     //       if making changes here, be sure to update the other copy too.
     jqueryCheck: [
@@ -175,10 +175,35 @@ module.exports = function (grunt) {
           sourceMap: true,
           outputSourceFiles: true,
           sourceMapURL: '<%= pkg.name %>.css.map',
-          sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map'
+          sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map',
+          paths: ['custom_themes/bootstrap']
         },
         src: 'less/bootstrap.less',
         dest: 'dist/css/<%= pkg.name %>.css'
+      },
+      compileCoreFeuerwehr: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          sourceMapURL: '<%= pkg.name %>.css.map',
+          sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map',
+          paths: ['custom_themes/feuerwehr']
+        },
+        src: 'less/bootstrap.less',
+        dest: 'dist/feuerwehr/css/<%= pkg.name %>.css'
+      },
+      compileCoreYeti: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          sourceMapURL: '<%= pkg.name %>.css.map',
+          sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map',
+          paths: ['custom_themes/yeti']
+        },
+        src: 'less/bootstrap.less',
+        dest: 'dist/yeti/css/<%= pkg.name %>.css'
       },
       compileTheme: {
         options: {
@@ -186,10 +211,35 @@ module.exports = function (grunt) {
           sourceMap: true,
           outputSourceFiles: true,
           sourceMapURL: '<%= pkg.name %>-theme.css.map',
-          sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map'
+          sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map',
+          paths: ['custom_themes/bootstrap']
         },
         src: 'less/theme.less',
         dest: 'dist/css/<%= pkg.name %>-theme.css'
+      },
+      compileThemeFeuerwehr: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          sourceMapURL: '<%= pkg.name %>-theme.css.map',
+          sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map',
+          paths: ['custom_themes/feuerwehr']
+        },
+        src: 'less/theme.less',
+        dest: 'dist/feuerwehr/css/<%= pkg.name %>-theme.css'
+      },
+      compileThemeYeti: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          sourceMapURL: '<%= pkg.name %>-theme.css.map',
+          sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map',
+          paths: ['custom_themes/yeti']
+        },
+        src: 'less/theme.less',
+        dest: 'dist/yeti/css/<%= pkg.name %>-theme.css'
       }
     },
 
@@ -259,9 +309,25 @@ module.exports = function (grunt) {
         src: 'dist/css/<%= pkg.name %>.css',
         dest: 'dist/css/<%= pkg.name %>.min.css'
       },
+      minifyCoreFeuerwehr: {
+        src: 'dist/feuerwehr/css/<%= pkg.name %>.css',
+        dest: 'dist/feuerwehr/css/<%= pkg.name %>.min.css'
+      },
+      minifyCoreYeti: {
+        src: 'dist/yeti/css/<%= pkg.name %>.css',
+        dest: 'dist/yeti/css/<%= pkg.name %>.min.css'
+      },
       minifyTheme: {
         src: 'dist/css/<%= pkg.name %>-theme.css',
         dest: 'dist/css/<%= pkg.name %>-theme.min.css'
+      },
+      minifyThemeFeuerwehr: {
+        src: 'dist/feuerwehr/css/<%= pkg.name %>-theme.css',
+        dest: 'dist/feuerwehr/css/<%= pkg.name %>-theme.min.css'
+      },
+      minifyThemeYeti: {
+        src: 'dist/yeti/css/<%= pkg.name %>-theme.css',
+        dest: 'dist/yeti/css/<%= pkg.name %>-theme.min.css'
       },
       docs: {
         src: [
@@ -308,6 +374,14 @@ module.exports = function (grunt) {
       fonts: {
         src: 'fonts/*',
         dest: 'dist/'
+      },
+      fontsFeuerwehr: {
+        src: 'fonts/*',
+        dest: 'dist/feuerwehr/'
+      },
+      fontsYeti: {
+        src: 'fonts/*',
+        dest: 'dist/yeti/'
       },
       docs: {
         src: 'dist/*/*',
@@ -412,7 +486,7 @@ module.exports = function (grunt) {
   require('time-grunt')(grunt);
 
   // Docs HTML validation task
- // grunt.registerTask('validate-html', ['jekyll', 'validation']);
+  // grunt.registerTask('validate-html', ['jekyll', 'validation']);
   grunt.registerTask('validate-html', ['validation']);
 
   var runSubset = function (subset) {
@@ -431,15 +505,15 @@ module.exports = function (grunt) {
   // Skip HTML validation if running a different subset of the test suite
   if (runSubset('validate-html') &&
       // Skip HTML5 validator on Travis when [skip validator] is in the commit message
-      isUndefOrNonZero(process.env.TWBS_DO_VALIDATOR)) {
+    isUndefOrNonZero(process.env.TWBS_DO_VALIDATOR)) {
     testSubtasks.push('validate-html');
   }
   // Only run Sauce Labs tests if there's a Sauce access key
   if (typeof process.env.SAUCE_ACCESS_KEY !== 'undefined' &&
       // Skip Sauce if running a different subset of the test suite
-      runSubset('sauce-js-unit') &&
+    runSubset('sauce-js-unit') &&
       // Skip Sauce on Travis when [skip sauce] is in the commit message
-      isUndefOrNonZero(process.env.TWBS_DO_SAUCE)) {
+    isUndefOrNonZero(process.env.TWBS_DO_SAUCE)) {
     testSubtasks.push('connect');
     testSubtasks.push('saucelabs-qunit');
   }
@@ -450,11 +524,12 @@ module.exports = function (grunt) {
   grunt.registerTask('dist-js', ['concat', 'uglify:core', 'commonjs']);
 
   // CSS distribution task.
-  grunt.registerTask('less-compile', ['less:compileCore', 'less:compileTheme']);
-  grunt.registerTask('dist-css', ['less-compile', 'autoprefixer:core', 'autoprefixer:theme', 'usebanner', 'csscomb:dist', 'cssmin:minifyCore', 'cssmin:minifyTheme']);
+  grunt.registerTask('less-compile', ['less:compileCore', 'less:compileCoreFeuerwehr', 'less:compileCoreYeti', 'less:compileTheme', 'less:compileThemeFeuerwehr', 'less:compileThemeYeti']);
+
+  grunt.registerTask('dist-css', ['less-compile', 'autoprefixer:core', 'autoprefixer:theme', 'usebanner', 'csscomb:dist', 'cssmin:minifyCore', 'cssmin:minifyCoreFeuerwehr', 'cssmin:minifyCoreYeti', 'cssmin:minifyTheme', 'cssmin:minifyThemeFeuerwehr', 'cssmin:minifyThemeYeti']);
 
   // Full distribution task.
-  grunt.registerTask('dist', ['clean:dist', 'dist-css', 'copy:fonts', 'dist-js']);
+  grunt.registerTask('dist', ['clean:dist', 'dist-css', 'copy:fonts', 'copy:fontsFeuerwehr', 'copy:fontsYeti', 'dist-js']);
 
   // Default task.
   grunt.registerTask('default', ['clean:dist', 'copy:fonts', 'test']);

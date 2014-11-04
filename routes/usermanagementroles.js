@@ -48,6 +48,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                 .catch(function (error) {
                     res.render('usermanagementroles', {
                             csrfToken: req.csrfToken(),
+                            bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: title,
                             user: req.user,

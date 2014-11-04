@@ -16,6 +16,7 @@ router.get('/', function (req, res) {
     model.getPagesForUser(req.user).then(function (pages) {
         res.render('login', {
             csrfToken: req.csrfToken(),
+            bootstrapTheme: config.get('bootstrapStyle'),
             appName: appName,
             title: 'Login',
             user: req.user,
@@ -101,6 +102,7 @@ function handlePassportAuthenticate(next, res, req) {
             model.getPagesForUser(req.user).then(function (pages) {
                 res.render('login', {
                     csrfToken: req.csrfToken(),
+                    bootstrapTheme: config.get('bootstrapStyle'),
                     appName: config.get('appName'),
                     title: 'Login failed',
                     user: req.user,

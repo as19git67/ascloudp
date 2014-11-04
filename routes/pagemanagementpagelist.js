@@ -16,6 +16,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
 
             res.render('pagemanagementpagelist', {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: title,
                 user: req.user,

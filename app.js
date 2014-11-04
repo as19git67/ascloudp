@@ -129,6 +129,7 @@ app.use(function (req, res, next) {
                                     pageContent.save().then(function (savedPageContent) {
                                         res.render(viewName, {
                                             csrfToken: req.csrfToken(),
+                                            bootstrapTheme: config.get('bootstrapStyle'),
                                             Page_id: page.Name,
                                             appName: config.get('appName'),
                                             title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
@@ -142,6 +143,7 @@ app.use(function (req, res, next) {
                                         console.log("Error while saving page content: " + error);
                                         res.render(viewName, {
                                             csrfToken: req.csrfToken(),
+                                            bootstrapTheme: config.get('bootstrapStyle'),
                                             Page_id: page.Name,
                                             appName: config.get('appName'),
                                             title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
@@ -164,6 +166,7 @@ app.use(function (req, res, next) {
                                     }
                                     res.render(viewName, {
                                         csrfToken: req.csrfToken(),
+                                        bootstrapTheme: config.get('bootstrapStyle'),
                                         Page_id: page.Name,
                                         appName: config.get('appName'),
                                         title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
@@ -197,6 +200,7 @@ app.use(function (req, res, next) {
                                     console.log("Error displaying view " + viewName + ". require('views/'" + viewName + ") failed.");
                                     res.render('genericList', {
                                         appName: config.get('appName'),
+                                        bootstrapTheme: config.get('bootstrapStyle'),
                                         title: page.EntityNamePlural,
                                         user: req.user,
                                         pages: pages,
@@ -209,6 +213,7 @@ app.use(function (req, res, next) {
                                 // Klasse für Collection existiert nicht
                                 res.render("genericList", {
                                     appName: config.get('appName'),
+                                    bootstrapTheme: config.get('bootstrapStyle'),
                                     title: page.EntityNamePlural,
                                     user: req.user,
                                     pages: pages,
@@ -261,6 +266,7 @@ if (app.get('env') === 'development') {
     app.use(function (err, req, res, next) {
         res.status(err.status || 500);
         res.render('error', {
+            bootstrapTheme: config.get('bootstrapStyle'),
             message: err.message,
             error: err
         });
@@ -272,6 +278,7 @@ if (app.get('env') === 'development') {
 app.use(function (err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
+        bootstrapTheme: config.get('bootstrapStyle'),
         message: err.message,
         error: {}
     });

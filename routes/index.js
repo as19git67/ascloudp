@@ -9,6 +9,7 @@ router.get('/', function (req, res) {
     model.getPagesForUser(req.user).then(function (pages) {
         res.render('index', {
             csrfToken: req.csrfToken(),
+            bootstrapTheme: config.get('bootstrapStyle'),
             appName: appName,
             title: 'Start',
             user: req.user,

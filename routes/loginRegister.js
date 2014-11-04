@@ -31,6 +31,7 @@ router.get('/', function (req, res) {
             provider = provider.charAt(0).toUpperCase() + provider.slice(1);
             res.render('loginRegister', {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: 'Registrierung.',
                 email: email,
@@ -71,6 +72,7 @@ router.post('/', function (req, res, next) {
                 if (err) {
                     res.render('loginRegister', {
                         csrfToken: req.csrfToken(),
+                        bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: 'Registrierung.',
                         email: email,
@@ -83,6 +85,7 @@ router.post('/', function (req, res, next) {
                     if (user) {
                         res.render('loginRegister', {
                             csrfToken: req.csrfToken(),
+                            bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: 'Registrierung.',
                             email: email,

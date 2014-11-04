@@ -92,6 +92,7 @@ router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                     } else {
                         res.render('usermanagementuseredit', {
                             csrfToken: req.csrfToken(),
+                            bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: title,
                             user: req.user,
@@ -222,6 +223,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                                         } else {
                                                             res.render('usermanagementuseredit', {
                                                                 csrfToken: req.csrfToken(),
+                                                                bootstrapTheme: config.get('bootstrapStyle'),
                                                                 appName: appName,
                                                                 title: title,
                                                                 user: req.user,
@@ -309,6 +311,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                                         console.log("ERROR while saving user: " + error);
                                                         res.render('usermanagementuseredit', {
                                                             csrfToken: req.csrfToken(),
+                                                            bootstrapTheme: config.get('bootstrapStyle'),
                                                             appName: appName,
                                                             title: title,
                                                             user: req.user,
@@ -347,6 +350,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
 
                                     res.render('usermanagementuseredit', {
                                         csrfToken: req.csrfToken(),
+                                        bootstrapTheme: config.get('bootstrapStyle'),
                                         appName: appName,
                                         title: title,
                                         user: req.user,

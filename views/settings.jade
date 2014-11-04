@@ -10,7 +10,7 @@ block content
             div.form-group
                 label(for="#{setting.key}",class="col-xs-12 col-sm-2 control-label") #{setting.key}
                 div(class="col-xs-12 col-sm-10")
-                    select(class="form-control")
+                    select(class="form-control", name="#{setting.key}")
                         each lookupValue, i in setting.lookupValues[setting.key]
                             if setting.value == lookupValue.name
                                 option(value=lookupValue.name selected) #{lookupValue.description}

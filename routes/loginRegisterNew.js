@@ -20,6 +20,7 @@ router.get('/', function (req, res) {
     model.getPagesForUser(req.user).then(function (pages) {
         res.render('loginRegisterNew', {
             csrfToken: req.csrfToken(),
+            bootstrapTheme: config.get('bootstrapStyle'),
             appName: appName,
             title: 'Neuen Benutzer registrieren.',
             email: email,
@@ -40,6 +41,7 @@ router.post('/', function (req, res, next) {
         if (password != passwordConfirmation) {
             res.render('loginRegisterNew', {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: 'Benutzerregistrierung',
                 email: username,
@@ -56,6 +58,7 @@ router.post('/', function (req, res, next) {
                 console.log('Fehler bei der Suche nach registriertem Benutzer: ' + username);
                 res.render('loginRegisterNew', {
                     csrfToken: req.csrfToken(),
+                    bootstrapTheme: config.get('bootstrapStyle'),
                     appName: appName,
                     title: 'Fehler bei der Registrierung.',
                     email: username,
@@ -68,6 +71,7 @@ router.post('/', function (req, res, next) {
                 if (user) {
                     res.render('loginRegisterNew', {
                         csrfToken: req.csrfToken(),
+                        bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: 'Fehler bei der Benutzerregistrierung.',
                         email: username,
@@ -98,6 +102,7 @@ router.post('/', function (req, res, next) {
                                     console.log('Failed to do passport.login with newly registered user: ' + err);
                                     res.render('loginRegisterNew', {
                                         csrfToken: req.csrfToken(),
+                                        bootstrapTheme: config.get('bootstrapStyle'),
                                         appName: appName,
                                         title: 'Fehler bei der Benutzerregistrierung',
                                         email: username,

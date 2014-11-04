@@ -243,6 +243,7 @@ function prepareResponseDataFromUser(userModel, pages, req) {
     }
     var responseData = {
         csrfToken: req.csrfToken(),
+        bootstrapTheme: config.get('bootstrapStyle'),
         appName: appName,
         title: 'Benutzereinstellungen',
         user: user,

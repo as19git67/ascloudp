@@ -70,6 +70,7 @@ router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2),
 
                     res.render('usermanagementroleedit', {
                         csrfToken: req.csrfToken(),
+                        bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: title,
                         user: req.user,
@@ -202,6 +203,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                             getProfiles().then(function (profiles) {
                                                 res.render('usermanagementroleedit', {
                                                     csrfToken: req.csrfToken(),
+                                                    bootstrapTheme: config.get('bootstrapStyle'),
                                                     appName: appName,
                                                     title: title,
                                                     user: req.user,
@@ -258,6 +260,7 @@ function handleError(errMsg, errMsgDetailed, req, res, roleObj) {
         getProfiles().then(function (profiles) {
             res.render('usermanagementroleedit', {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: title,
                 user: req.user,
@@ -270,6 +273,7 @@ function handleError(errMsg, errMsgDetailed, req, res, roleObj) {
             console.log("Error in handleError while getting profiles: " + error);
             res.render('usermanagementroleedit', {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: title,
                 user: req.user,

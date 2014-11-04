@@ -4,7 +4,7 @@ nconf.argv().env().file({ file: 'config.json' });
 
 nconf.defaults({
     "appName": "ASCloud",
-    "bootstrapStyle": "default",
+    "bootstrapStyle": "bootstrap",
     "adminUser": undefined,
     "initialAdminPassword": undefined,
     "cookieSecret": "super duper",

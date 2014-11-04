@@ -41,6 +41,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                 });
                 res.render('usermanagementuserlist', {
                     csrfToken: req.csrfToken(),
+                    bootstrapTheme: config.get('bootstrapStyle'),
                     appName: appName,
                     title: title,
                     user: req.user,
@@ -52,6 +53,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                 .catch(function (error) {
                     res.render('usermanagementuserlist', {
                             csrfToken: req.csrfToken(),
+                            bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: title,
                             user: req.user,

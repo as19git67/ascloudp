@@ -12,6 +12,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
     var appName = config.get('appName');
     res.render('databaseManagement', {
         csrfToken: req.csrfToken(),
+        bootstrapTheme: config.get('bootstrapStyle'),
         appName: appName,
         title: 'Datenbankverwaltung',
         user: req.user
@@ -33,6 +34,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                 var errorText = "Fehler beim Erzeugen der Datenbanktabellen. " + err;
                 res.render('databaseManagement', {
                     csrfToken: req.csrfToken(),
+                    bootstrapTheme: config.get('bootstrapStyle'),
                     appName: appName,
                     title: 'Datenbankverwaltung',
                     user: req.user,
@@ -52,6 +54,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                     var errorText = "Fehler beim Importieren der FFW Test Daten. " + err;
                     res.render('databaseManagement', {
                         csrfToken: req.csrfToken(),
+                        bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: 'Datenbankverwaltung',
                         user: req.user,
