@@ -68,6 +68,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
 
         res.render(page.View, {
             csrfToken: req.csrfToken(),
+            bootstrapTheme: config.get('bootstrapStyle'),
             canEdit: canEdit,
             appName: appName,
             title: page.EntityNamePlural,
@@ -81,6 +82,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             console.log("Error while reading persons with contact data from database: " + error);
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 canEdit: false,
                 appName: appName,
                 title: page.EntityNamePlural,

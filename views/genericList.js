@@ -82,6 +82,7 @@ module.exports.render = function(req, res, next, page, pages, canEdit, collectio
             canPost = false; // todo
             res.render("genericList", {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: config.get('appName'),
                 title: page.EntityNamePlural,
                 user: req.user,
