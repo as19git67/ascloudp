@@ -468,7 +468,7 @@ exports.createSchema = function () {
                 return knex.schema.createTable('EventItems', function (t) {
                     t.increments('id').primary();
                     t.integer('Event_id').references('id').inTable('Events').notNullable();
-                    t.string('Title', 50).notNullable();
+                    t.string('Title', 75).notNullable();
                     t.string('Location', 200);
                     t.string('Description', 5000);
                     t.timestamp('event_start').notNullable().index();

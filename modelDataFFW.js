@@ -1,13 +1,12 @@
 var _ = require('underscore');
 var moment = require('moment');
 var Promise = require('bluebird/js/main/promise')();
+var modelDataDefault = require('./modelDataDefault');
 
 exports.importTestData = function () {
     var model = require('./model');
     var knex = model.bookshelf.knex;
-
-    return Promise.reduce(
-        [
+    var createSteps = [
             function () {
                 // MITGLIEDER
                 return new Promise(function (resolve, reject) {
@@ -661,7 +660,11 @@ exports.importTestData = function () {
                     });
                 });
             }
-        ],
+        ];
+    var steps = modelDataDefault.clearTablesFunctions.concat(createSteps);
+
+    return Promise.reduce(
+        steps,
         function (total, current, index, arrayLength) {
             console.log("importTestData step " + (index + 1) + " von " + arrayLength);
             return current().then(function () {
