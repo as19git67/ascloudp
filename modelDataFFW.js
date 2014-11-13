@@ -2,80 +2,12 @@ var _ = require('underscore');
 var moment = require('moment');
 var Promise = require('bluebird/js/main/promise')();
 
-exports.importTestDataFFW = function () {
+exports.importTestData = function () {
     var model = require('./model');
     var knex = model.bookshelf.knex;
 
-    return Promise.reduce([
-            function () {
-                return knex('LinkItems').del();
-            },
-            function () {
-                return knex('Links').del();
-            },
-            function () {
-                return knex('ContactItems').del();
-            },
-            function () {
-                return knex('Contacts').del();
-            },
-            function () {
-                return knex('ArticleReferenceItems').del();
-            },
-            function () {
-                return knex('ArticleReferences').del();
-            },
-            function () {
-                return knex('ArticleSectionItems').del();
-            },
-            function () {
-                return knex('ArticleSections').del();
-            },
-            function () {
-                return knex('ArticleItems').del();
-            },
-            function () {
-                return knex('Articles').del();
-            },
-            function () {
-                return knex('EventItems').del();
-            },
-            function () {
-                return knex('Events').del();
-            },
-            function () {
-                return knex('MembershipItems').del();
-            },
-            function () {
-                return knex('Memberships').del();
-            },
-            function () {
-                return knex('PersonContactDataAddresses').del();
-            },
-            function () {
-                return knex('PersonContactDataPhonenumbers').del();
-            },
-            function () {
-                return knex('PersonContactDataAccounts').del();
-            },
-            function () {
-                return knex('PersonContactDatas').del();
-            },
-            function () {
-                return knex('PersonItems').del();
-            },
-            function () {
-                return knex('Persons').del();
-            },
-            function () {
-                return knex('PageCollectionColumns').del();
-            },
-            function () {
-                return knex('PageContents').del();
-            },
-            function () {
-                return knex('Pages').del();
-            },
+    return Promise.reduce(
+        [
             function () {
                 // MITGLIEDER
                 return new Promise(function (resolve, reject) {
@@ -731,7 +663,7 @@ exports.importTestDataFFW = function () {
             }
         ],
         function (total, current, index, arrayLength) {
-            console.log("importTestDataFFW step " + (index + 1) + " von " + arrayLength);
+            console.log("importTestData step " + (index + 1) + " von " + arrayLength);
             return current().then(function () {
             }).return(total + 1);
         }, 0);

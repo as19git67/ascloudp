@@ -3,6 +3,7 @@ var router = express.Router();
 var config = require('../config');
 var model = require('../model');
 var modelDataFFW = require('../modelDataFFW');
+var modelDataDefault = require('../modelDataDefault');
 var passportStrategies = require('../passportStrategies');
 var rolePermissions = require('../Roles');
 
@@ -43,7 +44,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
             });
     } else {
         if (req.body.dbloadTestFFW) {
-            modelDataFFW.importTestDataFFW()
+            modelDataFFW.importTestData()
                 .then(function () {
                     console.log("FFW Testdaten importiert");
                     req.logout();
@@ -62,7 +63,28 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                     });
                 });
         } else {
-            res.redirect('/');
+            if (req.body.dbloadTestData) {
+                modelDataDefault.importTestData()
+                    .then(function () {
+                        console.log("Default Testdaten importiert");
+                        req.logout();
+                        res.redirect('/');
+                    })
+                    .catch(function (err) {
+                        console.log("ERROR when importing test data: " + err);
+                        var errorText = "Fehler beim Importieren der Test Daten. " + err;
+                        res.render('databaseManagement', {
+                            csrfToken: req.csrfToken(),
+                            bootstrapTheme: config.get('bootstrapStyle'),
+                            appName: appName,
+                            title: 'Datenbankverwaltung',
+                            user: req.user,
+                            error: errorText
+                        });
+                    });
+            } else {
+                res.redirect('/');
+            }
         }
     }
 });
