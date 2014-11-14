@@ -12,13 +12,69 @@ exports.importTestData = function () {
             // SEITEN
             return new Promise(function (resolve, reject) {
                 var allPages = [
-                    {Order: 1, Name: "overview", AnonymousAccess: true, EntityNameSingular: "Overview", EntityNamePlural: "Overview Infos", Model: "PageContent", View: "genericHTML"},
-                    {Order: 2, Name: "events", AnonymousAccess: true, EntityNameSingular: "Event", EntityNamePlural: "Events", Collection: "Events", View: "Calendar"},
-                    {Order: 4, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Contact", EntityNamePlural: "Contacts", Collection: "Persons", View: "Contacts"},
-                    {Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links"},
-                    {Order: 3, Name: "blog", AnonymousAccess: true, EntityNameSingular: "Article", EntityNamePlural: "Articles", Collection: "Articles", View: "Articles"},
-                    {Order: 9, Name: "contacts", AnonymousAccess: true, EntityNameSingular: "Contact", EntityNamePlural: "Contacts", Collection: "Contacts", View: "Contacts"},
-                    {Order: 10, Name: "members", AnonymousAccess: false, EntityNameSingular: "Member", EntityNamePlural: "Members", Collection: "Persons", View: "Members"}
+                    {
+                        Order: 1,
+                        Name: "overview",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Overview",
+                        EntityNamePlural: "Overview Infos",
+                        Model: "PageContent",
+                        View: "genericHTML"
+                    },
+                    {
+                        Order: 2,
+                        Name: "events",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Event",
+                        EntityNamePlural: "Events",
+                        Collection: "Events",
+                        View: "Calendar"
+                    },
+                    {
+                        Order: 4,
+                        Name: "kontakte",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Contact",
+                        EntityNamePlural: "Contacts",
+                        Collection: "Persons",
+                        View: "Contacts"
+                    },
+                    {
+                        Order: 6,
+                        Name: "links",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Link",
+                        EntityNamePlural: "Links",
+                        Collection: "Links",
+                        View: "Links"
+                    },
+                    {
+                        Order: 3,
+                        Name: "blog",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Article",
+                        EntityNamePlural: "Articles",
+                        Collection: "Articles",
+                        View: "Articles"
+                    },
+                    {
+                        Order: 9,
+                        Name: "contacts",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Contact",
+                        EntityNamePlural: "Contacts",
+                        Collection: "Contacts",
+                        View: "Contacts"
+                    },
+                    {
+                        Order: 10,
+                        Name: "members",
+                        AnonymousAccess: false,
+                        EntityNameSingular: "Member",
+                        EntityNamePlural: "Members",
+                        Collection: "Persons",
+                        View: "Members"
+                    }
                 ];
                 var pages = model.models.Pages.forge(allPages);
                 console.log("Adding pages.");
@@ -86,6 +142,300 @@ exports.importTestData = function () {
                     resolve();
                 }).catch(function (error) {
                     console.log("Error while saving events: " + error);
+                });
+            });
+        },
+        function () {
+            // LINKS
+            return new Promise(function (resolve, reject) {
+                Promise.map(linkList, function (value) {
+                    return new Promise(function (resolveLink, rejectLink) {
+                        new model.models.Link({Page_id: "links", Url: value.href}).save().then(function (newLink) {
+                            var linkObj = {
+                                Link_id: newLink.get('id'),
+                                Url: value.href,
+                                Description: value.d,
+                                valid_start: new Date()
+                            };
+                            new model.models.LinkItem(linkObj).save().then(function (newLinkItem) {
+                                resolveLink();
+                            }).catch(function (error) {
+                                console.log("Error while saving LinkItem: " + error);
+                                rejectLink(error);
+                            });
+                        }).catch(function (error) {
+                            console.log("Error while saving Link: " + error);
+                            rejectLink(error);
+                        });
+                    });
+                }).then(function (savedLinks) {
+                    console.log(savedLinks.length + " links added to database");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving links: " + error);
+                });
+            });
+        },
+        function () {
+            // MITGLIEDER
+            return new Promise(function (resolve, reject) {
+
+                Promise.map(memberList, function (value) {
+                    var now = new Date();
+                    var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
+                    var streetRegexResult = regexp.exec(value.Straße);
+                    var street = "";
+                    var streetNumber = "";
+                    if (streetRegexResult == null || streetRegexResult.length < 3) {
+                        street = value.Straße;
+                    } else {
+                        street = streetRegexResult[1];
+                        streetNumber = streetRegexResult[2];
+                    }
+
+                    regexp = /([a-z|A-Z|ä|ö|ü|ß|Ä|Ö|Ü]+)(,\s?)?(jun\.|sen\.|Jun|Sen|Jun\.|Sen\.)?/;
+                    var nameRegexResult = regexp.exec(value.Nachname);
+                    var lastname = "";
+                    var suffix = "";
+                    if (nameRegexResult == null || nameRegexResult.length < 4) {
+                        lastname = value.Nachname;
+                    } else {
+                        if (nameRegexResult[2] == null || nameRegexResult[2] == null) {
+                            lastname = value.Nachname;
+                        } else {
+                            lastname = nameRegexResult[1];
+                            suffix = nameRegexResult[3];
+                            if (suffix == 'Jun' || suffix == 'Jun.') {
+                                suffix = 'jun.';
+                            } else {
+                                if (suffix == 'Sen' || suffix == 'Sen.') {
+                                    suffix = 'sen.';
+                                }
+                            }
+                        }
+                    }
+
+                    var pObj = {
+                        Salutation: value.Anrede,
+                        Firstname: value.Vorname,
+                        Lastname: lastname,
+                        Birthday: value.Geboren,
+                        valid_start: now
+
+                    };
+                    if (suffix && suffix.length > 0) {
+                        pObj.Suffix = suffix;
+                    }
+
+                    return new Promise(function (resolvePerson, rejectPerson) {
+                        new model.models.Person().save().then(function (newPerson) {
+
+                            pObj.Person_id = newPerson.get('id');
+                            new model.models.PersonItem(pObj).save().then(function (newPersonItem) {
+                                var lr;
+                                var ld;
+                                if (value.verstorben) {
+                                    lr = 'Tod';
+                                    ld = value.verstorben;
+                                } else if (value.Ausgetreten) {
+                                    lr = 'Austritt';
+                                    ld = value.Ausgetreten;
+                                }
+                                var ed = value.Eingetreten;
+                                if (!ed && !value.verzogenDatum) {
+                                    ed = "1900-01-01T00:00:00";
+                                }
+
+                                new model.models.Membership({
+                                    Person_id: newPerson.get('id'),
+                                    MembershipNumber: value.ID
+                                }).save()
+                                    .then(function (newMember) {
+                                        new model.models.MembershipItem({
+                                            Membership_id: newMember.get('id'),
+                                            MembershipNumber: value.ID,
+                                            EntryDate: ed,
+                                            LeavingDate: ld,
+                                            //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
+                                            PassiveSince: value.Übergang_Passiv,
+                                            //LivingElsewhereSince: value.verzogenDatum,
+                                            // todo: if value.verzogenDatum { set PersonContactDataAddress.valid_end with value.verzogenDatum }
+                                            valid_start: now
+                                        }).save()
+                                            .then(function (newMemberItem) {
+                                                //console.log("Member added: " + newMember.get('MembershipNumber'));
+                                                new model.models.PersonContactType().fetchAll().then(function (personContactTypes) {
+
+                                                    function addMorePart1() {
+                                                        if (value.Email && value.Email != '') {
+                                                            new model.models.PersonContactData({
+                                                                Person_id: newPerson.get('id'),
+                                                                PersonContactType_id: personContactTypeEmail,
+                                                                Usage: 'Privat'
+                                                            }).save()
+                                                                .then(function (newPersonContactDataForEmail) {
+                                                                    new model.models.PersonContactDataAccount({
+                                                                        PersonContactData_id: newPersonContactDataForEmail.get('id'),
+                                                                        Account: value.Email,
+                                                                        valid_start: now
+                                                                    }).save()
+                                                                        .then(function (newPersonContactDataEmail) {
+                                                                            console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
+                                                                            resolvePerson({
+                                                                                person: newPerson,
+                                                                                membership: newMember
+                                                                            });
+                                                                        }
+                                                                    );
+                                                                }
+                                                            );
+                                                        } else {
+                                                            resolvePerson({person: newPerson, membership: newMember});
+                                                        }
+                                                    }
+
+                                                    var personContactTypesByName = {};
+                                                    personContactTypes.forEach(function (personContactType) {
+                                                        personContactTypesByName[personContactType.get('Name')] = personContactType.get('id');
+                                                    });
+                                                    var personContactTypeAddress = personContactTypesByName['address'];
+                                                    var personContactTypePhone = personContactTypesByName['phone'];
+                                                    var personContactTypeEmail = personContactTypesByName['email'];
+
+                                                    function addOtherCommData() {
+                                                        if (value.Mobiltelefon && value.Mobiltelefon != '') {
+                                                            new model.models.PersonContactData({
+                                                                Person_id: newPerson.get('id'),
+                                                                PersonContactType_id: personContactTypePhone,
+                                                                Usage: 'Mobil'
+                                                            }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                    var number = value.Mobiltelefon;
+                                                                    if (number.length > 1 && number.charAt(0) == '0') {
+                                                                        number = '+49' + number.substr(1);
+                                                                    } else {
+                                                                        console.log('WARNING: wrong phone number format: ' + number);
+                                                                    }
+                                                                    new model.models.PersonContactDataPhonenumber({
+                                                                        PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
+                                                                        Number: number,
+                                                                        valid_start: now
+                                                                    }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                            if (value.Telefon && value.Telefon != '') {
+                                                                                new model.models.PersonContactData({
+                                                                                    Person_id: newPerson.get('id'),
+                                                                                    PersonContactType_id: personContactTypePhone,
+                                                                                    Usage: 'Privat'
+                                                                                }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                        var number = value.Telefon;
+                                                                                        if (number.charAt(0) != '0') {
+                                                                                            number = '08233' + number;
+                                                                                        }
+                                                                                        if (number.length > 1 && number.charAt(0) == '0') {
+                                                                                            number = '+49' + number.substr(1);
+                                                                                        } else {
+                                                                                            console.log('WARNING: wrong phone number format: ' + number);
+                                                                                        }
+                                                                                        new model.models.PersonContactDataPhonenumber({
+                                                                                            PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
+                                                                                            Number: number,
+                                                                                            valid_start: now
+                                                                                        }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                                addMorePart1();
+                                                                                            }).catch(function (error) {
+                                                                                                console.log('PersonContactDataAddress.create had ERRORS');
+                                                                                                console.log(error);
+                                                                                                rejectPerson(error);
+                                                                                            }
+                                                                                        );
+                                                                                    }).catch(function (error) {
+                                                                                        console.log('PersonContactData.create had ERRORS');
+                                                                                        console.log(error);
+                                                                                        rejectPerson(error);
+                                                                                    });
+                                                                            } else {
+                                                                                addMorePart1();
+                                                                            }
+                                                                        }).catch(function (error) {
+                                                                            console.log('PersonContactDataAddress.create had ERRORS');
+                                                                            console.log(error);
+                                                                            rejectPerson(error);
+                                                                        }
+                                                                    );
+                                                                }).catch(function (error) {
+                                                                    console.log('PersonContactData.create had ERRORS');
+                                                                    console.log(error);
+                                                                    rejectPerson(error);
+                                                                });
+                                                        } else {
+                                                            addMorePart1();
+                                                        }
+                                                    }
+
+                                                    if (personContactTypeAddress && personContactTypePhone && personContactTypeEmail) {
+
+                                                        if (value.PLZ && value.Ort) {
+                                                            new model.models.PersonContactData({
+                                                                Person_id: newPerson.get('id'),
+                                                                PersonContactType_id: personContactTypeAddress,
+                                                                Usage: 'Privat'
+                                                            }).save().then(function (newPersonContactDataAddress) {
+                                                                    new model.models.PersonContactDataAddress({
+                                                                        PersonContactData_id: newPersonContactDataAddress.get('id'),
+                                                                        Street: street,
+                                                                        StreetNumber: streetNumber,
+                                                                        Postalcode: value.PLZ,
+                                                                        City: value.Ort,
+                                                                        valid_start: now
+                                                                    }).save().then(function (newPersonContactDataAddress) {
+                                                                            addOtherCommData();
+                                                                        }).catch(function (error) {
+                                                                            console.log('PersonContactDataAddress.create had ERRORS');
+                                                                            console.log(error);
+                                                                            rejectPerson(error);
+                                                                        });
+                                                                }).catch(function (error) {
+                                                                    console.log("Error while saving PersonContactData: " + error);
+                                                                    rejectPerson(error);
+                                                                }
+                                                            );
+                                                        } else {
+                                                            // no address added - try to add the rest
+                                                            addOtherCommData();
+                                                        }
+                                                    }
+                                                    else {
+                                                        var errMsg = "PersonContactType address or phone does not exist in the database.";
+                                                        console.log(errMsg);
+                                                        rejectPerson(errMsg);
+                                                    }
+                                                }).catch(function (error) {
+                                                    console.log("Error while fetching PersonContactType: " + error);
+                                                    rejectPerson(error);
+                                                });
+                                            }).catch(function (error) {
+                                                console.log("Error while saving MembershipItem: " + error);
+                                                rejectPerson(error);
+                                            });
+                                    }).catch(function (error) {
+                                        console.log("Error while saving Membership: " + error);
+                                        rejectPerson(error);
+                                    });
+                            }).catch(function (error) {
+                                console.log("Error while saving PersonItem: " + error);
+                                rejectPerson(error);
+                            });
+                        }).catch(function (error) {
+                            console.log("Error while saving Person: " + error);
+                            rejectPerson(error);
+                        });
+                    });
+
+                }).then(function (savedObj) {
+                    console.log("Persons and Memberships added to database.");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving persons and memberships: " + error);
+                    reject(error);
                 });
             });
         },
@@ -200,4 +550,265 @@ var eventList = [
         city: "New York",
         locationdescription: "Siro's"
     }
+];
+
+
+var linkList = [
+    {href: "http://www.opentext.com", d: "OpenText"},
+    {href: "http://www.microsoft.com", d: "Microsoft"},
+    {href: "http://www.stackoverflow.com", d: "Stackoverflow"},
+    {href: "http://nodejs.org", d: "node.js"},
+    {href: "http://emberjs.com", d: "A framework for creating ambitious web applications"},
+    {href: "http://angularjs.org", d: "Angularjs by Google - HTML enhanced web apps"},
+    {href: "http://backbonejs.org", d: "backbone.js"},
+    {href: "http://underscorejs.org", d: "underscore.js"},
+    {href: "http://marionettejs.com", d: "Marionette.js"},
+    {href: "http://handlebarsjs.com", d: "handlebars"}
+];
+
+var memberList = [
+    {
+        "ID": 1,
+        "Anrede": "Frau",
+        "Vorname": "Angela",
+        "Vorstandsmitglied": true,
+        "Nachname": "Merkel",
+        "PLZ": 10557,
+        "Ort": "Berlin",
+        "Straße": "Willy-Brandt-Straße 1",
+        "verzogen": false,
+        "Geboren": "1954-07-17T00:00:00",
+        "Telefon": null,
+        "Mobiltelefon": null,
+        "Eingetreten": "1990-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 2,
+        "Anrede": "Herr",
+        "Vorname": "Sigmar",
+        "Vorstandsmitglied": true,
+        "Nachname": "Gabriel",
+        "PLZ": 10115,
+        "Ort": "Berlin",
+        "Straße": "Scharnhorststraße 34-37",
+        "verzogen": false,
+        "Geboren": "1959-09-12T00:00:00",
+        "Telefon": "03018 615-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "2005-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 3,
+        "Anrede": "Herr",
+        "Vorname": "Frank-Walter",
+        "Vorstandsmitglied": true,
+        "Nachname": "Steinmeier",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Werderscher Markt 1",
+        "verzogen": false,
+        "Geboren": "1956-01-05T00:00:00",
+        "Telefon": "03018 17-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "1999-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 4,
+        "Anrede": "Herr",
+        "Vorname": "Thomas",
+        "Vorstandsmitglied": true,
+        "Nachname": "de Maizière",
+        "PLZ": 10559,
+        "Ort": "Berlin",
+        "Straße": "Alt-Moabit 101D",
+        "verzogen": false,
+        "Geboren": "1954-01-21T00:00:00",
+        "Telefon": "03018 681-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "2005-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 5,
+        "Anrede": "Herr",
+        "Vorname": "Heiko",
+        "Vorstandsmitglied": true,
+        "Nachname": "Maas",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Mohrenstraße 37",
+        "verzogen": false,
+        "Geboren": "1966-09-19T00:00:00",
+        "Telefon": "03018 580-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "2012-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 6,
+        "Anrede": "Herr",
+        "Vorname": "Wolfgang",
+        "Vorstandsmitglied": true,
+        "Nachname": "Schäuble",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Wilhelmstraße 97",
+        "verzogen": false,
+        "Geboren": "1942-09-18T00:00:00",
+        "Telefon": "03018 682-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "1984-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 7,
+        "Anrede": "Frau",
+        "Vorname": "Andrea",
+        "Vorstandsmitglied": true,
+        "Nachname": "Nahles",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Wilhelmstraße 49",
+        "verzogen": false,
+        "Geboren": "1970-06-20T00:00:00",
+        "Telefon": "03018 527-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "1998-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 8,
+        "Anrede": "Herr",
+        "Vorname": "Christian",
+        "Vorstandsmitglied": true,
+        "Nachname": "Schmidt",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Wilhelmstraße 54",
+        "verzogen": false,
+        "Geboren": "1957-08-26T00:00:00",
+        "Telefon": "03018 529-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "1990-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 9,
+        "Anrede": "Frau",
+        "Vorname": "Ursula",
+        "Vorstandsmitglied": true,
+        "Nachname": "von der Leyen",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Wilhelmstraße 49",
+        "verzogen": false,
+        "Geboren": "1958-10-08T00:00:00",
+        "Telefon": "03018 527-0",
+        "Mobiltelefon": null,
+        "Eingetreten": "2005-01-01T00:00:00",
+        "Ausgetreten": null,
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": true,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 10,
+        "Anrede": "Herr",
+        "Vorname": "Helmut",
+        "Vorstandsmitglied": false,
+        "Nachname": "Kohl",
+        "PLZ": 10117,
+        "Ort": "Berlin",
+        "Straße": "Unter den Linden 71",
+        "Unterdorf": false,
+        "verzogen": false,
+        "Geboren": "1930-04-03T00:00:00",
+        "Telefon": "030 227 - 73002",
+        "Mobiltelefon": null,
+        "Eingetreten": "1976-01-01T00:00:00",
+        "Ausgetreten": "1998-10-26T00:00:00",
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": false,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 11,
+        "Anrede": "Herr",
+        "Vorname": "Gerhard",
+        "Vorstandsmitglied": false,
+        "Nachname": "Schröder",
+        "PLZ": 30159,
+        "Ort": "Hannover",
+        "Straße": "Plathnerstraße",
+        "Unterdorf": false,
+        "verzogen": false,
+        "Geboren": "1944-04-07T00:00:00",
+        "Telefon": null,
+        "Mobiltelefon": null,
+        "Eingetreten": "1998-01-01T00:00:00",
+        "Ausgetreten": "2005-11-11T00:00:00",
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": false,
+        "verzogenDatum": null
+    },
+    {
+        "ID": 12,
+        "Anrede": "Herr",
+        "Vorname": "Helmut Heinrich Waldemar",
+        "Vorstandsmitglied": false,
+        "Nachname": "Schmidt",
+        "PLZ": null,
+        "Ort": "Hamburg-Langenhorn",
+        "Straße": null,
+        "Unterdorf": false,
+        "verzogen": false,
+        "Geboren": "1918-12-23T00:00:00",
+        "Telefon": null,
+        "Mobiltelefon": null,
+        "Eingetreten": "1969-01-01T00:00:00",
+        "Ausgetreten": "1986-09-10T00:00:00",
+        "Übergang_Passiv": null,
+        "verstorben": null,
+        "aktiv": false,
+        "verzogenDatum": null
+    }
+
 ];
