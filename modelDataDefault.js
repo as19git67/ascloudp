@@ -792,7 +792,7 @@ var memberList = [
     {
         "ID": 12,
         "Anrede": "Herr",
-        "Vorname": "Helmut Heinrich Waldemar",
+        "Vorname": "Helmut",
         "Vorstandsmitglied": false,
         "Nachname": "Schmidt",
         "PLZ": null,
