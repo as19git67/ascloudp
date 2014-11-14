@@ -31,15 +31,6 @@ exports.importTestData = function () {
                         View: "Calendar"
                     },
                     {
-                        Order: 4,
-                        Name: "kontakte",
-                        AnonymousAccess: true,
-                        EntityNameSingular: "Contact",
-                        EntityNamePlural: "Contacts",
-                        Collection: "Persons",
-                        View: "Contacts"
-                    },
-                    {
                         Order: 6,
                         Name: "links",
                         AnonymousAccess: true,
@@ -63,7 +54,7 @@ exports.importTestData = function () {
                         AnonymousAccess: true,
                         EntityNameSingular: "Contact",
                         EntityNamePlural: "Contacts",
-                        Collection: "Contacts",
+                        Collection: "Contacts", // not used by view Contacts
                         View: "Contacts"
                     },
                     {
@@ -439,6 +430,151 @@ exports.importTestData = function () {
                 });
             });
         },
+        function () {
+            // VORSTANDSCHAFT (Contacts)
+            return new Promise(function (resolve, reject) {
+                var pageName = "contacts";
+                var memberships = _.where(memberList, {'Vorstandsmitglied': true});
+                var membershipIds = _.map(memberships, function (membershipObj) {
+                    return membershipObj.ID;
+                });
+                var allContacts = [];
+                model.bookshelf.knex('Memberships')
+                    .whereIn('MembershipNumber', membershipIds)
+                    .select('Person_id')
+                    .then(function (results) {
+                        var now = new Date();
+                        results.forEach(function (m) {
+                            allContacts.push({
+                                Person_id: m.Person_id,
+                                valid_start: now
+                            });
+                        });
+                        Promise.map(allContacts, function (contactItem) {
+                            return new Promise(function (resolveContact, rejectContact) {
+                                new model.models.Contact({Page_id: pageName}).save().then(function (newContact) {
+                                    contactItem.Contact_id = newContact.get('id');
+                                    new model.models.ContactItem(contactItem).save().then(function (newContactItem) {
+                                        resolveContact(newContact);
+                                    }).catch(function (error) {
+                                        console.log("Error while adding contact item for page " + pageName + ": " + error);
+                                        rejectContact(error);
+                                    });
+                                }).catch(function (error) {
+                                    console.log("Error while adding contact for page " + pageName + ": " + error);
+                                    rejectContact(error);
+                                });
+                            });
+                        }).then(function (allSavedContacts) {
+                            console.log(" contacts for page " + pageName + " saved in database.");
+                            resolve();
+                        }).catch(function (error) {
+                            console.log("Error while saving contacts for page " + pageName + ": " + error);
+                            reject(error);
+                        });
+                    }).catch(function (error) {
+                        console.log("Error while reading Memberships: " + error);
+                        reject(error);
+                    });
+            });
+        },
+        function () {
+            return new Promise(function (resolve, reject) {
+                var now = new Date();
+                var end = new Date();
+                end.setFullYear(end.getFullYear() + 1);
+                new model.models.Article({"Page_id": "blog"}).save().then(function (newArticle) {
+                    new model.models.ArticleItem({
+                        "Article_id": newArticle.get('id'),
+                        "Date": new Date(2014, 11, 13),
+                        "Title": "Comet Landing Bumpier Than Initially Thought",
+                        "Subtitle": "",
+                        "Author": "KENNETH CHANG",
+                        "publish_start": now,
+                        "publish_end": end,
+                        "valid_start": now
+                    }).save().then(function (newArticle) {
+                            new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
+                                new model.models.ArticleSectionItem({
+                                    "ArticleSection_id": newArticleSection.get('id'),
+                                    "Order": 1,
+                                    "Title": undefined,
+                                    "Text": "",
+                                    "ImageUrl": "http://static01.nyt.com/images/2014/11/13/science/13philae-on-comet/13philae-on-comet-master675.jpg",
+                                    "ImageDescription": "A two-image panorama taken by the Philae lander from the surface of Comet 67P/Churyumov-Gerasimenko.",
+                                    "valid_start": now
+                                }).save().then(function (newArticleSectionItem) {
+                                        new model.models.ArticleReference({ArticleSection_id: newArticleSection.get('id')}).save().then(function (newArticleReference) {
+                                            new model.models.ArticleReferenceItem({
+                                                "ArticleReference_id": newArticleReference.get('id'),
+                                                "Text": "European Space Agency",
+                                                "valid_start": now
+                                            }).save().then(function (newArticleReferenceItem) {
+                                                    new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
+                                                        new model.models.ArticleSectionItem({
+                                                            "ArticleSection_id": newArticleSection2.get('id'),
+                                                            "Order": 2,
+                                                            "Title": null,
+                                                            "Text": "This historic landing of a spacecraft on a comet on Wednesday turned out to be not one but three landings as the craft hopped across the surface. " +
+                                                            "Because of the failure of a thruster that was to press it against the comet’s surface after touching down, the European Space Agency’s Philae lander, part of the $1.75 billion Rosetta mission, bounded up more than half a mile before falling to the surface of Comet 67P/Churyumov-Gerasimenko again nearly two hours later, more than half a mile away. That is a considerable distance across a comet that is only 2.5 miles wide. " +
+                                                            "Philae then bounced again, less high, and ended up with only two of its three legs on the surface, tipped against a boulder, a wall of rock or perhaps the side of a hole. " +
+                                                            "“We are almost vertical, one foot probably in the open air — open space. I’m sorry, there is no air around,” Jean-Pierre Bibring, the lead lander scientist, said at a news conference on Thursday. " +
+                                                            "In the skewed position, Philae’s solar panels are generating much less power than had been planned, and when its batteries drain in a couple of days, it may not be able to recharge. As the comet rotates once every 12 hours, the lander is receiving only about 1.5 hours of sunlight instead of the expected six to seven hours. ",
+                                                            "ImageDescription": "CHASING A COMET  Rosetta launched in 2004, made several loops through the inner solar system gathering speed and then spent years chasing down Comet 67P/C-G. The spacecraft arrived in August.",
+                                                            "ImageUrl": "http://graphics8.nytimes.com/newsgraphics/2014/11/08/rosetta-philae/5e378c5e4212594c134fc802fc7a3d82b7d6b5e5/rosetta_white-945.png",
+                                                            "valid_start": now
+                                                        }).save().then(function (newArticleSectionItem2) {
+                                                                new model.models.ArticleReference({ArticleSection_id: newArticleSection2.get('id')}).save().then(function (newArticleReference2) {
+                                                                    new model.models.ArticleReferenceItem({
+                                                                        "ArticleReference_id": newArticleReference2.get('id'),
+                                                                        "Text": "The New York Times",
+                                                                        "valid_start": now
+                                                                    }).save().then(function (newArticleReferenceItem2) {
+                                                                            console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                                            resolve();
+                                                                        }).catch(function (error) {
+                                                                            console.log("Error while creating ArticleReferenceItem for page 'blog': " +
+                                                                            error);
+                                                                            reject(error);
+                                                                        });
+                                                                }).catch(function (error) {
+                                                                    console.log("Error while creating ArticleReference for page 'blog': " + error);
+                                                                    reject(error);
+                                                                });
+                                                            }).catch(function (error) {
+                                                                console.log("Error while creating ArticleSectionItem for page 'blog': " + error);
+                                                                reject(error);
+                                                            });
+                                                    }).catch(function (error) {
+                                                        console.log("Error while creating ArticleSection for page 'blog': " + error);
+                                                        reject(error);
+                                                    });
+                                                }).catch(function (error) {
+                                                    console.log("Error while creating ArticleReferenceItem for page 'blog': " + error);
+                                                    reject(error);
+                                                });
+                                        }).catch(function (error) {
+                                            console.log("Error while creating ArticleReference for page 'blog': " + error);
+                                            reject(error);
+                                        });
+                                    }).catch(function (error) {
+                                        console.log("Error while creating ArticleSectionItem for page 'blog': " + error);
+                                        reject(error);
+                                    });
+                            }).catch(function (error) {
+                                console.log("Error while creating ArticleSection for page 'blog': " + error);
+                                reject(error);
+                            });
+                        }).catch(function (error) {
+                            console.log("Error while creating Article for page 'blog': " + error);
+                            reject(error);
+                        });
+                }).catch(function (error) {
+                    console.log("Error while creating Article for page 'blog': " + error);
+                    reject(error);
+                });
+            });
+        }
     ];
 
     var steps = exports.clearTablesFunctions.concat(createSteps);
@@ -558,7 +694,7 @@ var linkList = [
     {href: "http://www.microsoft.com", d: "Microsoft"},
     {href: "http://www.stackoverflow.com", d: "Stackoverflow"},
     {href: "http://nodejs.org", d: "node.js"},
-    {href: "http://emberjs.com", d: "A framework for creating ambitious web applications"},
+    {href: "http://emberjs.com", d: "Ember - a framework for creating ambitious web applications"},
     {href: "http://angularjs.org", d: "Angularjs by Google - HTML enhanced web apps"},
     {href: "http://backbonejs.org", d: "backbone.js"},
     {href: "http://underscorejs.org", d: "underscore.js"},

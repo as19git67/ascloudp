@@ -93,6 +93,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             });
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,
@@ -104,6 +105,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         } else {
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,

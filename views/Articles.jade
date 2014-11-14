@@ -6,7 +6,7 @@ block content
         h1
             u #{page.EntityNamePlural}
         each record in Records
-            div(class="col-md-12 col-xs-12")
+            div(class="col-lg-10 col-md-11 col-xs-12")
                 if record.title
                     h3 #{record.title}
                 if record.author
@@ -23,7 +23,7 @@ block content
                             if section.imageDescription
                                 img(src='#{section.imageUrl}', alternate='#{section.imageDescription}')
                                 br
-                                div #{section.imageDescription}
+                                div.small #{section.imageDescription}
                             else
                                 img(src='#{section.imageUrl}')
                 if record.references && record.references.length > 0
