@@ -91,13 +91,13 @@ module.exports = function () {
                 permissions: ["get", "post"],
                 menus: ["admin.role", "admin.roles"]
             },
-            api_member_read: {
+            api_event_read: {
                 description: "RESTAPI: Termine anzeigen",
                 resources: ["/api/v1/events"],
                 permissions: ["get"],
                 menus: []
             },
-            api_member_edit: {
+            api_event_edit: {
                 description: "RESTAPI: Termine ändern",
                 resources: ["/api/v1/events"],
                 permissions: ["put", "post", "delete"],
