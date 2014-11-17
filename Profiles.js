@@ -92,6 +92,18 @@ module.exports = function () {
                 menus: ["admin.role", "admin.roles"]
             },
             api_member_read: {
+                description: "RESTAPI: Termine anzeigen",
+                resources: ["/api/v1/events"],
+                permissions: ["get"],
+                menus: []
+            },
+            api_member_edit: {
+                description: "RESTAPI: Termine ändern",
+                resources: ["/api/v1/events"],
+                permissions: ["put", "post", "delete"],
+                menus: []
+            },
+            api_member_read: {
                 description: "RESTAPI: Mitgliedsdaten anzeigen",
                 resources: ["/api/v1/members", "/api/v1/addresses", "/api/v1/phoneNumbers", "/api/v1/accounts"],
                 permissions: ["get"],

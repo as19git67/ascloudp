@@ -11,14 +11,14 @@ module.exports.getical = function (req, res, next, page, pages, canEdit, collect
     var cal = ical();
 
     cal.setDomain('ascloud.de').setName(page.EntityNamePlural);
-    cal.setProdID({company: "Anton Schegg", product: "ascloud.de", language: "DE"});
+    cal.setProdID({ company: "Anton Schegg", product: "ascloud.de", language: "DE" });
 
     var now = new Date();
     new Event().query(function (qb) {
         qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
         qb.select(['EventItems.*']);
-        qb.where({Page_id: page.Name})
+        qb.where({ Page_id: page.Name })
             .andWhere('EventItems.valid_end', null)
             .andWhere('EventItems.event_end', '>=', now)
             .andWhere('EventItems.publish_start', '<=', now)
@@ -47,7 +47,7 @@ module.exports.getical = function (req, res, next, page, pages, canEdit, collect
     });
 };
 
-module.exports.render = function (req, res, next, page, pages, collectionModelClass) {
+module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
     var icalUrl = req.originalUrl;
     var idx = icalUrl.indexOf('?');
     if (idx >= 1) {
@@ -62,7 +62,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
         qb.select(['EventItems.*']);
-        qb.where({Page_id: page.Name})
+        qb.where({ Page_id: page.Name })
             .andWhere('EventItems.valid_end', null)
             .andWhere('EventItems.event_end', '>=', now)
             .andWhere('EventItems.publish_start', '<=', now)
@@ -72,6 +72,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
                 var dataObj = {
+                    id: dataModel.get('id'),
                     Title: dataModel.get('Title'),
                     Location: dataModel.get('Location'),
                     Description: dataModel.get('Description'),
@@ -82,7 +83,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                     event_start_time_formatted: moment(dataModel.get('event_start')).format('HH:mm'),
                     event_end_time_formatted: moment(dataModel.get('event_end')).format('HH:mm'),
                     //                    event_start_date_formatted: moment(dataModel.get('event_start')).format('dd., D. MMM'),
-                    event_start_date_formatted: moment(dataModel.get('event_start')).format('dddd, D. MMMM'),
+                    event_start_date_formatted: moment(dataModel.get('event_start')).format('dddd, D. MMMM YYYY'),
                     event_end_date_formatted: moment(dataModel.get('event_end')).format('dd., D. MMM'),
                     event_start_formatted: moment(dataModel.get('event_start')).format('L HH:mm'),
                     event_end_formatted: moment(dataModel.get('event_end')).format('L HH:mm'),
@@ -94,6 +95,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
                 bootstrapTheme: config.get('bootstrapStyle'),
+                canEdit: canEdit,
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,
@@ -106,6 +108,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
                 bootstrapTheme: config.get('bootstrapStyle'),
+                canEdit: canEdit,
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,

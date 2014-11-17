@@ -187,7 +187,7 @@ module.exports = function (grunt) {
           sourceMap: true,
           outputSourceFiles: true,
           sourceMapURL: '<%= pkg.name %>.css.map',
-          sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map',
+          sourceMapFilename: 'dist/feuerwehr/css/<%= pkg.name %>.css.map',
           paths: ['custom_themes/feuerwehr']
         },
         src: 'less/bootstrap.less',
@@ -199,7 +199,7 @@ module.exports = function (grunt) {
           sourceMap: true,
           outputSourceFiles: true,
           sourceMapURL: '<%= pkg.name %>.css.map',
-          sourceMapFilename: 'dist/css/<%= pkg.name %>.css.map',
+          sourceMapFilename: 'dist/yeti/css/<%= pkg.name %>.css.map',
           paths: ['custom_themes/yeti']
         },
         src: 'less/bootstrap.less',
@@ -223,7 +223,7 @@ module.exports = function (grunt) {
           sourceMap: true,
           outputSourceFiles: true,
           sourceMapURL: '<%= pkg.name %>-theme.css.map',
-          sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map',
+          sourceMapFilename: 'dist/feuerwehr/css/<%= pkg.name %>-theme.css.map',
           paths: ['custom_themes/feuerwehr']
         },
         src: 'less/theme.less',
@@ -235,7 +235,7 @@ module.exports = function (grunt) {
           sourceMap: true,
           outputSourceFiles: true,
           sourceMapURL: '<%= pkg.name %>-theme.css.map',
-          sourceMapFilename: 'dist/css/<%= pkg.name %>-theme.css.map',
+          sourceMapFilename: 'dist/yeti/css/<%= pkg.name %>-theme.css.map',
           paths: ['custom_themes/yeti']
         },
         src: 'less/theme.less',

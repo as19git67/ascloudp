@@ -3,7 +3,7 @@ html
     head
         title= title
         link(rel='stylesheet', href='/stylesheets/style.css')
-        if bootstrapTheme
+        if bootstrapTheme && bootstrapTheme != 'bootstrap'
             link(rel='stylesheet', href='/lib/bootstrap/dist/#{bootstrapTheme}/css/bootstrap.css')
         else
             link(rel='stylesheet', href='/lib/bootstrap/dist/css/bootstrap.css')

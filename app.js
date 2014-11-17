@@ -34,6 +34,7 @@ var rolePermissions = require('./Roles');
 var model = require('./model');
 var PageContent = model.models.PageContent;
 var apiMembers = require('./routes/api/v1/members');
+var apiEvents = require('./routes/api/v1/events');
 var apiCommunicationData = require('./routes/api/v1/communicationData');
 
 moment.locale("de"); // todo: use language from configuration or browser setting
@@ -79,6 +80,7 @@ app.use('/loginManageAccount', loginManageAccount);
 
 var rp = new rolePermissions(model.models);
 
+app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.get);
 app.get('/api/v1/members', passportStrategies.ensureAuthenticated, rp.middleware(), apiMembers.list);
 app.get('/api/v1/members/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiMembers.get);
 app.put('/api/v1/members/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiMembers.put);
@@ -192,7 +194,7 @@ app.use(function (req, res, next) {
                                 var view = require('./views/' + viewName);
                                 if (view) {
                                     if (view.getical && req.query && req.query.type && req.query.type == "ical") {
-                                        view.getical(req, res, next, page, pages, collectionModelClass);
+                                        view.getical(req, res, next, page, pages, canPost, collectionModelClass);
                                     } else {
                                         view.render(req, res, next, page, pages, canPost, collectionModelClass);
                                     }
