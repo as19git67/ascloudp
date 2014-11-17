@@ -7,660 +7,660 @@ exports.importTestData = function () {
     var model = require('./model');
     var knex = model.bookshelf.knex;
     var createSteps = [
-            function () {
-                // MITGLIEDER
-                return new Promise(function (resolve, reject) {
+        function () {
+            // MITGLIEDER
+            return new Promise(function (resolve, reject) {
 
-                    Promise.map(ffwMitglieder, function (value) {
-                        var now = new Date();
-                        var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
-                        var streetRegexResult = regexp.exec(value.Straße);
-                        var street = "";
-                        var streetNumber = "";
-                        if (streetRegexResult == null || streetRegexResult.length < 3) {
-                            street = value.Straße;
-                        } else {
-                            street = streetRegexResult[1];
-                            streetNumber = streetRegexResult[2];
-                        }
+                Promise.map(ffwMitglieder, function (value) {
+                    var now = new Date();
+                    var regexp = /(.+)\s([0-9]+[a-z|A-Z]?)/;
+                    var streetRegexResult = regexp.exec(value.Straße);
+                    var street = "";
+                    var streetNumber = "";
+                    if (streetRegexResult == null || streetRegexResult.length < 3) {
+                        street = value.Straße;
+                    } else {
+                        street = streetRegexResult[1];
+                        streetNumber = streetRegexResult[2];
+                    }
 
-                        regexp = /([a-z|A-Z|ä|ö|ü|ß|Ä|Ö|Ü]+)(,\s?)?(jun\.|sen\.|Jun|Sen|Jun\.|Sen\.)?/;
-                        var nameRegexResult = regexp.exec(value.Nachname);
-                        var lastname = "";
-                        var suffix = "";
-                        if (nameRegexResult == null || nameRegexResult.length < 4) {
+                    regexp = /([a-z|A-Z|ä|ö|ü|ß|Ä|Ö|Ü]+)(,\s?)?(jun\.|sen\.|Jun|Sen|Jun\.|Sen\.)?/;
+                    var nameRegexResult = regexp.exec(value.Nachname);
+                    var lastname = "";
+                    var suffix = "";
+                    if (nameRegexResult == null || nameRegexResult.length < 4) {
+                        lastname = value.Nachname;
+                    } else {
+                        if (nameRegexResult[2] == null || nameRegexResult[2] == null) {
                             lastname = value.Nachname;
                         } else {
-                            if (nameRegexResult[2] == null || nameRegexResult[2] == null) {
-                                lastname = value.Nachname;
+                            lastname = nameRegexResult[1];
+                            suffix = nameRegexResult[3];
+                            if (suffix == 'Jun' || suffix == 'Jun.') {
+                                suffix = 'jun.';
                             } else {
-                                lastname = nameRegexResult[1];
-                                suffix = nameRegexResult[3];
-                                if (suffix == 'Jun' || suffix == 'Jun.') {
-                                    suffix = 'jun.';
-                                } else {
-                                    if (suffix == 'Sen' || suffix == 'Sen.') {
-                                        suffix = 'sen.';
-                                    }
+                                if (suffix == 'Sen' || suffix == 'Sen.') {
+                                    suffix = 'sen.';
                                 }
                             }
                         }
+                    }
 
-                        var pObj = {
-                            Salutation: value.Anrede,
-                            Firstname: value.Vorname,
-                            Lastname: lastname,
-                            Birthday: value.Geboren,
-                            valid_start: now
+                    var pObj = {
+                        Salutation: value.Anrede,
+                        Firstname: value.Vorname,
+                        Lastname: lastname,
+                        Birthday: value.Geboren,
+                        valid_start: now
 
-                        };
-                        if (suffix && suffix.length > 0) {
-                            pObj.Suffix = suffix;
-                        }
+                    };
+                    if (suffix && suffix.length > 0) {
+                        pObj.Suffix = suffix;
+                    }
 
-                        return new Promise(function (resolvePerson, rejectPerson) {
-                            new model.models.Person().save().then(function (newPerson) {
+                    return new Promise(function (resolvePerson, rejectPerson) {
+                        new model.models.Person().save().then(function (newPerson) {
 
-                                pObj.Person_id = newPerson.get('id');
-                                new model.models.PersonItem(pObj).save().then(function (newPersonItem) {
-                                    var lr;
-                                    var ld;
-                                    if (value.verstorben) {
-                                        lr = 'Tod';
-                                        ld = value.verstorben;
-                                    } else if (value.Ausgetreten) {
-                                        lr = 'Austritt';
-                                        ld = value.Ausgetreten;
-                                    }
-                                    var ed = value.Eingetreten;
-                                    if (!ed && !value.verzogenDatum) {
-                                        ed = "1900-01-01T00:00:00";
-                                    }
+                            pObj.Person_id = newPerson.get('id');
+                            new model.models.PersonItem(pObj).save().then(function (newPersonItem) {
+                                var lr;
+                                var ld;
+                                if (value.verstorben) {
+                                    lr = 'Tod';
+                                    ld = value.verstorben;
+                                } else if (value.Ausgetreten) {
+                                    lr = 'Austritt';
+                                    ld = value.Ausgetreten;
+                                }
+                                var ed = value.Eingetreten;
+                                if (!ed && !value.verzogenDatum) {
+                                    ed = "1900-01-01T00:00:00";
+                                }
 
-                                    new model.models.Membership({
-                                        Person_id: newPerson.get('id'),
-                                        MembershipNumber: value.ID
-                                    }).save()
-                                        .then(function (newMember) {
-                                            new model.models.MembershipItem({
-                                                Membership_id: newMember.get('id'),
-                                                MembershipNumber: value.ID,
-                                                EntryDate: ed,
-                                                LeavingDate: ld,
-                                                //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
-                                                PassiveSince: value.Übergang_Passiv,
-                                                //LivingElsewhereSince: value.verzogenDatum,
-                                                // todo: if value.verzogenDatum { set PersonContactDataAddress.valid_end with value.verzogenDatum }
-                                                valid_start: now
-                                            }).save()
-                                                .then(function (newMemberItem) {
-                                                    //console.log("Member added: " + newMember.get('MembershipNumber'));
-                                                    new model.models.PersonContactType().fetchAll().then(function (personContactTypes) {
+                                new model.models.Membership({
+                                    Person_id: newPerson.get('id'),
+                                    MembershipNumber: value.ID
+                                }).save()
+                                    .then(function (newMember) {
+                                        new model.models.MembershipItem({
+                                            Membership_id: newMember.get('id'),
+                                            MembershipNumber: value.ID,
+                                            EntryDate: ed,
+                                            LeavingDate: ld,
+                                            //t.integer('LeavingReason_id').references('id').inTable('LeavingReasons');
+                                            PassiveSince: value.Übergang_Passiv,
+                                            //LivingElsewhereSince: value.verzogenDatum,
+                                            // todo: if value.verzogenDatum { set PersonContactDataAddress.valid_end with value.verzogenDatum }
+                                            valid_start: now
+                                        }).save()
+                                            .then(function (newMemberItem) {
+                                                //console.log("Member added: " + newMember.get('MembershipNumber'));
+                                                new model.models.PersonContactType().fetchAll().then(function (personContactTypes) {
 
-                                                        function addMorePart1() {
-                                                            if (value.Email && value.Email != '') {
-                                                                new model.models.PersonContactData({
-                                                                    Person_id: newPerson.get('id'),
-                                                                    PersonContactType_id: personContactTypeEmail,
-                                                                    Usage: 'Privat'
-                                                                }).save()
-                                                                    .then(function (newPersonContactDataForEmail) {
-                                                                        new model.models.PersonContactDataAccount({
-                                                                            PersonContactData_id: newPersonContactDataForEmail.get('id'),
-                                                                            Account: value.Email,
-                                                                            valid_start: now
-                                                                        }).save()
-                                                                            .then(function (newPersonContactDataEmail) {
-                                                                                console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
-                                                                                resolvePerson({person: newPerson, membership: newMember});
-                                                                            }
-                                                                        );
-                                                                    }
-                                                                );
-                                                            } else {
-                                                                resolvePerson({person: newPerson, membership: newMember});
-                                                            }
-                                                            //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
-                                                            /*
-                                                             var awards = createAwardsArray(element, newPerson);
-                                                             if (awards.length > 0) {
-                                                             MemberAward.bulkCreate(awards).success(function () {
-                                                             console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
-                                                             " (id: " + newMembership.person_id + ")");
-                                                             callback();
-
-                                                             }).error(function (error) {
-                                                             console.log('MemberAward.bulkCreate had ERRORS');
-                                                             console.log(error);
-                                                             callback(error);
-                                                             });
-                                                             } else {
-                                                             callback();
-                                                             }
-                                                             */
-                                                        }
-
-                                                        var personContactTypesByName = {};
-                                                        personContactTypes.forEach(function (personContactType) {
-                                                            personContactTypesByName[personContactType.get('Name')] = personContactType.get('id');
-                                                        });
-                                                        var personContactTypeAddress = personContactTypesByName['address'];
-                                                        var personContactTypePhone = personContactTypesByName['phone'];
-                                                        var personContactTypeEmail = personContactTypesByName['email'];
-
-                                                        function addOtherCommData() {
-                                                            if (value.Mobiltelefon && value.Mobiltelefon != '') {
-                                                                new model.models.PersonContactData({
-                                                                    Person_id: newPerson.get('id'),
-                                                                    PersonContactType_id: personContactTypePhone,
-                                                                    Usage: 'Mobil'
-                                                                }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                        var number = value.Mobiltelefon;
-                                                                        if (number.length > 1 && number.charAt(0) == '0') {
-                                                                            number = '+49' + number.substr(1);
-                                                                        } else {
-                                                                            console.log('WARNING: wrong phone number format: ' + number);
+                                                    function addMorePart1() {
+                                                        if (value.Email && value.Email != '') {
+                                                            new model.models.PersonContactData({
+                                                                Person_id: newPerson.get('id'),
+                                                                PersonContactType_id: personContactTypeEmail,
+                                                                Usage: 'Privat'
+                                                            }).save()
+                                                                .then(function (newPersonContactDataForEmail) {
+                                                                    new model.models.PersonContactDataAccount({
+                                                                        PersonContactData_id: newPersonContactDataForEmail.get('id'),
+                                                                        Account: value.Email,
+                                                                        valid_start: now
+                                                                    }).save()
+                                                                        .then(function (newPersonContactDataEmail) {
+                                                                            console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
+                                                                            resolvePerson({ person: newPerson, membership: newMember });
                                                                         }
-                                                                        new model.models.PersonContactDataPhonenumber({
-                                                                            PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
-                                                                            Number: number,
-                                                                            valid_start: now
-                                                                        }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                if (value.Telefon && value.Telefon != '') {
-                                                                                    new model.models.PersonContactData({
-                                                                                        Person_id: newPerson.get('id'),
-                                                                                        PersonContactType_id: personContactTypePhone,
-                                                                                        Usage: 'Privat'
-                                                                                    }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                            var number = value.Telefon;
-                                                                                            if (number.charAt(0) != '0') {
-                                                                                                number = '08233' + number;
-                                                                                            }
-                                                                                            if (number.length > 1 && number.charAt(0) == '0') {
-                                                                                                number = '+49' + number.substr(1);
-                                                                                            } else {
-                                                                                                console.log('WARNING: wrong phone number format: ' + number);
-                                                                                            }
-                                                                                            new model.models.PersonContactDataPhonenumber({
-                                                                                                PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
-                                                                                                Number: number,
-                                                                                                valid_start: now
-                                                                                            }).save().then(function (newPersonContactDataPhonenumber) {
-                                                                                                    addMorePart1();
-                                                                                                }).catch(function (error) {
-                                                                                                    console.log('PersonContactDataAddress.create had ERRORS');
-                                                                                                    console.log(error);
-                                                                                                    rejectPerson(error);
-                                                                                                }
-                                                                                            );
-                                                                                        }).catch(function (error) {
-                                                                                            console.log('PersonContactData.create had ERRORS');
-                                                                                            console.log(error);
-                                                                                            rejectPerson(error);
-                                                                                        });
-                                                                                } else {
-                                                                                    addMorePart1();
-                                                                                }
-                                                                            }).catch(function (error) {
-                                                                                console.log('PersonContactDataAddress.create had ERRORS');
-                                                                                console.log(error);
-                                                                                rejectPerson(error);
-                                                                            }
-                                                                        );
-                                                                    }).catch(function (error) {
-                                                                        console.log('PersonContactData.create had ERRORS');
-                                                                        console.log(error);
-                                                                        rejectPerson(error);
-                                                                    });
-                                                            } else {
-                                                                addMorePart1();
-                                                            }
+                                                                    );
+                                                                }
+                                                            );
+                                                        } else {
+                                                            resolvePerson({ person: newPerson, membership: newMember });
                                                         }
+                                                        //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
+                                                        /*
+                                                         var awards = createAwardsArray(element, newPerson);
+                                                         if (awards.length > 0) {
+                                                         MemberAward.bulkCreate(awards).success(function () {
+                                                         console.log("Added awards to member " + newPerson.firstname + " " + newPerson.lastname +
+                                                         " (id: " + newMembership.person_id + ")");
+                                                         callback();
 
-                                                        if (personContactTypeAddress && personContactTypePhone && personContactTypeEmail) {
+                                                         }).error(function (error) {
+                                                         console.log('MemberAward.bulkCreate had ERRORS');
+                                                         console.log(error);
+                                                         callback(error);
+                                                         });
+                                                         } else {
+                                                         callback();
+                                                         }
+                                                         */
+                                                    }
 
-                                                            if (value.PLZ && value.Ort) {
-                                                                new model.models.PersonContactData({
-                                                                    Person_id: newPerson.get('id'),
-                                                                    PersonContactType_id: personContactTypeAddress,
-                                                                    Usage: 'Privat'
-                                                                }).save().then(function (newPersonContactDataAddress) {
-                                                                        new model.models.PersonContactDataAddress({
-                                                                            PersonContactData_id: newPersonContactDataAddress.get('id'),
-                                                                            Street: street,
-                                                                            StreetNumber: streetNumber,
-                                                                            Postalcode: value.PLZ,
-                                                                            City: value.Ort,
-                                                                            valid_start: now
-                                                                        }).save().then(function (newPersonContactDataAddress) {
-                                                                                addOtherCommData();
-                                                                            }).catch(function (error) {
-                                                                                console.log('PersonContactDataAddress.create had ERRORS');
-                                                                                console.log(error);
-                                                                                rejectPerson(error);
-                                                                            });
-                                                                    }).catch(function (error) {
-                                                                        console.log("Error while saving PersonContactData: " + error);
-                                                                        rejectPerson(error);
-                                                                    }
-                                                                );
-                                                            } else {
-                                                                // no address added - try to add the rest
-                                                                addOtherCommData();
-                                                            }
-                                                        }
-                                                        else {
-                                                            var errMsg = "PersonContactType address or phone does not exist in the database.";
-                                                            console.log(errMsg);
-                                                            rejectPerson(errMsg);
-                                                        }
-                                                    }).catch(function (error) {
-                                                        console.log("Error while fetching PersonContactType: " + error);
-                                                        rejectPerson(error);
+                                                    var personContactTypesByName = {};
+                                                    personContactTypes.forEach(function (personContactType) {
+                                                        personContactTypesByName[personContactType.get('Name')] = personContactType.get('id');
                                                     });
+                                                    var personContactTypeAddress = personContactTypesByName['address'];
+                                                    var personContactTypePhone = personContactTypesByName['phone'];
+                                                    var personContactTypeEmail = personContactTypesByName['email'];
+
+                                                    function addOtherCommData() {
+                                                        if (value.Mobiltelefon && value.Mobiltelefon != '') {
+                                                            new model.models.PersonContactData({
+                                                                Person_id: newPerson.get('id'),
+                                                                PersonContactType_id: personContactTypePhone,
+                                                                Usage: 'Mobil'
+                                                            }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                    var number = value.Mobiltelefon;
+                                                                    if (number.length > 1 && number.charAt(0) == '0') {
+                                                                        number = '+49' + number.substr(1);
+                                                                    } else {
+                                                                        console.log('WARNING: wrong phone number format: ' + number);
+                                                                    }
+                                                                    new model.models.PersonContactDataPhonenumber({
+                                                                        PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
+                                                                        Number: number,
+                                                                        valid_start: now
+                                                                    }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                            if (value.Telefon && value.Telefon != '') {
+                                                                                new model.models.PersonContactData({
+                                                                                    Person_id: newPerson.get('id'),
+                                                                                    PersonContactType_id: personContactTypePhone,
+                                                                                    Usage: 'Privat'
+                                                                                }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                        var number = value.Telefon;
+                                                                                        if (number.charAt(0) != '0') {
+                                                                                            number = '08233' + number;
+                                                                                        }
+                                                                                        if (number.length > 1 && number.charAt(0) == '0') {
+                                                                                            number = '+49' + number.substr(1);
+                                                                                        } else {
+                                                                                            console.log('WARNING: wrong phone number format: ' + number);
+                                                                                        }
+                                                                                        new model.models.PersonContactDataPhonenumber({
+                                                                                            PersonContactData_id: newPersonContactDataPhonenumber.get('id'),
+                                                                                            Number: number,
+                                                                                            valid_start: now
+                                                                                        }).save().then(function (newPersonContactDataPhonenumber) {
+                                                                                                addMorePart1();
+                                                                                            }).catch(function (error) {
+                                                                                                console.log('PersonContactDataAddress.create had ERRORS');
+                                                                                                console.log(error);
+                                                                                                rejectPerson(error);
+                                                                                            }
+                                                                                        );
+                                                                                    }).catch(function (error) {
+                                                                                        console.log('PersonContactData.create had ERRORS');
+                                                                                        console.log(error);
+                                                                                        rejectPerson(error);
+                                                                                    });
+                                                                            } else {
+                                                                                addMorePart1();
+                                                                            }
+                                                                        }).catch(function (error) {
+                                                                            console.log('PersonContactDataAddress.create had ERRORS');
+                                                                            console.log(error);
+                                                                            rejectPerson(error);
+                                                                        }
+                                                                    );
+                                                                }).catch(function (error) {
+                                                                    console.log('PersonContactData.create had ERRORS');
+                                                                    console.log(error);
+                                                                    rejectPerson(error);
+                                                                });
+                                                        } else {
+                                                            addMorePart1();
+                                                        }
+                                                    }
+
+                                                    if (personContactTypeAddress && personContactTypePhone && personContactTypeEmail) {
+
+                                                        if (value.PLZ && value.Ort) {
+                                                            new model.models.PersonContactData({
+                                                                Person_id: newPerson.get('id'),
+                                                                PersonContactType_id: personContactTypeAddress,
+                                                                Usage: 'Privat'
+                                                            }).save().then(function (newPersonContactDataAddress) {
+                                                                    new model.models.PersonContactDataAddress({
+                                                                        PersonContactData_id: newPersonContactDataAddress.get('id'),
+                                                                        Street: street,
+                                                                        StreetNumber: streetNumber,
+                                                                        Postalcode: value.PLZ,
+                                                                        City: value.Ort,
+                                                                        valid_start: now
+                                                                    }).save().then(function (newPersonContactDataAddress) {
+                                                                            addOtherCommData();
+                                                                        }).catch(function (error) {
+                                                                            console.log('PersonContactDataAddress.create had ERRORS');
+                                                                            console.log(error);
+                                                                            rejectPerson(error);
+                                                                        });
+                                                                }).catch(function (error) {
+                                                                    console.log("Error while saving PersonContactData: " + error);
+                                                                    rejectPerson(error);
+                                                                }
+                                                            );
+                                                        } else {
+                                                            // no address added - try to add the rest
+                                                            addOtherCommData();
+                                                        }
+                                                    }
+                                                    else {
+                                                        var errMsg = "PersonContactType address or phone does not exist in the database.";
+                                                        console.log(errMsg);
+                                                        rejectPerson(errMsg);
+                                                    }
                                                 }).catch(function (error) {
-                                                    console.log("Error while saving MembershipItem: " + error);
+                                                    console.log("Error while fetching PersonContactType: " + error);
                                                     rejectPerson(error);
                                                 });
-                                        }).catch(function (error) {
-                                            console.log("Error while saving Membership: " + error);
-                                            rejectPerson(error);
-                                        });
-                                }).catch(function (error) {
-                                    console.log("Error while saving PersonItem: " + error);
-                                    rejectPerson(error);
-                                });
+                                            }).catch(function (error) {
+                                                console.log("Error while saving MembershipItem: " + error);
+                                                rejectPerson(error);
+                                            });
+                                    }).catch(function (error) {
+                                        console.log("Error while saving Membership: " + error);
+                                        rejectPerson(error);
+                                    });
                             }).catch(function (error) {
-                                console.log("Error while saving Person: " + error);
+                                console.log("Error while saving PersonItem: " + error);
                                 rejectPerson(error);
                             });
+                        }).catch(function (error) {
+                            console.log("Error while saving Person: " + error);
+                            rejectPerson(error);
                         });
+                    });
 
-                    }).then(function (savedObj) {
-                        console.log("Persons and Memberships added to database.");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving persons and memberships: " + error);
-                        reject(error);
-                    });
+                }).then(function (savedObj) {
+                    console.log("Persons and Memberships added to database.");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving persons and memberships: " + error);
+                    reject(error);
                 });
-            },
-            function () {
-                // SEITEN
-                return new Promise(function (resolve, reject) {
-                    var allPages = [
-                        {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
-                        {
-                            Order: 2,
-                            Name: "ausbildung",
-                            AnonymousAccess: true,
-                            EntityNameSingular: "Ausbildung",
-                            EntityNamePlural: "Ausbildungsmöglichkeiten",
-                            Model: "PageContent",
-                            View: "genericHTML"
-                        },
-                        {Order: 3, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles"},
-                        {Order: 4, Name: "fahrzeuge", AnonymousAccess: true, EntityNameSingular: "Fahrzeug", EntityNamePlural: "Fahrzeuge", Model: "PageContent", View: "genericHTML"},
-                        {Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
-                        {Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links"},
-                        {Order: 7, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
-                        {Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Bericht", EntityNamePlural: "Berichte", Collection: "Articles", View: "Articles"},
-                        {Order: 9, Name: "vorstand", AnonymousAccess: true, EntityNameSingular: "Vorstandsmitglied", EntityNamePlural: "Vorstand", Collection: "Contacts", View: "Contacts"},
-                        {Order: 10, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members"}
-                    ];
-                    var pages = model.models.Pages.forge(allPages);
-                    console.log("Adding pages.");
-                    Promise.all(pages.invoke('save')).then(function () {
-                        console.log("Pages added to database.");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving pages: " + error);
-                        reject(error);
-                    });
+            });
+        },
+        function () {
+            // SEITEN
+            return new Promise(function (resolve, reject) {
+                var allPages = [
+                    { Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar" },
+                    {
+                        Order: 2,
+                        Name: "ausbildung",
+                        AnonymousAccess: true,
+                        EntityNameSingular: "Ausbildung",
+                        EntityNamePlural: "Ausbildungsmöglichkeiten",
+                        Model: "PageContent",
+                        View: "genericHTML"
+                    },
+                    { Order: 3, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles" },
+                    { Order: 4, Name: "fahrzeuge", AnonymousAccess: true, EntityNameSingular: "Fahrzeug", EntityNamePlural: "Fahrzeuge", Model: "PageContent", View: "genericHTML" },
+                    { Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts" },
+                    { Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links" },
+                    { Order: 7, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML" },
+                    { Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Bericht", EntityNamePlural: "Berichte", Collection: "Articles", View: "Articles" },
+                    { Order: 9, Name: "vorstand", AnonymousAccess: true, EntityNameSingular: "Vorstandsmitglied", EntityNamePlural: "Vorstand", Collection: "Contacts", View: "Contacts" },
+                    { Order: 10, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members" }
+                ];
+                var pages = model.models.Pages.forge(allPages);
+                console.log("Adding pages.");
+                Promise.all(pages.invoke('save')).then(function () {
+                    console.log("Pages added to database.");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving pages: " + error);
+                    reject(error);
                 });
-            },
-            function () {
-                // SEITEN MIT GENERICHTML
-                return new Promise(function (resolve, reject) {
-                    var allPageContents = [
-                        {
-                            Page_id: "ausbildung",
-                            Text: "## Ausbildungsmaterial\r\n\r### Feuerwehr Dienstvorschriften:\r\n\rErklärungen und weiterführende Links zu den Feuerwehr Dienstvorschriften können in der Wikipedia nachgeschlagen werden: http://de.wikipedia.org/wiki/Feuerwehr-Dienstvorschrift\r\n\r### Lehrmittel:\r\n\rDie Staatliche Feuerwehrschule in Würzburg stellt Lehrmaterial bereit: Lehr- und Lernmittel\r\n\r"
-                        },
-                        {
-                            Page_id: "mitmachen",
-                            Text: "## Mitglied bei der Freiwilligen Feuerwehr Merching werden\r\n\r### Wer kann beitreten?\r\n\rDie Freiwillige Feuerwehr Merching freut sich immer über neue Mitglieder. Ab dem Alter von 14 Jahren kann man beitreten. Mit 16 Jahren kann man dann beschränkt bei Einsätzen dabei sein und ab dem 18. Lebenjahr ist man voll einsatzfähig.\r\n\r"
-                        },
-                        {Page_id: "fahrzeuge", Text: "## HLF 20/16\r\n\rHier wird das Bild erscheinen\r\n\r## LF 16\r\n\rHier wird das Bild erscheinen\r\n\r"}
-                    ];
-                    var pageContents = model.models.PageContents.forge(allPageContents);
-                    console.log("Adding PageContents.");
-                    Promise.all(pageContents.invoke('save')).then(function () {
-                        console.log("PageContents added to database.");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving PageContents: " + error);
-                        reject(error);
-                    });
+            });
+        },
+        function () {
+            // SEITEN MIT GENERICHTML
+            return new Promise(function (resolve, reject) {
+                var allPageContents = [
+                    {
+                        Page_id: "ausbildung",
+                        Text: "## Ausbildungsmaterial\r\n\r### Feuerwehr Dienstvorschriften:\r\n\rErklärungen und weiterführende Links zu den Feuerwehr Dienstvorschriften können in der Wikipedia nachgeschlagen werden: http://de.wikipedia.org/wiki/Feuerwehr-Dienstvorschrift\r\n\r### Lehrmittel:\r\n\rDie Staatliche Feuerwehrschule in Würzburg stellt Lehrmaterial bereit: Lehr- und Lernmittel\r\n\r"
+                    },
+                    {
+                        Page_id: "mitmachen",
+                        Text: "## Mitglied bei der Freiwilligen Feuerwehr Merching werden\r\n\r### Wer kann beitreten?\r\n\rDie Freiwillige Feuerwehr Merching freut sich immer über neue Mitglieder. Ab dem Alter von 14 Jahren kann man beitreten. Mit 16 Jahren kann man dann beschränkt bei Einsätzen dabei sein und ab dem 18. Lebenjahr ist man voll einsatzfähig.\r\n\r"
+                    },
+                    { Page_id: "fahrzeuge", Text: "## HLF 20/16\r\n\rHier wird das Bild erscheinen\r\n\r## LF 16\r\n\rHier wird das Bild erscheinen\r\n\r" }
+                ];
+                var pageContents = model.models.PageContents.forge(allPageContents);
+                console.log("Adding PageContents.");
+                Promise.all(pageContents.invoke('save')).then(function () {
+                    console.log("PageContents added to database.");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving PageContents: " + error);
+                    reject(error);
                 });
-            },
-            function () {
-                return new Promise(function (resolve, reject) {
-                    var allPageCollectionColumns = [
-                        {Order: 1, Page_id: "mitglieder", Name: "Salutation", Caption: "Anrede", Type: "string", Mandatory: false},
-                        {Order: 2, Page_id: "mitglieder", Name: "Firstname", Caption: "Vorname", Type: "string", Mandatory: false},
-                        {Order: 3, Page_id: "mitglieder", Name: "Lastname", Caption: "Nachname", Type: "string", Mandatory: true},
-                        {Order: 4, Page_id: "mitglieder", Name: "Suffix", Caption: "Suffix", Type: "string", Mandatory: false},
-                        {Order: 5, Page_id: "mitglieder", Name: "Birthday", Caption: "Geburtstag", Type: "date", Mandatory: false},
-                        {Order: 6, Page_id: "mitglieder", Name: "MembershipItem.MembershipNumber", Caption: "Mitgliedsnummer", Type: "integer", Mandatory: true}
-                    ];
-                    var pageCollectionColumns = model.models.PageCollectionColumns.forge(allPageCollectionColumns);
-                    console.log("Adding PageCollectionColumns.");
-                    Promise.all(pageCollectionColumns.invoke('save')).then(function () {
-                        console.log("PageCollectionColumns added to database.");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving PageCollectionColumns: " + error);
-                        reject(error);
-                    });
+            });
+        },
+        function () {
+            return new Promise(function (resolve, reject) {
+                var allPageCollectionColumns = [
+                    { Order: 1, Page_id: "mitglieder", Name: "Salutation", Caption: "Anrede", Type: "string", Mandatory: false },
+                    { Order: 2, Page_id: "mitglieder", Name: "Firstname", Caption: "Vorname", Type: "string", Mandatory: false },
+                    { Order: 3, Page_id: "mitglieder", Name: "Lastname", Caption: "Nachname", Type: "string", Mandatory: true },
+                    { Order: 4, Page_id: "mitglieder", Name: "Suffix", Caption: "Suffix", Type: "string", Mandatory: false },
+                    { Order: 5, Page_id: "mitglieder", Name: "Birthday", Caption: "Geburtstag", Type: "date", Mandatory: false },
+                    { Order: 6, Page_id: "mitglieder", Name: "MembershipItem.MembershipNumber", Caption: "Mitgliedsnummer", Type: "integer", Mandatory: true }
+                ];
+                var pageCollectionColumns = model.models.PageCollectionColumns.forge(allPageCollectionColumns);
+                console.log("Adding PageCollectionColumns.");
+                Promise.all(pageCollectionColumns.invoke('save')).then(function () {
+                    console.log("PageCollectionColumns added to database.");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving PageCollectionColumns: " + error);
+                    reject(error);
                 });
-            },
-            function () {
-                // TERMINE
-                return new Promise(function (resolve, reject) {
-                    Promise.map(ffwEvents, function (value) {
-                        return new Promise(function (resolveEvent, rejectEvent) {
-                            new model.models.Event({Page_id: "termine"}).save().then(function (newEvent) {
-                                var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
-                                var publishDateEnd = value.publishDateEnd == null ? value.eventDateEnd : value.publishDateEnd;
-                                var evObj = {
-                                    Event_id: newEvent.get('id'),
-                                    Title: value.title,
-                                    Location: value.locationdescription,
-                                    Description: value.description,
-                                    event_start: value.eventDateStart,
-                                    event_end: value.eventDateEnd,
-                                    publish_start: publishDateStart,
-                                    publish_end: publishDateEnd,
-                                    valid_start: new Date()
-                                };
-                                new model.models.EventItem(evObj).save().then(function (newEventItem) {
-                                    resolveEvent();
-                                }).catch(function (error) {
-                                    console.log("Error while saving EventItem: " + error);
-                                    rejectEvent(error);
-                                });
+            });
+        },
+        function () {
+            // TERMINE
+            return new Promise(function (resolve, reject) {
+                Promise.map(ffwEvents, function (value) {
+                    return new Promise(function (resolveEvent, rejectEvent) {
+                        new model.models.Event({ Page_id: "termine" }).save().then(function (newEvent) {
+                            var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
+                            var publishDateEnd = value.publishDateEnd == null ? value.eventDateEnd : value.publishDateEnd;
+                            var evObj = {
+                                Event_id: newEvent.get('id'),
+                                Title: value.title,
+                                Location: value.locationdescription,
+                                Description: value.description,
+                                event_start: value.eventDateStart,
+                                event_end: value.eventDateEnd,
+                                publish_start: publishDateStart,
+                                publish_end: publishDateEnd,
+                                valid_start: new Date()
+                            };
+                            new model.models.EventItem(evObj).save().then(function (newEventItem) {
+                                resolveEvent();
                             }).catch(function (error) {
-                                console.log("Error while saving Event: " + error);
+                                console.log("Error while saving EventItem: " + error);
                                 rejectEvent(error);
                             });
+                        }).catch(function (error) {
+                            console.log("Error while saving Event: " + error);
+                            rejectEvent(error);
                         });
-                    }).then(function (savedEvents) {
-                        console.log(savedEvents.length + " events added to database");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving events: " + error);
                     });
+                }).then(function (savedEvents) {
+                    console.log(savedEvents.length + " events added to database");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving events: " + error);
                 });
-            },
-            function () {
-                // LINKS
-                return new Promise(function (resolve, reject) {
-                    Promise.map(ffwLinks, function (value) {
-                        return new Promise(function (resolveLink, rejectLink) {
-                            new model.models.Link({Page_id: "links", Url: value.href}).save().then(function (newLink) {
-                                var linkObj = {
-                                    Link_id: newLink.get('id'),
-                                    Url: value.href,
-                                    Description: value.d,
-                                    valid_start: new Date()
-                                };
-                                new model.models.LinkItem(linkObj).save().then(function (newLinkItem) {
-                                    resolveLink();
-                                }).catch(function (error) {
-                                    console.log("Error while saving LinkItem: " + error);
-                                    rejectLink(error);
-                                });
+            });
+        },
+        function () {
+            // LINKS
+            return new Promise(function (resolve, reject) {
+                Promise.map(ffwLinks, function (value) {
+                    return new Promise(function (resolveLink, rejectLink) {
+                        new model.models.Link({ Page_id: "links", Url: value.href }).save().then(function (newLink) {
+                            var linkObj = {
+                                Link_id: newLink.get('id'),
+                                Url: value.href,
+                                Description: value.d,
+                                valid_start: new Date()
+                            };
+                            new model.models.LinkItem(linkObj).save().then(function (newLinkItem) {
+                                resolveLink();
                             }).catch(function (error) {
-                                console.log("Error while saving Link: " + error);
+                                console.log("Error while saving LinkItem: " + error);
                                 rejectLink(error);
                             });
+                        }).catch(function (error) {
+                            console.log("Error while saving Link: " + error);
+                            rejectLink(error);
                         });
-                    }).then(function (savedLinks) {
-                        console.log(savedLinks.length + " links added to database");
-                        resolve();
-                    }).catch(function (error) {
-                        console.log("Error while saving links: " + error);
                     });
+                }).then(function (savedLinks) {
+                    console.log(savedLinks.length + " links added to database");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Error while saving links: " + error);
                 });
-            },
-            function () {
-                // VORSTANDSCHAFT (Contacts)
-                return new Promise(function (resolve, reject) {
-                    var pageName = "vorstand";
-                    var memberships = _.where(ffwMitglieder, {'Vorstandsmitglied': true});
-                    var membershipIds = _.map(memberships, function (membershipObj) {
-                        return membershipObj.ID;
-                    });
-                    var allContacts = [];
-                    model.bookshelf.knex('Memberships')
-                        .whereIn('MembershipNumber', membershipIds)
-                        .select('Person_id')
-                        .then(function (results) {
-                            var now = new Date();
-                            results.forEach(function (m) {
-                                allContacts.push({
-                                    Person_id: m.Person_id,
-                                    valid_start: now
-                                });
+            });
+        },
+        function () {
+            // VORSTANDSCHAFT (Contacts)
+            return new Promise(function (resolve, reject) {
+                var pageName = "vorstand";
+                var memberships = _.where(ffwMitglieder, { 'Vorstandsmitglied': true });
+                var membershipIds = _.map(memberships, function (membershipObj) {
+                    return membershipObj.ID;
+                });
+                var allContacts = [];
+                model.bookshelf.knex('Memberships')
+                    .whereIn('MembershipNumber', membershipIds)
+                    .select('Person_id')
+                    .then(function (results) {
+                        var now = new Date();
+                        results.forEach(function (m) {
+                            allContacts.push({
+                                Person_id: m.Person_id,
+                                valid_start: now
                             });
-                            Promise.map(allContacts, function (contactItem) {
-                                return new Promise(function (resolveContact, rejectContact) {
-                                    new model.models.Contact({Page_id: pageName}).save().then(function (newContact) {
-                                        contactItem.Contact_id = newContact.get('id');
-                                        new model.models.ContactItem(contactItem).save().then(function (newContactItem) {
-                                            resolveContact(newContact);
-                                        }).catch(function (error) {
-                                            console.log("Error while adding contact item for page " + pageName + ": " + error);
-                                            rejectContact(error);
-                                        });
+                        });
+                        Promise.map(allContacts, function (contactItem) {
+                            return new Promise(function (resolveContact, rejectContact) {
+                                new model.models.Contact({ Page_id: pageName }).save().then(function (newContact) {
+                                    contactItem.Contact_id = newContact.get('id');
+                                    new model.models.ContactItem(contactItem).save().then(function (newContactItem) {
+                                        resolveContact(newContact);
                                     }).catch(function (error) {
-                                        console.log("Error while adding contact for page " + pageName + ": " + error);
+                                        console.log("Error while adding contact item for page " + pageName + ": " + error);
                                         rejectContact(error);
                                     });
+                                }).catch(function (error) {
+                                    console.log("Error while adding contact for page " + pageName + ": " + error);
+                                    rejectContact(error);
                                 });
-                            }).then(function (allSavedContacts) {
-                                console.log(" contacts for page " + pageName + " saved in database.");
-                                resolve();
+                            });
+                        }).then(function (allSavedContacts) {
+                            console.log(" contacts for page " + pageName + " saved in database.");
+                            resolve();
+                        }).catch(function (error) {
+                            console.log("Error while saving contacts for page " + pageName + ": " + error);
+                            reject(error);
+                        });
+                    }).catch(function (error) {
+                        console.log("Error while reading Memberships: " + error);
+                        reject(error);
+                    });
+            });
+        },
+        function () {
+            return new Promise(function (resolve, reject) {
+                var now = new Date();
+                var end = new Date();
+                end.setFullYear(end.getFullYear() + 1);
+                new model.models.Article({ "Page_id": "wir" }).save().then(function (newArticle) {
+                    new model.models.ArticleItem({
+                        "Article_id": newArticle.get('id'),
+                        "Date": new Date(2014, 6, 3),
+                        "Title": "RETTUNGSEINSATZ MERCHING: Ich dachte ein Flugzeug stürzt ab",
+                        "Subtitle": "Stadel auf landwirtschaftlichem Anwesen in Merching stürzt ein. Das Wohnhaus ist momentan für die fünfköpfige Familie nicht mehr zu betreten",
+                        "Author": "Eva Weizenegger",
+                        "publish_start": now,
+                        "publish_end": end,
+                        "valid_start": now
+                    }).save().then(function (newArticle) {
+                            new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection) {
+                                new model.models.ArticleSectionItem({
+                                    "ArticleSection_id": newArticleSection.get('id'),
+                                    "Order": 2,
+                                    "Title": undefined,
+                                    "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
+                                    "ImageUrl": "http://bilder.augsburger-allgemeine.de/img/aichach/origs25490156/6280418233-w900-h960/MCH-Stadeleinsturz-009.jpg",
+                                    "ImageDescription": "Ein Stadel eines landwirtschaftlichen Anwesens in Merching in der Bahnhofstraße stürzte gestern ein. Das angrenzende Wohnhaus ist zurzeit für die Familie nicht bewohnbar. Zunächst muss ein Statiker klären, wann die Familie das Haus wieder betreten darf.",
+                                    "valid_start": now
+                                }).save().then(function (newArticleSectionItem) {
+                                        new model.models.ArticleReference({ ArticleSection_id: newArticleSection.get('id') }).save().then(function (newArticleReference) {
+                                            new model.models.ArticleReferenceItem({
+                                                "ArticleReference_id": newArticleReference.get('id'),
+                                                "Text": "Friedberger Allgemeine, 3.6.2014",
+                                                "valid_start": now
+                                            }).save().then(function (newArticleReferenceItem) {
+                                                    new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection2) {
+                                                        new model.models.ArticleSectionItem({
+                                                            "ArticleSection_id": newArticleSection2.get('id'),
+                                                            "Order": 1,
+                                                            "Title": null,
+                                                            "Text": "Noch völlig unter Schock steht die fünfkopfige Familie in Merching, als sie auf die Trümmer ihres Stadels schaut. " +
+                                                            "„Es hat einen wahnsinnigen Schlag getan und dann dachte ich, eine Lawine geht ab“, schildert eine Betroffene die Ereignisse vom Montagmorgen. " +
+                                                            "Wie Polizeikommissar Michael Daschner informiert, wurden die Retter gegen 8.20 Uhr verständigt, um zu dem eingestürzten Stadel in der Bahnhofstraße, der direkt an das Wohnhaus angebaut ist, zu fahren und erste Sicherungsmaßnahmen vorzunehmen. " +
+                                                            "„Momentan darf die Familie ihr Wohnhaus nicht betreten, erst wenn der Statiker keine weitere Einsturzgefahr bescheinigt, kann das Haus wieder betreten werden.“ " +
+                                                            "Bürgermeister Martin Walch telefoniert bereits mit dem Landratsamt und versucht, einen Bausachverständigen zu organisieren. " + "Er läuft zwischen Baucontainern, alten Landwirtschaftsgeräten hin und her, beantwortet Fragen von Polizei und Abbruchunternehmen und redet gleichzeitig mit dem Hausbesitzer, der fassungslos auf die Trümmer des Stadels blickt. " +
+                                                            " „Was denn noch alles?“, sagt der Mann nur noch. Tiere waren in dem ehemaligen Kuhstall nicht. Einen Hund, der sich noch im Wohnhaus befindet, kann Martin Walch rauslocken.",
+                                                            "valid_start": now
+                                                        }).save().then(function (newArticleSectionItem2) {
+                                                                new model.models.ArticleReference({ ArticleSection_id: newArticleSection2.get('id') }).save().then(function (newArticleReference2) {
+                                                                    new model.models.ArticleReferenceItem({
+                                                                        "ArticleReference_id": newArticleReference2.get('id'),
+                                                                        "Text": "Feuerwehr Merching, 2.6.2014",
+                                                                        "valid_start": now
+                                                                    }).save().then(function (newArticleReferenceItem2) {
+                                                                            console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                                            resolve();
+                                                                        }).catch(function (error) {
+                                                                            console.log("Error while creating ArticleReferenceItem for page 'wir': " +
+                                                                            error);
+                                                                            reject(error);
+                                                                        });
+                                                                }).catch(function (error) {
+                                                                    console.log("Error while creating ArticleReference for page 'wir': " + error);
+                                                                    reject(error);
+                                                                });
+                                                            }).catch(function (error) {
+                                                                console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                                                reject(error);
+                                                            });
+                                                    }).catch(function (error) {
+                                                        console.log("Error while creating ArticleSection for page 'wir': " + error);
+                                                        reject(error);
+                                                    });
+                                                }).catch(function (error) {
+                                                    console.log("Error while creating ArticleReferenceItem for page 'wir': " + error);
+                                                    reject(error);
+                                                });
+                                        }).catch(function (error) {
+                                            console.log("Error while creating ArticleReference for page 'wir': " + error);
+                                            reject(error);
+                                        });
+                                    }).catch(function (error) {
+                                        console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                        reject(error);
+                                    });
                             }).catch(function (error) {
-                                console.log("Error while saving contacts for page " + pageName + ": " + error);
+                                console.log("Error while creating ArticleSection for page 'wir': " + error);
                                 reject(error);
                             });
                         }).catch(function (error) {
-                            console.log("Error while reading Memberships: " + error);
+                            console.log("Error while creating Article for page 'wir': " + error);
                             reject(error);
                         });
+                }).catch(function (error) {
+                    console.log("Error while creating Article for page 'wir': " + error);
+                    reject(error);
                 });
-            },
-            function () {
-                return new Promise(function (resolve, reject) {
-                    var now = new Date();
-                    var end = new Date();
-                    end.setFullYear(end.getFullYear() + 1);
-                    new model.models.Article({"Page_id": "wir"}).save().then(function (newArticle) {
-                        new model.models.ArticleItem({
-                            "Article_id": newArticle.get('id'),
-                            "Date": new Date(2014, 6, 3),
-                            "Title": "RETTUNGSEINSATZ MERCHING: Ich dachte ein Flugzeug stürzt ab",
-                            "Subtitle": "Stadel auf landwirtschaftlichem Anwesen in Merching stürzt ein. Das Wohnhaus ist momentan für die fünfköpfige Familie nicht mehr zu betreten",
-                            "Author": "Eva Weizenegger",
-                            "publish_start": now,
-                            "publish_end": end,
-                            "valid_start": now
-                        }).save().then(function (newArticle) {
-                                new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
-                                    new model.models.ArticleSectionItem({
-                                        "ArticleSection_id": newArticleSection.get('id'),
-                                        "Order": 2,
-                                        "Title": undefined,
-                                        "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
-                                        "ImageUrl": "http://bilder.augsburger-allgemeine.de/img/aichach/origs25490156/6280418233-w900-h960/MCH-Stadeleinsturz-009.jpg",
-                                        "ImageDescription": "Ein Stadel eines landwirtschaftlichen Anwesens in Merching in der Bahnhofstraße stürzte gestern ein. Das angrenzende Wohnhaus ist zurzeit für die Familie nicht bewohnbar. Zunächst muss ein Statiker klären, wann die Familie das Haus wieder betreten darf.",
-                                        "valid_start": now
-                                    }).save().then(function (newArticleSectionItem) {
-                                            new model.models.ArticleReference({ArticleSection_id: newArticleSection.get('id')}).save().then(function (newArticleReference) {
-                                                new model.models.ArticleReferenceItem({
-                                                    "ArticleReference_id": newArticleReference.get('id'),
-                                                    "Text": "Friedberger Allgemeine, 3.6.2014",
-                                                    "valid_start": now
-                                                }).save().then(function (newArticleReferenceItem) {
-                                                        new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
-                                                            new model.models.ArticleSectionItem({
-                                                                "ArticleSection_id": newArticleSection2.get('id'),
-                                                                "Order": 1,
-                                                                "Title": null,
-                                                                "Text": "Noch völlig unter Schock steht die fünfkopfige Familie in Merching, als sie auf die Trümmer ihres Stadels schaut. " +
-                                                                "„Es hat einen wahnsinnigen Schlag getan und dann dachte ich, eine Lawine geht ab“, schildert eine Betroffene die Ereignisse vom Montagmorgen. " +
-                                                                "Wie Polizeikommissar Michael Daschner informiert, wurden die Retter gegen 8.20 Uhr verständigt, um zu dem eingestürzten Stadel in der Bahnhofstraße, der direkt an das Wohnhaus angebaut ist, zu fahren und erste Sicherungsmaßnahmen vorzunehmen. " +
-                                                                "„Momentan darf die Familie ihr Wohnhaus nicht betreten, erst wenn der Statiker keine weitere Einsturzgefahr bescheinigt, kann das Haus wieder betreten werden.“ " +
-                                                                "Bürgermeister Martin Walch telefoniert bereits mit dem Landratsamt und versucht, einen Bausachverständigen zu organisieren. " + "Er läuft zwischen Baucontainern, alten Landwirtschaftsgeräten hin und her, beantwortet Fragen von Polizei und Abbruchunternehmen und redet gleichzeitig mit dem Hausbesitzer, der fassungslos auf die Trümmer des Stadels blickt. " +
-                                                                " „Was denn noch alles?“, sagt der Mann nur noch. Tiere waren in dem ehemaligen Kuhstall nicht. Einen Hund, der sich noch im Wohnhaus befindet, kann Martin Walch rauslocken.",
-                                                                "valid_start": now
-                                                            }).save().then(function (newArticleSectionItem2) {
-                                                                    new model.models.ArticleReference({ArticleSection_id: newArticleSection2.get('id')}).save().then(function (newArticleReference2) {
-                                                                        new model.models.ArticleReferenceItem({
-                                                                            "ArticleReference_id": newArticleReference2.get('id'),
-                                                                            "Text": "Feuerwehr Merching, 2.6.2014",
-                                                                            "valid_start": now
-                                                                        }).save().then(function (newArticleReferenceItem2) {
-                                                                                console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                                                resolve();
-                                                                            }).catch(function (error) {
-                                                                                console.log("Error while creating ArticleReferenceItem for page 'wir': " +
-                                                                                error);
-                                                                                reject(error);
-                                                                            });
-                                                                    }).catch(function (error) {
-                                                                        console.log("Error while creating ArticleReference for page 'wir': " + error);
-                                                                        reject(error);
-                                                                    });
-                                                                }).catch(function (error) {
-                                                                    console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                                                    reject(error);
-                                                                });
-                                                        }).catch(function (error) {
-                                                            console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                                            reject(error);
-                                                        });
+            });
+        },
+        function () {
+            return new Promise(function (resolve, reject) {
+                var now = new Date();
+                var end = new Date();
+                var now1 = new Date();
+                now1.setFullYear(end.getFullYear() - 1);
+                end.setFullYear(end.getFullYear() + 1);
+                new model.models.Article({ "Page_id": "wir" }).save().then(function (newArticle) {
+                    new model.models.ArticleItem({
+                        "Article_id": newArticle.get('id'),
+                        "Date": now,
+                        "Title": "Generationenwechsel bei der Merchinger Feuerwehr",
+                        "Subtitle": "Neuwahlen bei der Freiwilligen Feuerwehr",
+                        "Author": "Anton Schegg",
+                        "publish_start": now1,
+                        "publish_end": end,
+                        "valid_start": now
+                    }).save().then(function (newArticle) {
+                            new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection) {
+                                new model.models.ArticleSectionItem({
+                                    "ArticleSection_id": newArticleSection.get('id'),
+                                    "Order": 1,
+                                    "Title": "Artikel aus der Friedberger Allgemeinen",
+                                    "Text": "Alles Bestens im vergangenen Jahr.\r\n\rBei den Neuwahlen der Freiwilligen Feuerwehr Merching wurde das alte Team entlastet und die Neuwahlen bestätigten die Wahlvorschläge. Somit wurde der Ausschuss ziemlich verjüngt.",
+                                    "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_1.jpg",
+                                    "ImageDescription": null,
+                                    "valid_start": now
+                                }).save().then(function (newArticleSectionItem) {
+                                        new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection2) {
+                                            new model.models.ArticleSectionItem({
+                                                "ArticleSection_id": newArticleSection2.get('id'),
+                                                "Order": 3,
+                                                "Title": "Ergebnisse der Neuwahl",
+                                                "Text": "Gewählt wurden:\r\n\r* Vorsitzender: Markus Storch\r\n\r* Kommandant: Andreas Escher",
+                                                "valid_start": now
+                                            }).save().then(function (newArticleSectionItem2) {
+                                                    new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection) {
+                                                        new model.models.ArticleSectionItem({
+                                                            "ArticleSection_id": newArticleSection.get('id'),
+                                                            "Order": 2,
+                                                            "Title": null,
+                                                            "Text": "",
+                                                            "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_2.jpg",
+                                                            "ImageDescription": null,
+                                                            "valid_start": now
+                                                        }).save().then(function (newArticleSectionItem) {
+                                                                console.log("Article '" + newArticle.get('Title') + "' saved.");
+                                                                resolve();
+                                                            }).catch(function (error) {
+                                                                console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                                                reject(error);
+                                                            });
                                                     }).catch(function (error) {
-                                                        console.log("Error while creating ArticleReferenceItem for page 'wir': " + error);
+                                                        console.log("Error while creating ArticleSection for page 'wir': " + error);
                                                         reject(error);
                                                     });
-                                            }).catch(function (error) {
-                                                console.log("Error while creating ArticleReference for page 'wir': " + error);
-                                                reject(error);
-                                            });
+                                                }).catch(function (error) {
+                                                    console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                                    reject(error);
+                                                });
                                         }).catch(function (error) {
-                                            console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                            console.log("Error while creating ArticleSection for page 'wir': " + error);
                                             reject(error);
                                         });
-                                }).catch(function (error) {
-                                    console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                    reject(error);
-                                });
+                                    }).catch(function (error) {
+                                        console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
+                                        reject(error);
+                                    });
                             }).catch(function (error) {
-                                console.log("Error while creating Article for page 'wir': " + error);
+                                console.log("Error while creating ArticleSection for page 'wir': " + error);
                                 reject(error);
                             });
-                    }).catch(function (error) {
-                        console.log("Error while creating Article for page 'wir': " + error);
-                        reject(error);
-                    });
+                        }).catch(function (error) {
+                            console.log("Error while creating Article for page 'wir': " + error);
+                            reject(error);
+                        });
+                }).catch(function (error) {
+                    console.log("Error while creating Article for page 'wir': " + error);
+                    reject(error);
                 });
-            },
-            function () {
-                return new Promise(function (resolve, reject) {
-                    var now = new Date();
-                    var end = new Date();
-                    var now1 = new Date();
-                    now1.setFullYear(end.getFullYear() - 1);
-                    end.setFullYear(end.getFullYear() + 1);
-                    new model.models.Article({"Page_id": "wir"}).save().then(function (newArticle) {
-                        new model.models.ArticleItem({
-                            "Article_id": newArticle.get('id'),
-                            "Date": now,
-                            "Title": "Generationenwechsel bei der Merchinger Feuerwehr",
-                            "Subtitle": "Neuwahlen bei der Freiwilligen Feuerwehr",
-                            "Author": "Anton Schegg",
-                            "publish_start": now1,
-                            "publish_end": end,
-                            "valid_start": now
-                        }).save().then(function (newArticle) {
-                                new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
-                                    new model.models.ArticleSectionItem({
-                                        "ArticleSection_id": newArticleSection.get('id'),
-                                        "Order": 1,
-                                        "Title": "Artikel aus der Friedberger Allgemeinen",
-                                        "Text": "Alles Bestens im vergangenen Jahr.\r\n\rBei den Neuwahlen der Freiwilligen Feuerwehr Merching wurde das alte Team entlastet und die Neuwahlen bestätigten die Wahlvorschläge. Somit wurde der Ausschuss ziemlich verjüngt.",
-                                        "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_1.jpg",
-                                        "ImageDescription": null,
-                                        "valid_start": now
-                                    }).save().then(function (newArticleSectionItem) {
-                                            new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
-                                                new model.models.ArticleSectionItem({
-                                                    "ArticleSection_id": newArticleSection2.get('id'),
-                                                    "Order": 3,
-                                                    "Title": "Ergebnisse der Neuwahl",
-                                                    "Text": "Gewählt wurden:\r\n\r* Vorsitzender: Markus Storch\r\n\r* Kommandant: Andreas Escher",
-                                                    "valid_start": now
-                                                }).save().then(function (newArticleSectionItem2) {
-                                                        new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
-                                                            new model.models.ArticleSectionItem({
-                                                                "ArticleSection_id": newArticleSection.get('id'),
-                                                                "Order": 2,
-                                                                "Title": null,
-                                                                "Text": "",
-                                                                "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_2.jpg",
-                                                                "ImageDescription": null,
-                                                                "valid_start": now
-                                                            }).save().then(function (newArticleSectionItem) {
-                                                                    console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                                    resolve();
-                                                                }).catch(function (error) {
-                                                                    console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                                                    reject(error);
-                                                                });
-                                                        }).catch(function (error) {
-                                                            console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                                            reject(error);
-                                                        });
-                                                    }).catch(function (error) {
-                                                        console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                                        reject(error);
-                                                    });
-                                            }).catch(function (error) {
-                                                console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                                reject(error);
-                                            });
-                                        }).catch(function (error) {
-                                            console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                            reject(error);
-                                        });
-                                }).catch(function (error) {
-                                    console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                    reject(error);
-                                });
-                            }).catch(function (error) {
-                                console.log("Error while creating Article for page 'wir': " + error);
-                                reject(error);
-                            });
-                    }).catch(function (error) {
-                        console.log("Error while creating Article for page 'wir': " + error);
-                        reject(error);
-                    });
-                });
-            }
-        ];
+            });
+        }
+    ];
     var steps = modelDataDefault.clearTablesFunctions.concat(createSteps);
 
     return Promise.reduce(
@@ -12449,65 +12449,65 @@ var ffwMitglieder = [
 ];
 
 var ffwFunktionen = [
-    {"IdFunktion": 1, "Name": "Schriftführer"},
-    {"IdFunktion": 2, "Name": "Beisitzer"},
-    {"IdFunktion": 3, "Name": "Kassenrevisor"},
-    {"IdFunktion": 4, "Name": "Kassier"},
-    {"IdFunktion": 5, "Name": "1. Kommandant"},
-    {"IdFunktion": 6, "Name": "2. Kommandant"},
-    {"IdFunktion": 7, "Name": "1. Vorsitzender"},
-    {"IdFunktion": 8, "Name": "Fahnenträger"},
-    {"IdFunktion": 9, "Name": "Fahnenbegleitung"},
-    {"IdFunktion": 10, "Name": "Zeugwart"},
-    {"IdFunktion": 11, "Name": "Kreisbrandmeister"},
-    {"IdFunktion": 13, "Name": "Atemschutz"},
-    {"IdFunktion": 14, "Name": "Jugendwart"},
-    {"IdFunktion": 15, "Name": "Ehren-KBM"},
-    {"IdFunktion": 16, "Name": "Ehrenmitglied"}
+    { "IdFunktion": 1, "Name": "Schriftführer" },
+    { "IdFunktion": 2, "Name": "Beisitzer" },
+    { "IdFunktion": 3, "Name": "Kassenrevisor" },
+    { "IdFunktion": 4, "Name": "Kassier" },
+    { "IdFunktion": 5, "Name": "1. Kommandant" },
+    { "IdFunktion": 6, "Name": "2. Kommandant" },
+    { "IdFunktion": 7, "Name": "1. Vorsitzender" },
+    { "IdFunktion": 8, "Name": "Fahnenträger" },
+    { "IdFunktion": 9, "Name": "Fahnenbegleitung" },
+    { "IdFunktion": 10, "Name": "Zeugwart" },
+    { "IdFunktion": 11, "Name": "Kreisbrandmeister" },
+    { "IdFunktion": 13, "Name": "Atemschutz" },
+    { "IdFunktion": 14, "Name": "Jugendwart" },
+    { "IdFunktion": 15, "Name": "Ehren-KBM" },
+    { "IdFunktion": 16, "Name": "Ehrenmitglied" }
 ];
 
 var ffwMitgliederFunktionen = [
-    {"IdMitglied": 1243, "IdFunktion": 2, "Beginn": "2013-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 1253, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 72, "IdFunktion": 8, "Beginn": "1996-05-17T00:00:00", "Ende": null},
-    {"IdMitglied": 110, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null},
-    {"IdMitglied": 244, "IdFunktion": 3, "Beginn": "1949-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 255, "IdFunktion": 1, "Beginn": "1959-01-06T00:00:00", "Ende": "1995-01-06T00:00:00"},
-    {"IdMitglied": 259, "IdFunktion": 2, "Beginn": "1959-01-06T00:00:00", "Ende": "1964-01-06T00:00:00"},
-    {"IdMitglied": 259, "IdFunktion": 5, "Beginn": "1949-03-06T00:00:00", "Ende": "1958-01-06T00:00:00"},
-    {"IdMitglied": 260, "IdFunktion": 4, "Beginn": "1949-03-06T00:00:00", "Ende": "1960-12-25T00:00:00"},
-    {"IdMitglied": 271, "IdFunktion": 3, "Beginn": "1967-01-01T00:00:00", "Ende": "1995-01-06T00:00:00"},
-    {"IdMitglied": 274, "IdFunktion": 4, "Beginn": "1948-01-11T00:00:00", "Ende": "1949-03-06T00:00:00"},
-    {"IdMitglied": 274, "IdFunktion": 6, "Beginn": "1949-03-06T00:00:00", "Ende": "1994-04-07T00:00:00"},
-    {"IdMitglied": 277, "IdFunktion": 5, "Beginn": "1970-01-10T00:00:00", "Ende": "1983-01-06T00:00:00"},
-    {"IdMitglied": 282, "IdFunktion": 4, "Beginn": "1960-12-26T00:00:00", "Ende": "1995-01-06T00:00:00"},
-    {"IdMitglied": 298, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-01-01T00:00:00"},
-    {"IdMitglied": 300, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-12-31T00:00:00"},
-    {"IdMitglied": 304, "IdFunktion": 6, "Beginn": "1958-01-06T00:00:00", "Ende": "1983-01-06T00:00:00"},
-    {"IdMitglied": 414, "IdFunktion": 5, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
-    {"IdMitglied": 515, "IdFunktion": 4, "Beginn": "2001-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 515, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null},
-    {"IdMitglied": 531, "IdFunktion": 5, "Beginn": "1983-01-06T00:00:00", "Ende": "1989-01-06T00:00:00"},
-    {"IdMitglied": 531, "IdFunktion": 7, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
-    {"IdMitglied": 557, "IdFunktion": 5, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
-    {"IdMitglied": 559, "IdFunktion": 1, "Beginn": "2001-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 568, "IdFunktion": 4, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
-    {"IdMitglied": 568, "IdFunktion": 7, "Beginn": "2001-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 569, "IdFunktion": 1, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
-    {"IdMitglied": 1257, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2008-01-06T00:00:00"},
-    {"IdMitglied": 1239, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
-    {"IdMitglied": 565, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
-    {"IdMitglied": 62, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
-    {"IdMitglied": 548, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
-    {"IdMitglied": 114, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 110, "IdFunktion": 6, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
-    {"IdMitglied": 1243, "IdFunktion": 10, "Beginn": "2007-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 277, "IdFunktion": 15, "Beginn": "1946-01-01T00:00:00", "Ende": null},
-    {"IdMitglied": 255, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": "2003-04-26T00:00:00"},
-    {"IdMitglied": 282, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 1251, "IdFunktion": 5, "Beginn": "2013-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 110, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null},
-    {"IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null}
+    { "IdMitglied": 1243, "IdFunktion": 2, "Beginn": "2013-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 1253, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 72, "IdFunktion": 8, "Beginn": "1996-05-17T00:00:00", "Ende": null },
+    { "IdMitglied": 110, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null },
+    { "IdMitglied": 244, "IdFunktion": 3, "Beginn": "1949-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 255, "IdFunktion": 1, "Beginn": "1959-01-06T00:00:00", "Ende": "1995-01-06T00:00:00" },
+    { "IdMitglied": 259, "IdFunktion": 2, "Beginn": "1959-01-06T00:00:00", "Ende": "1964-01-06T00:00:00" },
+    { "IdMitglied": 259, "IdFunktion": 5, "Beginn": "1949-03-06T00:00:00", "Ende": "1958-01-06T00:00:00" },
+    { "IdMitglied": 260, "IdFunktion": 4, "Beginn": "1949-03-06T00:00:00", "Ende": "1960-12-25T00:00:00" },
+    { "IdMitglied": 271, "IdFunktion": 3, "Beginn": "1967-01-01T00:00:00", "Ende": "1995-01-06T00:00:00" },
+    { "IdMitglied": 274, "IdFunktion": 4, "Beginn": "1948-01-11T00:00:00", "Ende": "1949-03-06T00:00:00" },
+    { "IdMitglied": 274, "IdFunktion": 6, "Beginn": "1949-03-06T00:00:00", "Ende": "1994-04-07T00:00:00" },
+    { "IdMitglied": 277, "IdFunktion": 5, "Beginn": "1970-01-10T00:00:00", "Ende": "1983-01-06T00:00:00" },
+    { "IdMitglied": 282, "IdFunktion": 4, "Beginn": "1960-12-26T00:00:00", "Ende": "1995-01-06T00:00:00" },
+    { "IdMitglied": 298, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-01-01T00:00:00" },
+    { "IdMitglied": 300, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-12-31T00:00:00" },
+    { "IdMitglied": 304, "IdFunktion": 6, "Beginn": "1958-01-06T00:00:00", "Ende": "1983-01-06T00:00:00" },
+    { "IdMitglied": 414, "IdFunktion": 5, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
+    { "IdMitglied": 515, "IdFunktion": 4, "Beginn": "2001-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 515, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null },
+    { "IdMitglied": 531, "IdFunktion": 5, "Beginn": "1983-01-06T00:00:00", "Ende": "1989-01-06T00:00:00" },
+    { "IdMitglied": 531, "IdFunktion": 7, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
+    { "IdMitglied": 557, "IdFunktion": 5, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
+    { "IdMitglied": 559, "IdFunktion": 1, "Beginn": "2001-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 568, "IdFunktion": 4, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
+    { "IdMitglied": 568, "IdFunktion": 7, "Beginn": "2001-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 569, "IdFunktion": 1, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
+    { "IdMitglied": 1257, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2008-01-06T00:00:00" },
+    { "IdMitglied": 1239, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
+    { "IdMitglied": 565, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
+    { "IdMitglied": 62, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
+    { "IdMitglied": 548, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
+    { "IdMitglied": 114, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 110, "IdFunktion": 6, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
+    { "IdMitglied": 1243, "IdFunktion": 10, "Beginn": "2007-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 277, "IdFunktion": 15, "Beginn": "1946-01-01T00:00:00", "Ende": null },
+    { "IdMitglied": 255, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": "2003-04-26T00:00:00" },
+    { "IdMitglied": 282, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 1251, "IdFunktion": 5, "Beginn": "2013-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 110, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null },
+    { "IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null }
 ];
 
 var gesternStart = moment().subtract(1, 'days').subtract(3, 'hours').utc().toDate();
@@ -12891,9 +12891,9 @@ var ffwEvents = [
 ];
 
 var ffwLinks = [
-    {href: "http://www.merching.de", d: "Gemeinde Merching"},
-    {href: "http://www.pfarrei-merching.de", d: "Pfarrei Merching"},
-    {href: "http://www.kbv-merching.de", d: "Kath. Burschenverein Merching"},
-    {href: "http://www.hutv-bayermuenching.de", d: "Trachtenverein Bayermünching"},
-    {href: "http://www.paartaler-merching.de", d: "Trachtenverein D` Paartaler"}
+    { href: "http://www.merching.de", d: "Gemeinde Merching" },
+    { href: "http://www.pfarrei-merching.de", d: "Pfarrei Merching" },
+    { href: "http://www.kbv-merching.de", d: "Kath. Burschenverein Merching" },
+    { href: "http://www.hutv-bayermuenching.de", d: "Trachtenverein Bayermünching" },
+    { href: "http://www.paartaler-merching.de", d: "Trachtenverein D` Paartaler" }
 ];
