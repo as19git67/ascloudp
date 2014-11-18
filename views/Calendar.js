@@ -72,7 +72,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
                 var dataObj = {
-                    id: dataModel.get('id'),
+                    id: dataModel.get('Event_id'),
                     Title: dataModel.get('Title'),
                     Location: dataModel.get('Location'),
                     Description: dataModel.get('Description'),

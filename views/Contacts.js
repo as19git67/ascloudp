@@ -2,7 +2,6 @@ var _ = require('underscore');
 var config = require('../config');
 var model = require('../model');
 var members = require('../routes/api/v1/members');
-var PersonItem = model.models.PersonItem;
 
 var knex = model.bookshelf.knex;
 

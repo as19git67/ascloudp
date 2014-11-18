@@ -14,7 +14,7 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
     initialize: function () {
         if (this.model) {
             console.log("model event handler set");
-            this.model.on("change", this.render);
+            //this.model.on("change", this.render);
         }
     }
     /*,
@@ -27,8 +27,6 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
     }
     */
 });
-
-var myView = new CalendarItemView;
 
 
 $(".calendarListItem").click(function () {
