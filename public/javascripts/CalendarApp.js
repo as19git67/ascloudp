@@ -34,13 +34,15 @@ $(".calendarListItem").click(function () {
     var id = clickedElement.attr('data-id');
     var model = new CalendarItem({id: id});
     var myView = new CalendarItemView({model: model});
+    model.on("change", myView.render);
+
     model.fetch().done(function () {
         console.log("model fetched");
-        //myView.render();
+        $('#editCalendarEntry').on('shown.bs.modal', function (e) {
+        });
+        $('#editCalendarEntry').modal({backdrop: true});
+    //    myView.render();
     });
 
-    $('#editCalendarEntry').on('shown.bs.modal', function (e) {
-    });
-    $('#editCalendarEntry').modal({backdrop: true});
 
 });
