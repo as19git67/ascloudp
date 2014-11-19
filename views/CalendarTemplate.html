@@ -2,17 +2,62 @@
     <script type="text/x-handlebars" data-template-name="calendarItem">
 
         <!-- Modal -->
-        <div class="modal fade" id="editCalendarEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal fade" id="editCalendarEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true">
             <div class="modal-dialog modal-dialog-full">
                 <div class="modal-content modal-content-full">
                     <div class="modal-header modal-header-full">
-                        <button type="button" class="btn btn-primary">Speichern und Zurück</button>
+                        <button type="button" class="btn btn-primary" id="btSave">Speichern und Zurück</button>
                         <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
                     </div>
                     <div class="modal-body">
+                        <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
                         <div class="container-fluid">
-                            {{title}}
+                            <div class="row">
+                                <form class="form-horizontal" role="form">
+                                    <div class="form-group">
+                                        <label for="title" class="col-md-3 control-label">Titel:</label>
 
+                                        <div class="col-md-9" id="title">
+                                            <input type="text" class="form-control" name="title"
+                                                   placeholder="Titel">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="location" class="col-md-3 control-label">Ort:</label>
+
+                                        <div class="col-md-9" id="location">
+                                            <input type="text" class="form-control" name="location"
+                                                   placeholder="Ort">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="begin" class="col-xs-2 col-md-3 control-label">Beginn:</label>
+
+                                        <div class="col-xs-10 col-md-9" id="begin">
+                                            <input type="text" class="form-control" value=""
+                                                   placeholder="Beginn">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="end" class="col-xs-2 col-md-3 control-label">Ende:</label>
+
+                                        <div class="col-xs-10 col-md-9" id="end">
+                                            <input type="text" class="form-control" value=""
+                                                   placeholder="Ende">
+                                        </div>
+                                    </div>
+
+
+                                    <div class="form-group">
+                                        <label for="description" class="col-md-3 control-label hidden-xs">Beschreibung:</label>
+
+                                        <div class="col-md-9" id="description">
+                                            <textarea class="form-control" rows="10" name="description" placeholder="Beschreibung"></textarea>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
                         </div>
 
                     </div>

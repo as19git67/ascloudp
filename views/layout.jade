@@ -2,13 +2,14 @@ doctype html
 html
     head
         title= title
+        meta(name="viewport", content="width=device-width, initial-scale=1")
         link(rel='stylesheet', href='/stylesheets/style.css')
         if bootstrapTheme && bootstrapTheme != 'bootstrap'
             link(rel='stylesheet', href='/lib/bootstrap/dist/#{bootstrapTheme}/css/bootstrap.css')
         else
             link(rel='stylesheet', href='/lib/bootstrap/dist/css/bootstrap.css')
         link(rel='stylesheet', href='/lib/eonasdan-bootstrap-datetimepicker/css/bootstrap-datetimepicker.min.css')
-        meta(name="viewport", content="width=device-width, initial-scale=1")
+        script(src="/lib/jquery-2.1.1.min.js", type="text/javascript")
         style(type="text/css").
             .modal-dialog-full {
                 width: 100%;
@@ -125,7 +126,6 @@ html
                 div.container-fluid
                     block content
 
-        script(src="/lib/jquery-2.1.1.min.js", type="text/javascript")
         script(src="/lib/moment-2.8.3/moment-with-locales.js", type="text/javascript")
         script(src="/lib/bootstrap/dist/js/bootstrap.min.js", type="text/javascript")
         script(src="/lib/eonasdan-bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js")

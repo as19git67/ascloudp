@@ -81,6 +81,7 @@ app.use('/loginManageAccount', loginManageAccount);
 var rp = new rolePermissions(model.models);
 
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.get);
+app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.put);
 app.get('/api/v1/members', passportStrategies.ensureAuthenticated, rp.middleware(), apiMembers.list);
 app.get('/api/v1/members/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiMembers.get);
 app.put('/api/v1/members/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiMembers.put);
@@ -106,29 +107,67 @@ app.use(function (req, res, next) {
         url = url.substring(0, idx);
     }
 
-    rp.canPost(req).then(function (canPost) {
+    if (url.indexOf('api/') != 0) {
+        rp.canPost(req).then(function (canPost) {
 
-        model.getPagesForUser(req.user).then(function (pages) {
-            var page = _.findWhere(pages, {Name: url});
-            if (page) {
-                var viewName = page.View;
-                var m = page.isSingleEntity ? page.Model : page.Collection;
-                if (viewName) {
-                    var httpMethod = req.method.toLowerCase();
-                    var isPost = httpMethod == "post";
-                    if ((isPost && canPost) || httpMethod == "get") {
-                        console.log("Loading view " + viewName + " for model " + m);
-                        if (page.isSingleEntity) {
-                            new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
+            model.getPagesForUser(req.user).then(function (pages) {
+                var page = _.findWhere(pages, {Name: url});
+                if (page) {
+                    var viewName = page.View;
+                    var m = page.isSingleEntity ? page.Model : page.Collection;
+                    if (viewName) {
+                        var httpMethod = req.method.toLowerCase();
+                        var isPost = httpMethod == "post";
+                        if ((isPost && canPost) || httpMethod == "get") {
+                            console.log("Loading view " + viewName + " for model " + m);
+                            if (page.isSingleEntity) {
+                                new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
 
-                                if (isPost && req.body.save) {
-                                    if (!pageContent) {
-                                        pageContent = new PageContent({Page_id: page.Name});
-                                    }
-                                    rawRho = req.body.rawRho;
-                                    rawHtml = rho.toHtml(rawRho);
-                                    pageContent.set('Text', rawRho);
-                                    pageContent.save().then(function (savedPageContent) {
+                                    if (isPost && req.body.save) {
+                                        if (!pageContent) {
+                                            pageContent = new PageContent({Page_id: page.Name});
+                                        }
+                                        rawRho = req.body.rawRho;
+                                        rawHtml = rho.toHtml(rawRho);
+                                        pageContent.set('Text', rawRho);
+                                        pageContent.save().then(function (savedPageContent) {
+                                            res.render(viewName, {
+                                                csrfToken: req.csrfToken(),
+                                                bootstrapTheme: config.get('bootstrapStyle'),
+                                                Page_id: page.Name,
+                                                appName: config.get('appName'),
+                                                title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                                user: req.user,
+                                                pages: pages,
+                                                canEdit: canPost,
+                                                RawHTML: rawHtml,
+                                                RawRHO: rawRho
+                                            });
+                                        }).catch(function (error) {
+                                            console.log("Error while saving page content: " + error);
+                                            res.render(viewName, {
+                                                csrfToken: req.csrfToken(),
+                                                bootstrapTheme: config.get('bootstrapStyle'),
+                                                Page_id: page.Name,
+                                                appName: config.get('appName'),
+                                                title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                                user: req.user,
+                                                pages: pages,
+                                                canEdit: canPost,
+                                                RawHTML: rawHtml,
+                                                RawRHO: rawRho,
+                                                error: "Der Seiteninhalt konnte nicht gespeichert werden"
+                                            });
+                                        });
+                                    } else {
+                                        var rawRho = "";
+                                        var rawHtml = undefined;
+                                        if (pageContent) {
+                                            rawRho = pageContent.get('Text');
+                                            rawHtml = rho.toHtml(rawRho);
+                                        } else {
+                                            console.log("Warning: rendering page " + page.Name + " without content");
+                                        }
                                         res.render(viewName, {
                                             csrfToken: req.csrfToken(),
                                             bootstrapTheme: config.get('bootstrapStyle'),
@@ -141,123 +180,89 @@ app.use(function (req, res, next) {
                                             RawHTML: rawHtml,
                                             RawRHO: rawRho
                                         });
-                                    }).catch(function (error) {
-                                        console.log("Error while saving page content: " + error);
-                                        res.render(viewName, {
-                                            csrfToken: req.csrfToken(),
-                                            bootstrapTheme: config.get('bootstrapStyle'),
-                                            Page_id: page.Name,
+                                    }
+                                }).catch(function (error) {
+                                    var errMsg = "Error while getting content from database for page " + page.Name;
+                                    console.log(errMsg + ": " + error);
+                                    var err = new Error(errMsg);
+                                    err.status = 500;
+                                    next(err);
+                                });
+                            } else {
+                                var collectionClass = model.models[m];
+                                if (collectionClass) {
+                                    var collection = new collectionClass();
+                                    var collectionModelClass = collection.model;
+                                    var view = require('./views/' + viewName);
+                                    if (view) {
+                                        if (view.getical && req.query && req.query.type && req.query.type == "ical") {
+                                            view.getical(req, res, next, page, pages, canPost, collectionModelClass);
+                                        } else {
+                                            view.render(req, res, next, page, pages, canPost, collectionModelClass);
+                                        }
+                                    } else {
+                                        console.log("Error displaying view " + viewName + ". require('views/'" + viewName + ") failed.");
+                                        res.render('genericList', {
                                             appName: config.get('appName'),
-                                            title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
+                                            bootstrapTheme: config.get('bootstrapStyle'),
+                                            title: page.EntityNamePlural,
                                             user: req.user,
                                             pages: pages,
-                                            canEdit: canPost,
-                                            RawHTML: rawHtml,
-                                            RawRHO: rawRho,
-                                            error: "Der Seiteninhalt konnte nicht gespeichert werden"
+                                            canEdit: false,
+                                            error: "Die Anzeige (" + viewName + ") ist wegen eines internen Fehlers nicht möglich."
                                         });
-                                    });
-                                } else {
-                                    var rawRho = "";
-                                    var rawHtml = undefined;
-                                    if (pageContent) {
-                                        rawRho = pageContent.get('Text');
-                                        rawHtml = rho.toHtml(rawRho);
-                                    } else {
-                                        console.log("Warning: rendering page " + page.Name + " without content");
                                     }
-                                    res.render(viewName, {
-                                        csrfToken: req.csrfToken(),
-                                        bootstrapTheme: config.get('bootstrapStyle'),
-                                        Page_id: page.Name,
-                                        appName: config.get('appName'),
-                                        title: page.isSingleEntity ? page.EntityNameSingular : page.EntityNamePlural,
-                                        user: req.user,
-                                        pages: pages,
-                                        canEdit: canPost,
-                                        RawHTML: rawHtml,
-                                        RawRHO: rawRho
-                                    });
                                 }
-                            }).catch(function (error) {
-                                var errMsg = "Error while getting content from database for page " + page.Name;
-                                console.log(errMsg + ": " + error);
-                                var err = new Error(errMsg);
-                                err.status = 500;
-                                next(err);
-                            });
-                        } else {
-                            var collectionClass = model.models[m];
-                            if (collectionClass) {
-                                var collection = new collectionClass();
-                                var collectionModelClass = collection.model;
-                                var view = require('./views/' + viewName);
-                                if (view) {
-                                    if (view.getical && req.query && req.query.type && req.query.type == "ical") {
-                                        view.getical(req, res, next, page, pages, canPost, collectionModelClass);
-                                    } else {
-                                        view.render(req, res, next, page, pages, canPost, collectionModelClass);
-                                    }
-                                } else {
-                                    console.log("Error displaying view " + viewName + ". require('views/'" + viewName + ") failed.");
-                                    res.render('genericList', {
+                                else {
+                                    // Klasse für Collection existiert nicht
+                                    res.render("genericList", {
                                         appName: config.get('appName'),
                                         bootstrapTheme: config.get('bootstrapStyle'),
                                         title: page.EntityNamePlural,
                                         user: req.user,
                                         pages: pages,
                                         canEdit: false,
-                                        error: "Die Anzeige (" + viewName + ") ist wegen eines internen Fehlers nicht möglich."
+                                        error: "Keine Implementierung für Tabelle " + m + " vorhanden"
                                     });
                                 }
                             }
-                            else {
-                                // Klasse für Collection existiert nicht
-                                res.render("genericList", {
-                                    appName: config.get('appName'),
-                                    bootstrapTheme: config.get('bootstrapStyle'),
-                                    title: page.EntityNamePlural,
-                                    user: req.user,
-                                    pages: pages,
-                                    canEdit: false,
-                                    error: "Keine Implementierung für Tabelle " + m + " vorhanden"
-                                });
-                            }
+                        } else {
+                            // http method is not allowed
+                            var err = new Error('Forbidden');
+                            err.status = 403;
+                            next(err);
                         }
                     } else {
-                        // http method is not allowed
-                        var err = new Error('Forbidden');
-                        err.status = 403;
+                        // no view -> 404
+                        var err = new Error('Not Found');
+                        err.status = 404;
                         next(err);
                     }
                 } else {
-                    // no view -> 404
-                    var err = new Error('Not Found');
-                    err.status = 404;
-                    next(err);
-                }
-            } else {
-                if (req.user) {
-                    /// catch 404 and forward to error handler
-                    var err = new Error('Not Found');
-                    err.status = 404;
-                    next(err);
-                } else {
-                    // not authenticated
-                    if (req.originalUrl != '/') {
-                        console.log("User is not authenticated. Redirecting to /");
-                        res.redirect('/');
+                    if (req.user) {
+                        /// catch 404 and forward to error handler
+                        var err = new Error('Not Found');
+                        err.status = 404;
+                        next(err);
+                    } else {
+                        // not authenticated
+                        if (req.originalUrl != '/') {
+                            console.log("User is not authenticated. Redirecting to /");
+                            res.redirect('/');
+                        }
                     }
                 }
-            }
+            });
+        }).catch(function (error) {
+            var errMsg = "Error while checking role permissions for url " + url;
+            console.log(errMsg + ": " + error);
+            var err = new Error(errMsg);
+            err.status = 500;
+            next(err);
         });
-    }).catch(function (error) {
-        var errMsg = "Error while checking role permissions for url " + url;
-        console.log(errMsg + ": " + error);
-        var err = new Error(errMsg);
-        err.status = 500;
-        next(err);
-    });
+    } else {
+        next();
+    }
 });
 
 /// error handlers

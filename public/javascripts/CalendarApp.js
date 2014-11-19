@@ -1,9 +1,7 @@
 var CalendarItem = Backbone.Model.extend({
-    urlRoot: 'api/v1',
-    url: function () {
-        // Important! It's got to know where to send its REST calls.
-        // In this case, POST to '/calendarItems' and PUT to '/calendarItems/:id'
-        return this.id ? this.urlRoot + '/events/' + this.id : this.urlRoot + '/events';
+    urlRoot: 'api/v1/events',    // note: backbone adds id automatically
+    sendAuthentication: function (xhr) {
+        xhr.setRequestHeader("X-CSRF-Token", this.get("csrfToken"));
     }
 });
 
@@ -11,38 +9,59 @@ var CalendarItem = Backbone.Model.extend({
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
     el: '#calendarItemView',
-    initialize: function () {
-        if (this.model) {
-            console.log("model event handler set");
-            //this.model.on("change", this.render);
-        }
-    }
-    /*,
     modelEvents: {
         'change': "modelChanged"
     },
+    events: {
+        "click #btSave": "saveClicked"
+    },
+    ui: {
+        editCalendarEntry: "#editCalendarEntry",
+        errorMessage: "#errorMessage"
+    },
     modelChanged: function () {
-        console.log(this.model);
-       // this.render();
+        console.log("model changed");
+        //this.render();
+    },
+    onRender: function () {
+        console.log("View has been rendered");
+
+        this.modelbinder = new Backbone.ModelBinder();
+        this.modelbinder.bind(this.model, this.el);
+
+        this.ui.editCalendarEntry.on('shown.bs.modal', function (e) {
+            console.log("modal dialg shows calendar entry");
+        });
+        this.ui.editCalendarEntry.on('hidden.bs.modal', function (e) {
+            console.log("modal dialg closed");
+            this.destroy(); // release all resources of this view
+        });
+
+        // show the modal dialog
+        this.ui.editCalendarEntry.modal({backdrop: true});
+    },
+    saveClicked: function (e) {
+        var self = this;
+        self.ui.errorMessage.addClass("hidden");
+        // todo disable save button
+
+        this.model.save({
+            beforeSend: sendAuthentication
+        }).done(function () {
+            self.ui.editCalendarEntry.modal('hide');
+        }).fail(function (req) {
+            self.ui.errorMessage.text(req.status + " " + req.statusText).removeClass("hidden");
+        });
     }
-    */
+
 });
 
-
-$(".calendarListItem").click(function () {
-    var clickedElement = $(this);
-    var id = clickedElement.attr('data-id');
-    var model = new CalendarItem({id: id});
-    var myView = new CalendarItemView({model: model});
-    model.on("change", myView.render);
-
-    model.fetch().done(function () {
-        console.log("model fetched");
-        $('#editCalendarEntry').on('shown.bs.modal', function (e) {
-        });
-        $('#editCalendarEntry').modal({backdrop: true});
-    //    myView.render();
+$(function () {
+    $(".calendarListItem").click(function () {
+        var clickedElement = $(this);
+        var id = clickedElement.attr('data-id');
+        var model = new CalendarItem({id: id});
+        new CalendarItemView({model: model}).render();
+        model.fetch();
     });
-
-
 });
