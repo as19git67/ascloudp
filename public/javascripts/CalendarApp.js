@@ -1,3 +1,19 @@
+// Save a copy of the old Backbone.sync function so you can call it later.
+var oldBackboneSync = Backbone.sync;
+
+// Override Backbone.Sync
+Backbone.sync = function( method, model, options ) {
+    if ( method === 'fetch' ) {
+        if ( options.data ) {
+            // properly formats data for back-end to parse
+            options.data = JSON.stringify(options.data);
+        }
+        // transform all delete requests to application/json
+        options.contentType = 'application/json';
+    }
+    return oldBackboneSync.apply(this, [method, model, options]);
+};
+
 var CalendarItem = Backbone.Model.extend({
     urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     sendAuthentication: function (xhr) {
