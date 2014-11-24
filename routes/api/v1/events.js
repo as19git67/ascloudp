@@ -40,9 +40,9 @@ module.exports.put = function (req, res) {
     new EventItem({Event_id: eventId}).fetch().then(function (eventItem) {
         if (eventItem) {
             eventItem.set({
-                'Title': req.title,
-                'Location': req.location,
-                'Description': req.description
+                'Title': req.body.title,
+                'Location': req.body.location,
+                'Description': req.body.description
             });
             eventItem.save().then(function () {
                 res.setHeader('X-CSRF-Token', req.csrfToken());

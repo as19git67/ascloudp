@@ -3,18 +3,17 @@ var oldBackboneSync = Backbone.sync;
 
 // Override Backbone.Sync
 Backbone.sync = function (method, model, options) {
-    if (method === 'read') {
-        console.log('Backbone sync called.');
-        console.log('model: ', model);
-        console.log('options: ', options);
-    } else {
-        if (this.csrfToken) {
-            console.log('setting X-CSRF-Token');
-            options.xhr.setRequestHeader("X-CSRF-Token", this.csrfToken);
-        } else {
-            console.log('Not setting non existing X-CSRF-Token');
+    var self = this;
+    options.beforeSend = function(xhr) {
+        if (method != 'fetch') {
+            if (self.csrfToken) {
+                console.log('setting X-CSRF-Token');
+                xhr.setRequestHeader("X-CSRF-Token", self.csrfToken);
+            } else {
+                console.log('Not setting non existing X-CSRF-Token');
+            }
         }
-    }
+    };
     return oldBackboneSync.apply(this, [method, model, options]);
 };
 
@@ -22,10 +21,9 @@ var CalendarItem = Backbone.Model.extend({
     urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     fetch: function (options) {
         var self = this;
-        var jqXHR = Backbone.Collection.prototype.fetch.call(this, options);
+        // extract CSRF Token from header after read
+        var jqXHR = Backbone.Model.prototype.fetch.call(this, options);
         jqXHR.done(function () {
-            // Get all headers:
-            console.log('All headers:', jqXHR.getAllResponseHeaders());
             self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
         })
     }
