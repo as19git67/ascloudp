@@ -10,7 +10,7 @@ Backbone.sync = function (method, model, options) {
     } else {
         if (this.csrfToken) {
             console.log('setting X-CSRF-Token');
-            xhr.setRequestHeader("X-CSRF-Token", this.csrfToken);
+            options.xhr.setRequestHeader("X-CSRF-Token", this.csrfToken);
         } else {
             console.log('Not setting non existing X-CSRF-Token');
         }
@@ -21,11 +21,12 @@ Backbone.sync = function (method, model, options) {
 var CalendarItem = Backbone.Model.extend({
     urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     fetch: function (options) {
+        var self = this;
         var jqXHR = Backbone.Collection.prototype.fetch.call(this, options);
         jqXHR.done(function () {
             // Get all headers:
             console.log('All headers:', jqXHR.getAllResponseHeaders());
-            this.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
+            self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
         })
     }
 });
