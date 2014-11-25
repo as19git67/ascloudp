@@ -4,6 +4,13 @@ var oldBackboneSync = Backbone.sync;
 // Override Backbone.Sync
 Backbone.sync = function (method, model, options) {
     var self = this;
+    var success = options.success;
+
+    options.success = function (resp) {
+        success && success(resp);
+        model._isDirty = false;
+    };
+
     options.beforeSend = function (xhr) {
         if (method != 'fetch') {
             if (self.csrfToken) {
@@ -13,12 +20,27 @@ Backbone.sync = function (method, model, options) {
                 console.log('Not setting non existing X-CSRF-Token');
             }
         }
+        else {
+            model._isDirty = false;
+        }
     };
     return oldBackboneSync.apply(this, [method, model, options]);
 };
 
 var CalendarItem = Backbone.Model.extend({
-    _isNotDirty: true,
+    _isDirty: false,
+    initialize: function () {
+        // If you extend this model, make sure to call this initialize method
+        // or add the following line to the extended model as well
+        this.listenTo(this, 'change', this.modelChanged);
+    },
+    markNotDirty: function() {
+        this._isDirty = false;
+    },
+    modelChanged: function () {
+        console.log("model changed");
+        this._isDirty = true;
+    },
     urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     fetch: function (options) {
         var self = this;
@@ -28,8 +50,10 @@ var CalendarItem = Backbone.Model.extend({
             self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
         })
     },
-    isNotDirty: function () {
-        return this._isNotDirty;
+    isNotDirty: function (direction, value, attributeName, model, boundEls) {
+        var _isNotDirty = model._isDirty ? undefined : "disabled";
+        console.log("isNotDirty called. Returning " + _isNotDirty);
+        return _isNotDirty;
     }
 });
 
@@ -48,8 +72,6 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         errorMessage: "#errorMessage"
     },
     initialize: function () {
-        this.modalShown = false;
-        this.model.set("_isNotDirty", true);
 
         Handlebars.registerHelper('bind-attr', function (args, options) {
             var data = args.data;
@@ -78,8 +100,7 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         });
     },
     modelChanged: function () {
-        console.log("model changed");
-        this.model.set("_isNotDirty", false);
+        //console.log("model changed");
         //       this.render();
     },
     onRender: function () {
@@ -89,27 +110,18 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         // The view has several form element with a name attribute that should be bound
         // but some bindings require a converter...
         var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
-        bindings['isNotDirty'] = {
-            selector: '[disabled=isNotDirty]',
-            elAttribute: 'disabled',
-            converter: this.model.isNotDirty
-        };
+        bindings['isNotDirty'] = { selector: '#btSave', elAttribute: 'disabled', converter: this.model.isNotDirty };
 
         this.modelbinder.bind(this.model, this.el, bindings);
 
         this.ui.editCalendarEntry.on('shown.bs.modal', function (e) {
             console.log("modal dialg shows calendar entry");
-//            self.modalShown = true;
         });
         this.ui.editCalendarEntry.on('hidden.bs.modal', function (e) {
             console.log("modal dialg closed");
-//            self.modalShown = false;
         });
 
-//        // show the modal dialog if not already shown
-//        if (this.modalShown == false) {
         this.ui.editCalendarEntry.modal({backdrop: true});
-//        }
         console.log("View has been rendered");
     },
     saveClicked: function (e) {
@@ -144,6 +156,7 @@ $(function () {
         model.fetch({
             success: function () {
                 console.log("Event fetched");
+               // model.markNotDirty();
                 new CalendarItemView({model: model}).render();
             }
         });
