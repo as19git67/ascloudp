@@ -72,7 +72,7 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
 
         this.model.save().done(function () {
             self.ui.editCalendarEntry.modal('hide');
-            //      location.reload();
+            location.reload();
         }).fail(function (req) {
             self.ui.errorMessage.text(req.status + " " + req.statusText).removeClass("hidden");
         });
