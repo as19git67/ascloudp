@@ -267,6 +267,18 @@ app.use(function (req, res, next) {
 
 /// error handlers
 
+app.use(function (err, req, res, next) {
+    if (err.code !== 'EBADCSRFTOKEN') {
+        return next(err);
+    }
+
+    console.log(req.method + " request to " + req.url + " forbidden because CSRF token is missing or expired");
+
+    // handle CSRF token errors here
+    res.status(403);
+    res.send('CSRF token missing or expired');
+});
+
 // development error handler
 // will print stacktrace
 if (app.get('env') === 'development') {
