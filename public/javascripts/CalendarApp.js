@@ -4,7 +4,7 @@ var oldBackboneSync = Backbone.sync;
 // Override Backbone.Sync
 Backbone.sync = function (method, model, options) {
     var self = this;
-    options.beforeSend = function(xhr) {
+    options.beforeSend = function (xhr) {
         if (method != 'fetch') {
             if (self.csrfToken) {
                 console.log('setting X-CSRF-Token');
@@ -48,6 +48,8 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         //this.render();
     },
     onRender: function () {
+        var self = this;
+
         console.log("View has been rendered");
 
         this.modelbinder = new Backbone.ModelBinder();
@@ -58,7 +60,6 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         });
         this.ui.editCalendarEntry.on('hidden.bs.modal', function (e) {
             console.log("modal dialg closed");
-            this.destroy(); // release all resources of this view
         });
 
         // show the modal dialog
@@ -71,6 +72,7 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
 
         this.model.save().done(function () {
             self.ui.editCalendarEntry.modal('hide');
+            //      location.reload();
         }).fail(function (req) {
             self.ui.errorMessage.text(req.status + " " + req.statusText).removeClass("hidden");
         });
@@ -83,7 +85,11 @@ $(function () {
         var clickedElement = $(this);
         var id = clickedElement.attr('data-id');
         var model = new CalendarItem({id: id});
-        new CalendarItemView({model: model}).render();
-        model.fetch();
+        model.fetch({
+            success: function () {
+                console.log("Event fetched");
+                new CalendarItemView({model: model}).render();
+            }
+        });
     });
 });
