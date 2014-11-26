@@ -110,8 +110,12 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
         // Note: ModelBinder has special handling for enabled attribute: add or remove disabled attribute
         bindings['isDirty'] = {selector: '#btSave', elAttribute: 'enabled'};
-        var changeTriggers = {'': 'change', '[contenteditable]': 'blur', '[contenteditable]': 'keyup'};
-        this.modelbinder.bind(this.model, this.el, bindings, changeTriggers);
+        var changeTriggers = {
+            'select': 'change',
+            '[contenteditable]': 'keyup',
+            ':text': 'keyup'   // select input[type=text], textarea
+        };  // use keyup instead blur
+        this.modelbinder.bind(this.model, this.el, bindings, {changeTriggers: changeTriggers});
 
         // show modal dialog
         this.ui.editCalendarEntry.modal({backdrop: true});
