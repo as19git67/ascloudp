@@ -74,6 +74,9 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         errorMessage: "#errorMessage"
     },
     initialize: function () {
+        this.modelbinder = new Backbone.ModelBinder();
+
+        this.bindAttrs = [];
 
         Handlebars.registerHelper('bind-attr', function (args, options) {
             var data = args.data;
@@ -84,32 +87,27 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
                 var htmlElementAttributeName = keys[idx];
                 var dataAttributeName = hash[htmlElementAttributeName];
                 var values = data.root;
-                console.log("binding " + htmlElementAttributeName + " to attribute " + dataAttributeName);
-                var value = values[dataAttributeName];
-                if (value) {
-                    if (attributesAsHtml.length > 0) {
-                        attributesAsHtml += ' ';
-                    }
-                    var nextAttribute = htmlElementAttributeName + '="' + value + '"';
-                    console.log("Adding html attribute: " + nextAttribute);
-                    attributesAsHtml += nextAttribute;
-                } else {
-                    console.log(dataAttributeName + "=false");
+                console.log("binding " + htmlElementAttributeName + " to model attribute " + dataAttributeName);
+                if (attributesAsHtml.length > 0) {
+                    attributesAsHtml += ' ';
                 }
+                var nextIndex = this.bindAttrs.length;
+                var nextAttribute = 'data-bindattr-' + nextIndex;
+                console.log("adding bind-attr: " + nextAttribute);
+                attributesAsHtml += nextAttribute + '="' + nextIndex + '"';
+                this.bindAttrs.push(nextAttribute);
             }
-
             return attributesAsHtml;
         });
     },
     onRender: function () {
         var self = this;
 
-        this.modelbinder = new Backbone.ModelBinder();
         // The view has several form element with a name attribute that should be bound
         // but some bindings require a converter...
         var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
         // Note: ModelBinder has special handling for enabled attribute: add or remove disabled attribute
-        bindings['isDirty'] = {selector: '#btSave', elAttribute: 'enabled'};
+        //bindings['isDirty'] = {selector: '#btSave', elAttribute: 'enabled'};
         var changeTriggers = {
             'select': 'change',
             '[contenteditable]': 'keyup',
