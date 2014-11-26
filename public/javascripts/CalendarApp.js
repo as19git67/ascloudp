@@ -1,16 +1,19 @@
-// Save a copy of the old Backbone.sync function so you can call it later.
+// Save a copy of the old Backbone.sync function so it can be called later.
 var oldBackboneSync = Backbone.sync;
 
-// Override Backbone.Sync
+// Globally override Backbone.Sync
 Backbone.sync = function (method, model, options) {
     var self = this;
-    var success = options.success;
 
-    options.success = function (resp) {
-        success && success(resp);
-        model._isDirty = false;
-    };
+    /*
+     var success = options.success;
+     options.success = function (resp) {
+     success && success(resp);
+     //        model.set('_isDirty', false);
+     };
+     */
 
+    // on every ajax request add the csrf token to the header unless its a fetch
     options.beforeSend = function (xhr) {
         if (method != 'fetch') {
             if (self.csrfToken) {
@@ -20,28 +23,19 @@ Backbone.sync = function (method, model, options) {
                 console.log('Not setting non existing X-CSRF-Token');
             }
         }
-        else {
-            model._isDirty = false;
-        }
     };
     return oldBackboneSync.apply(this, [method, model, options]);
 };
 
 var CalendarItem = Backbone.Model.extend({
-    _isDirty: false,
+    urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     initialize: function () {
+        this.set('isDirty', false, {silent: true});
+
         // If you extend this model, make sure to call this initialize method
         // or add the following line to the extended model as well
         this.listenTo(this, 'change', this.modelChanged);
     },
-    markNotDirty: function() {
-        this._isDirty = false;
-    },
-    modelChanged: function () {
-        console.log("model changed");
-        this._isDirty = true;
-    },
-    urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     fetch: function (options) {
         var self = this;
         // extract CSRF Token from header after read
@@ -50,14 +44,21 @@ var CalendarItem = Backbone.Model.extend({
             self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
         })
     },
-    isDirty: function (direction, value, attributeName, model, boundEls) {
-        console.log("isDirty called. Returning ", model._isDirty);
-        return model._isDirty;
+    modelChanged: function () {
+        console.log("model changed");
+        this.updateDirty();
     },
-    isNotDirty: function (direction, value, attributeName, model, boundEls) {
-        var _isNotDirty = model._isDirty ? undefined : "disabled";
-        console.log("isNotDirty called. Returning " + _isNotDirty);
-        return _isNotDirty;
+    updateDirty: function () {
+        var changedAttributes = this.changedAttributes();
+        if (changedAttributes) {
+            var changedAttributesKeys = Object.keys(changedAttributes);
+            this.set('isDirty', changedAttributesKeys.length > 0, {silent: true});
+        } else {
+            this.set('isDirty', false, {silent: true});
+        }
+    },
+    markNotDirty: function () {
+        this.set('isDirty', false, {silent: true});
     }
 });
 
@@ -65,9 +66,6 @@ var CalendarItem = Backbone.Model.extend({
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
     el: '#calendarItemView',
-    modelEvents: {
-        'change': "modelChanged"
-    },
     events: {
         "click #btSave": "saveClicked"
     },
@@ -103,10 +101,6 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
             return attributesAsHtml;
         });
     },
-    modelChanged: function () {
-        //console.log("model changed");
-        //       this.render();
-    },
     onRender: function () {
         var self = this;
 
@@ -115,24 +109,18 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         // but some bindings require a converter...
         var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
         // Note: ModelBinder has special handling for enabled attribute: add or remove disabled attribute
-        bindings['isNotDirty'] = { selector: '#btSave', elAttribute: 'enabled', converter: this.model.isDirty };
+        bindings['isDirty'] = {selector: '#btSave', elAttribute: 'enabled'};
+        var changeTriggers = {'': 'change', '[contenteditable]': 'blur', '[contenteditable]': 'keyup'};
+        this.modelbinder.bind(this.model, this.el, bindings, changeTriggers);
 
-        this.modelbinder.bind(this.model, this.el, bindings);
-
-        this.ui.editCalendarEntry.on('shown.bs.modal', function (e) {
-            console.log("modal dialg shows calendar entry");
-        });
-        this.ui.editCalendarEntry.on('hidden.bs.modal', function (e) {
-            console.log("modal dialg closed");
-        });
-
+        // show modal dialog
         this.ui.editCalendarEntry.modal({backdrop: true});
+
         console.log("View has been rendered");
     },
     saveClicked: function (e) {
         var self = this;
         self.ui.errorMessage.addClass("hidden");
-        // todo disable save button
 
         this.model.save().done(function () {
             self.ui.editCalendarEntry.modal('hide');

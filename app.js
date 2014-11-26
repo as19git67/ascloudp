@@ -58,9 +58,10 @@ app.use(cookieSession({
     maxage: sessionTimeout
 }));
 
+app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
-app.use(express.static(path.join(__dirname, 'public')));
 app.use(csrf());
 
 app.use('/', routes);

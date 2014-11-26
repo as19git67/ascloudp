@@ -353,7 +353,7 @@ function findByProviderKey(providerName, providerKey, fn) {
 
 function findById(userId, fn) {
     new User({'id': userId})
-        .fetch({withRelated: ['UserLogin']})
+        .fetch()
         .then(function (model) {
             if (model) {
                 console.log('found user by id ' + userId + ': ' + model.get('UserName'));
