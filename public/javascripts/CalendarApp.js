@@ -50,6 +50,10 @@ var CalendarItem = Backbone.Model.extend({
             self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
         })
     },
+    isDirty: function (direction, value, attributeName, model, boundEls) {
+        console.log("isDirty called. Returning ", model._isDirty);
+        return model._isDirty;
+    },
     isNotDirty: function (direction, value, attributeName, model, boundEls) {
         var _isNotDirty = model._isDirty ? undefined : "disabled";
         console.log("isNotDirty called. Returning " + _isNotDirty);
@@ -110,7 +114,8 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         // The view has several form element with a name attribute that should be bound
         // but some bindings require a converter...
         var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
-        bindings['isNotDirty'] = { selector: '#btSave', elAttribute: 'disabled', converter: this.model.isNotDirty };
+        // Note: ModelBinder has special handling for enabled attribute: add or remove disabled attribute
+        bindings['isNotDirty'] = { selector: '#btSave', elAttribute: 'enabled', converter: this.model.isDirty };
 
         this.modelbinder.bind(this.model, this.el, bindings);
 
@@ -156,7 +161,7 @@ $(function () {
         model.fetch({
             success: function () {
                 console.log("Event fetched");
-               // model.markNotDirty();
+                model.markNotDirty();
                 new CalendarItemView({model: model}).render();
             }
         });
