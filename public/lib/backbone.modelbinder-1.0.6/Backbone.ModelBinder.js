@@ -59,6 +59,7 @@
             }
             else {
                 this._initializeDefaultBindings();
+                this._initializeStatusBindings();   // ADDED by ANTON
             }
 
             this._bindModelToView();
@@ -182,6 +183,43 @@
             }
         },
 
+        // added by ANTON
+        _initializeStatusBindings: function() {
+            this._statusBindings = {};
+            var foundDataBinds = $("[data-bind]", this._rootEl);
+            for (var elCount = 0; elCount < foundDataBinds.length; elCount++) {
+                var foundEl = $(foundDataBinds[elCount]);
+                var bindKeyVal = foundEl.data("bind");
+                if (bindKeyVal) {
+                    var parts = bindKeyVal.split(':');
+                    if (parts.length > 1) {
+                        console.log("data-bind: " + parts[0] + " to " + parts[1]);
+                        if (parts[0] == 'enabled') {
+                            var computeFunctionName = parts[1];
+                                if (typeof this._model[computeFunctionName] === "function") {
+                                    var id = foundEl.attr('id');
+                                    if (!id) {
+                                        id = elCount;
+                                        foundEl.attr('id', id);
+                                    }
+                                    this._statusBindings[id] = {
+                                        boundEls: [foundEl],
+                                        attributeName: 'enabled',
+                                        compute: this._model[computeFunctionName]
+                                    };
+                                    console.log("statusBindings[" + id + "] = ", this._statusBindings[id]);
+                                } else {
+                                    console.log("Ignore status binding because compute function " +  computeFunctionName + " does not exit in model");
+                                }
+                        }
+                    } else {
+                        console.log("data-bind: " + bindKeyVal);
+                    }
+                }
+            }
+
+
+        },
         _bindModelToView: function () {
             this._model.on('change', this._onModelChange, this);
 

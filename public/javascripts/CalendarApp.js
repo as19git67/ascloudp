@@ -1,3 +1,17 @@
+// extend jquery with :data pseudo (alternatively include jquery ui)
+$.extend($.expr[":"], {
+    data: $.expr.createPseudo ?
+        $.expr.createPseudo(function (dataName) {
+            return function (elem) {
+                return !!$.data(elem, dataName);
+            };
+        }) :
+        // support: jQuery <1.8
+        function (elem, i, match) {
+            return !!$.data(elem, match[3]);
+        }
+});
+
 // Save a copy of the old Backbone.sync function so it can be called later.
 var oldBackboneSync = Backbone.sync;
 
@@ -30,7 +44,7 @@ Backbone.sync = function (method, model, options) {
 var CalendarItem = Backbone.Model.extend({
     urlRoot: 'api/v1/events',    // note: backbone adds id automatically
     initialize: function () {
-        this.set('isDirty', false, {silent: true});
+        this.set('isDirty', false, { silent: true });
 
         // If you extend this model, make sure to call this initialize method
         // or add the following line to the extended model as well
@@ -52,26 +66,37 @@ var CalendarItem = Backbone.Model.extend({
         var changedAttributes = this.changedAttributes();
         if (changedAttributes) {
             var changedAttributesKeys = Object.keys(changedAttributes);
-            this.set('isDirty', changedAttributesKeys.length > 0, {silent: true});
+            this.set('isDirty', changedAttributesKeys.length > 0, { silent: true });
         } else {
-            this.set('isDirty', false, {silent: true});
+            this.set('isDirty', false, { silent: true });
         }
     },
     markNotDirty: function () {
-        this.set('isDirty', false, {silent: true});
+        this.set('isDirty', false, { silent: true });
+    },
+    isDirty: function () {
+        var changedAttributes = this.changedAttributes();
+        if (changedAttributes) {
+            var changedAttributesKeys = Object.keys(changedAttributes);
+            return changedAttributesKeys.length > 0;
+        } else {
+            return false;
+        }
     }
 });
 
 
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
-    getTemplate: function () {
-        var self = this;
-        var templateFunc = this.getOption('template');
-        return function (data) {
-            return templateFunc(data, self);
-        }
-    },
+    /*
+     getTemplate: function () {
+     var self = this;
+     var templateFunc = this.getOption('template');
+     return function (data) {
+     return templateFunc(data, self);
+     }
+     },
+     */
     el: '#calendarItemView',
     events: {
         "click #btSave": "saveClicked"
@@ -82,48 +107,29 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
     },
     initialize: function () {
         this.modelbinder = new Backbone.ModelBinder();
-
-        this.bindAttrs = [];
-
-        Handlebars.registerHelper('bind-attr', function (args, options) {
-            var data = args.data;
-            var hash = args.hash;
-            var keys = Object.keys(hash);
-            var attributesAsHtml = "";
-            for (var idx = 0; idx < keys.length; idx++) {
-                var htmlElementAttributeName = keys[idx];
-                var dataAttributeName = hash[htmlElementAttributeName];
-                var values = data.root;
-                console.log("binding " + htmlElementAttributeName + " to model attribute " + dataAttributeName);
-                if (attributesAsHtml.length > 0) {
-                    attributesAsHtml += ' ';
-                }
-                var nextIndex = this.bindAttrs.length;
-                var nextAttribute = 'data-bindattr-' + nextIndex;
-                console.log("adding bind-attr: " + nextAttribute);
-                attributesAsHtml += nextAttribute + '="' + nextIndex + '"';
-                this.bindAttrs.push(nextAttribute);
-            }
-            return attributesAsHtml;
-        });
     },
     onRender: function () {
         var self = this;
 
         // The view has several form element with a name attribute that should be bound
         // but some bindings require a converter...
-        var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
+
+        // var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
+
         // Note: ModelBinder has special handling for enabled attribute: add or remove disabled attribute
         //bindings['isDirty'] = {selector: '#btSave', elAttribute: 'enabled'};
+
         var changeTriggers = {
             'select': 'change',
             '[contenteditable]': 'keyup',
             ':text': 'keyup'   // select input[type=text], textarea
         };  // use keyup instead blur
-        this.modelbinder.bind(this.model, this.el, bindings, {changeTriggers: changeTriggers});
+
+        // bind with default bindings but specify custom changeTriggers
+        this.modelbinder.bind(this.model, this.el, undefined, { changeTriggers: changeTriggers });
 
         // show modal dialog
-        this.ui.editCalendarEntry.modal({backdrop: true});
+        this.ui.editCalendarEntry.modal({ backdrop: true });
 
         console.log("View has been rendered");
     },
@@ -148,7 +154,7 @@ $(function () {
     $(".calendarListItem").click(function () {
         var clickedElement = $(this);
         var id = clickedElement.attr('data-id');
-        var model = new CalendarItem({id: id});
+        var model = new CalendarItem({ id: id });
 
         // When waiting for the completion of fetch and then
         // giving this model to the view we don't get the initial
@@ -159,7 +165,7 @@ $(function () {
             success: function () {
                 console.log("Event fetched");
                 model.markNotDirty();
-                new CalendarItemView({model: model}).render();
+                new CalendarItemView({ model: model }).render();
             }
         });
     });
