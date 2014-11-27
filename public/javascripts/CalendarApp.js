@@ -65,6 +65,13 @@ var CalendarItem = Backbone.Model.extend({
 
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
+    getTemplate: function () {
+        var self = this;
+        var templateFunc = this.getOption('template');
+        return function (data) {
+            return templateFunc(data, self);
+        }
+    },
     el: '#calendarItemView',
     events: {
         "click #btSave": "saveClicked"
