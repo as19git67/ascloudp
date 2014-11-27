@@ -4442,7 +4442,7 @@ var ffwMitglieder = [
         "Mitgliedsjahre": 50,
         "Ehrung_25_Jahre_aktiv": null,
         "Ehrung_40_Jahre_aktiv": null,
-        "Ehrennadel_Silber": null,
+        "Ehrennadel_Silber": "2014-01-06T00:00:00",
         "Ehrennadel_Gold": null,
         "Ehrung_60_Jahre": null,
         "Ehrenkreuz_Silber": null,
