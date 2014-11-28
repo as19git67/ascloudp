@@ -1878,7 +1878,7 @@ var ffwMitglieder = [
         "Eingetreten": "1970-01-01T00:00:00",
         "Ausgetreten": null,
         "Übergang_Passiv": "1900-01-01T00:00:00",
-        "verstorben": null,
+        "verstorben": "2014-05-14T00:00:00",
         "aktiv": false,
         "Einladung": false,
         "EinladungSeparat": false,
