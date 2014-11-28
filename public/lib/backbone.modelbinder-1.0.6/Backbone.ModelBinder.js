@@ -301,11 +301,20 @@
             el = $(event.target)[0];
             elBindings = this._getElBindings(el);
 
+            // added by ANTON
+            var atLeastOneCopied = false;
+
             for(elBindingCount = 0; elBindingCount < elBindings.length; elBindingCount++){
                 elBinding = elBindings[elBindingCount];
                 if (this._isBindingUserEditable(elBinding)) {
                     this._copyViewToModel(elBinding, el);
+                    // added by ANTON
+                    atLeastOneCopied = true;
                 }
+            }
+            // added by ANTON
+            if (atLeastOneCopied) {
+                this._copyComputedlToView();
             }
         },
 
@@ -400,6 +409,8 @@
             }
         },
 
+        _copyComputedlToView:function()
+        {},
         _setEl: function (el, elementBinding, convertedValue) {
             if (elementBinding.elAttribute) {
                 this._setElAttribute(el, elementBinding, convertedValue);
