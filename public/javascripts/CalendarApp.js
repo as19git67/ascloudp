@@ -19,21 +19,20 @@ var oldBackboneSync = Backbone.sync;
 Backbone.sync = function (method, model, options) {
     var self = this;
 
-    // call this success function and then the one that was specified in the options
+    // call this function and then the one that was specified in the options
+    // This function resets _isDirty and stores the CSRF token from the header in this.csrfToken.
     var success = options.success;
-    options.success = function (resp) {
-        success && success(resp);   // call the original success function
+    options.success = function (model, resp, jqXHR) {
+        success && success(model, resp, jqXHR);   // call the original success function
         self._isDirty = false;      // clear isDirty after each successful sync
+        self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
     };
 
     // on every ajax request add the csrf token to the header unless its a fetch
     options.beforeSend = function (xhr) {
         if (method != 'fetch') {
             if (self.csrfToken) {
-                console.log('setting X-CSRF-Token');
                 xhr.setRequestHeader("X-CSRF-Token", self.csrfToken);
-            } else {
-                console.log('Not setting non existing X-CSRF-Token');
             }
         }
     };
@@ -49,14 +48,6 @@ var CalendarItem = Backbone.Model.extend({
         // or add the following line to the extended model as well
         this.listenTo(this, 'change', this.modelChanged);
     },
-    fetch: function (options) {
-        var self = this;
-        // extract CSRF Token from header after read
-        var jqXHR = Backbone.Model.prototype.fetch.call(this, options);
-        jqXHR.done(function () {
-            self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
-        })
-    },
     modelChanged: function () {
         console.log("model changed");
         this._isDirty = true;
@@ -66,6 +57,10 @@ var CalendarItem = Backbone.Model.extend({
     }
 });
 
+var DatePickerView = Backbone.Marionette.LayoutView.extend({
+    template: Handlebars.compile($('*[data-template-name="components/date-picker"]').html()),
+
+});
 
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
@@ -79,8 +74,29 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
     },
     initialize: function () {
         this.modelbinder = new Backbone.ModelBinder();
+
+        Handlebars.registerHelper('date-picker', function (args, options) {
+            var data = args.data;
+            var hash = args.hash;
+            var keys = Object.keys(hash);
+            var datePickerTemplate = Handlebars.compile($('*[data-template-name="components/date-picker"]').html());
+            for (var idx = 0; idx < keys.length; idx++) {
+                var htmlElementAttributeName = keys[idx];
+                var dataAttributeName = hash[htmlElementAttributeName];
+                var values = data.root;
+                console.log("binding " + htmlElementAttributeName + " to model attribute " + dataAttributeName);
+            }
+            var html = datePickerTemplate({});
+            var result = '<a href="' + dataAttributeName + '">' + htmlElementAttributeName + '</a>';
+            return Handlebars.SafeString(result); // returns html as save string, which means it does not escape it
+        });
     },
     onRender: function () {
+
+        var datePickerEls = $('.date');
+
+
+
         var changeTriggers = {
             'select': 'change', '[contenteditable]': 'keyup', ':text': 'keyup'   /* select input[type=text], textarea */
         };  // use keyup instead blur
