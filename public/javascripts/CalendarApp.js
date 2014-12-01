@@ -19,13 +19,12 @@ var oldBackboneSync = Backbone.sync;
 Backbone.sync = function (method, model, options) {
     var self = this;
 
-    /*
-     var success = options.success;
-     options.success = function (resp) {
-     success && success(resp);
-     //        model.set('_isDirty', false);
-     };
-     */
+    // call this success function and then the one that was specified in the options
+    var success = options.success;
+    options.success = function (resp) {
+        success && success(resp);   // call the original success function
+        self._isDirty = false;      // clear isDirty after each successful sync
+    };
 
     // on every ajax request add the csrf token to the header unless its a fetch
     options.beforeSend = function (xhr) {
@@ -43,8 +42,8 @@ Backbone.sync = function (method, model, options) {
 
 var CalendarItem = Backbone.Model.extend({
     urlRoot: 'api/v1/events',    // note: backbone adds id automatically
+    _isDirty: false,
     initialize: function () {
-        this.set('isDirty', false, { silent: true });
 
         // If you extend this model, make sure to call this initialize method
         // or add the following line to the extended model as well
@@ -60,43 +59,16 @@ var CalendarItem = Backbone.Model.extend({
     },
     modelChanged: function () {
         console.log("model changed");
-        this.updateDirty();
-    },
-    updateDirty: function () {
-        var changedAttributes = this.changedAttributes();
-        if (changedAttributes) {
-            var changedAttributesKeys = Object.keys(changedAttributes);
-            this.set('isDirty', changedAttributesKeys.length > 0, { silent: true });
-        } else {
-            this.set('isDirty', false, { silent: true });
-        }
-    },
-    markNotDirty: function () {
-        this.set('isDirty', false, { silent: true });
+        this._isDirty = true;
     },
     isDirty: function () {
-        var changedAttributes = this.changedAttributes();
-        if (changedAttributes) {
-            var changedAttributesKeys = Object.keys(changedAttributes);
-            return changedAttributesKeys.length > 0;
-        } else {
-            return false;
-        }
+        return this._isDirty;
     }
 });
 
 
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
-    /*
-     getTemplate: function () {
-     var self = this;
-     var templateFunc = this.getOption('template');
-     return function (data) {
-     return templateFunc(data, self);
-     }
-     },
-     */
     el: '#calendarItemView',
     events: {
         "click #btSave": "saveClicked"
@@ -109,23 +81,14 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         this.modelbinder = new Backbone.ModelBinder();
     },
     onRender: function () {
-        var self = this;
-
-        // The view has several form element with a name attribute that should be bound
-        // but some bindings require a converter...
-
-        // var bindings = Backbone.ModelBinder.createDefaultBindings(this.el, 'name');
-
-        // Note: ModelBinder has special handling for enabled attribute: add or remove disabled attribute
-        //bindings['isDirty'] = {selector: '#btSave', elAttribute: 'enabled'};
-
         var changeTriggers = {
-            'select': 'change',
-            '[contenteditable]': 'keyup',
-            ':text': 'keyup'   // select input[type=text], textarea
+            'select': 'change', '[contenteditable]': 'keyup', ':text': 'keyup'   /* select input[type=text], textarea */
         };  // use keyup instead blur
 
-        // bind with default bindings but specify custom changeTriggers
+
+        // Bind with default bindings but specify custom changeTriggers.
+        //   Note that the Modelbinder was enhanced to also bind element with data-bind="enabled:<computeFunction>",
+        //   where computeFunction is a model function that is called to get the value for enabled.
         this.modelbinder.bind(this.model, this.el, undefined, { changeTriggers: changeTriggers });
 
         // show modal dialog
@@ -164,7 +127,6 @@ $(function () {
         model.fetch({
             success: function () {
                 console.log("Event fetched");
-                model.markNotDirty();
                 new CalendarItemView({ model: model }).render();
             }
         });
