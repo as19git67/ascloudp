@@ -13,21 +13,6 @@ var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
 
-function authenticate() {
-    var user = getUsername().then(function (username) {
-        return getUser(username);
-    });
-
-    return user.then(function (user) {
-        return getPassword();
-    }).then(function (password) {
-        // Guaranteed that user promise is fulfilled, so .value() can be called here
-        if (user.value().passwordHash !== hash(password)) {
-            throw new Error("Can't authenticate");
-        }
-    });
-}
-
 exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {

@@ -4,12 +4,13 @@ var model = require('../../../model');
 var moment = require('moment');
 var Event = model.models.Event;
 var EventItem = model.models.EventItem;
+var Audit = model.models.Audit;
 
 
 module.exports.get = function (req, res) {
     var eventId = req.params.id;
 
-    new EventItem({Event_id: eventId, valid_end: null}).fetch().then(function (eventItem) {
+    new EventItem({ Event_id: eventId, valid_end: null }).fetch().then(function (eventItem) {
         if (eventItem) {
             res.setHeader('X-CSRF-Token', req.csrfToken());
             res.json(
@@ -42,12 +43,12 @@ module.exports.put = function (req, res) {
 
     model.bookshelf.transaction(function (t) {
 
-        new EventItem({Event_id: eventId, valid_end: null}).fetch().then(function (eventItem) {
+        new EventItem({ Event_id: eventId, valid_end: null }).fetch().then(function (eventItem) {
             if (eventItem) {
                 // invalidate current eventItem record
                 var now = new Date();
                 eventItem.set('valid_end', now);
-                eventItem.save(null, {transacting: t}).then(function () {
+                eventItem.save(null, { transacting: t }).then(function () {
 
                     // create new eventItem
                     new EventItem({
@@ -60,27 +61,40 @@ module.exports.put = function (req, res) {
                         publish_start: eventItem.get('publish_start'),
                         publish_end: eventItem.get('publish_end'),
                         valid_start: now
-                    }).save(null, {transacting: t}).then(function (savedEventItem) {
-                            t.commit(savedEventItem);
+                    }).save(null, { transacting: t }).then(function (savedEventItem) {
+                            var userName = req.user.UserName ? req.user.UserName : req.user.id;
+                            new Audit({
+                                    ChangedAt: new Date(),
+                                    Table: savedEventItem.tableName,
+                                    ChangedBy: userName,
+                                    Description: "EventItem changed by user " + userName + ". Id of new item in EventItems is " + savedEventItem.id
+                                }
+                            ).save().then(function () {
+                                    t.commit(savedEventItem);
+                                }).catch(function (error) {
+                                    console.log("Error while saving Audit for new EventItem to database:", error);
+                                    console.log("Roll back transaction");
+                                    t.rollback({ statusCode: 500, message: 'Error 500: saving of events to database failed' });
+                                });
                         }).catch(function (error) {
                             console.log("Error while saving new EventItem to database:", error);
                             console.log("Roll back transaction");
-                            t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
+                            t.rollback({ statusCode: 500, message: 'Error 500: saving of events to database failed' });
                         });
                 }).catch(function (error) {
                     console.log("Error while updating EventItem in database:", error);
                     console.log("Roll back transaction");
-                    t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
+                    t.rollback({ statusCode: 500, message: 'Error 500: saving of events to database failed' });
                 });
             } else {
                 console.log("Event with id " + eventId + " not found. Rolling back transaction");
-                t.rollback({statusCode: 404, message: 'Error 404: Event with id ' + eventId + ' not found'});
+                t.rollback({ statusCode: 404, message: 'Error 404: Event with id ' + eventId + ' not found' });
             }
 
         }).catch(function (error) {
             console.log("Error while reading events from database:", error);
             console.log("Roll back transaction");
-            t.rollback({statusCode: 500, message: 'Error 500: reading of event from database failed'});
+            t.rollback({ statusCode: 500, message: 'Error 500: reading of event from database failed' });
         });
     }).then(function (savedItem) {
         console.log("Transaction (saving eventItem) committed");
