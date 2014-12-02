@@ -47,13 +47,11 @@
                                                    placeholder="Ende">
                                         </div>
                                     </div>
-                                    {{date-picker label="Start Veröffentlichung:" value=publish_start }}
-                                    {{date-picker label="Ende Veröffentlichung:" value=publish_start }}
 
                                     <div class="form-group">
                                         <label for="publish_start" class="col-md-3 control-label" >Veröffentlichung Start:</label>
                                         <div class="col-md-9">
-                                            <div class='input-group date' id="publish_start">
+                                            <div class='input-group date' id="publish_start" data-bind="datePicker:publish_start">
                                                 <input type="text" class="form-control" >
                                                 <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                                             </div>

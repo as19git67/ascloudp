@@ -93,7 +93,7 @@
             this._options['modelSetOptions'].changeSource = 'ModelBinder';
 
             if (!this._options['changeTriggers']) {
-                this._options['changeTriggers'] = { '': 'change', '[contenteditable]': 'blur' };
+                this._options['changeTriggers'] = {'': 'change', '[contenteditable]': 'blur'};
             }
 
             if (!this._options['initialCopyDirection']) {
@@ -109,13 +109,13 @@
                 inputBinding = this._attributeBindings[attributeBindingKey];
 
                 if (_.isString(inputBinding)) {
-                    attributeBinding = { elementBindings: [{ selector: inputBinding }] };
+                    attributeBinding = {elementBindings: [{selector: inputBinding}]};
                 }
                 else if (_.isArray(inputBinding)) {
-                    attributeBinding = { elementBindings: inputBinding };
+                    attributeBinding = {elementBindings: inputBinding};
                 }
                 else if (_.isObject(inputBinding)) {
-                    attributeBinding = { elementBindings: [inputBinding] };
+                    attributeBinding = {elementBindings: [inputBinding]};
                 }
                 else {
                     this._throwException('Unsupported type passed to Model Binder ' + attributeBinding);
@@ -145,12 +145,12 @@
 
                 // For elements like radio buttons we only want a single attribute binding with possibly multiple element bindings
                 if (!this._attributeBindings[name]) {
-                    attributeBinding = { attributeName: name };
-                    attributeBinding.elementBindings = [{ attributeBinding: attributeBinding, boundEls: [matchedEl] }];
+                    attributeBinding = {attributeName: name};
+                    attributeBinding.elementBindings = [{attributeBinding: attributeBinding, boundEls: [matchedEl]}];
                     this._attributeBindings[name] = attributeBinding;
                 }
                 else {
-                    this._attributeBindings[name].elementBindings.push({ attributeBinding: this._attributeBindings[name], boundEls: [matchedEl] });
+                    this._attributeBindings[name].elementBindings.push({attributeBinding: this._attributeBindings[name], boundEls: [matchedEl]});
                 }
             }
         },
@@ -186,6 +186,7 @@
         // added by ANTON
         _initializeStatusBindings: function () {
             this._statusBindings = {};
+            this._datePickerBindings = {};
             var foundDataBinds = $("[data-bind]", this._rootEl);
             for (var elCount = 0; elCount < foundDataBinds.length; elCount++) {
                 var foundEl = $(foundDataBinds[elCount]);
@@ -194,23 +195,39 @@
                     var parts = bindKeyVal.split(':');
                     if (parts.length > 1) {
                         console.log("data-bind: " + parts[0] + " to " + parts[1]);
-                        if (parts[0] == 'enabled') {
-                            var computeFunctionName = parts[1];
-                            if (typeof this._model[computeFunctionName] === "function") {
+                        switch (parts[0].toLowerCase()) {
+                            case 'enabled':
+                                var computeFunctionName = parts[1];
+                                if (typeof this._model[computeFunctionName] === "function") {
+                                    var id = foundEl.attr('id');
+                                    if (!id) {
+                                        id = elCount;
+                                        foundEl.attr('id', id);
+                                    }
+                                    this._statusBindings[id] = {
+                                        boundEls: [foundEl],
+                                        elAttribute: 'enabled',
+                                        compute: this._model[computeFunctionName]
+                                    };
+                                    console.log("statusBindings[" + id + "] = ", this._statusBindings[id]);
+                                } else {
+                                    console.log("Ignore status binding because compute function " + computeFunctionName + " does not exit in model");
+                                }
+                                break;
+                            case 'datepicker':
+                                var modelAttributeName = parts[1];
                                 var id = foundEl.attr('id');
                                 if (!id) {
                                     id = elCount;
                                     foundEl.attr('id', id);
                                 }
-                                this._statusBindings[id] = {
+                                this._datePickerBindings[id] = {
                                     boundEls: [foundEl],
                                     elAttribute: 'enabled',
-                                    compute: this._model[computeFunctionName]
+                                    compute: this._model.has
                                 };
                                 console.log("statusBindings[" + id + "] = ", this._statusBindings[id]);
-                            } else {
-                                console.log("Ignore status binding because compute function " + computeFunctionName + " does not exit in model");
-                            }
+                                break;
                         }
                     } else {
                         console.log("data-bind: " + bindKeyVal);
@@ -413,7 +430,7 @@
                 var statusBinding = this._statusBindings[statusBindingName];
                 var computedValue = statusBinding.compute.call(this._model);
                 var self = this;
-                _.each(statusBinding.boundEls, function(boundEl) {
+                _.each(statusBinding.boundEls, function (boundEl) {
                     self._setElAttribute(boundEl, statusBinding, computedValue);
                 });
 
@@ -588,7 +605,7 @@
             attributeName = $(foundEl).attr(attributeType);
 
             if (!bindings[attributeName]) {
-                var attributeBinding = { selector: '[' + attributeType + '="' + attributeName + '"]' };
+                var attributeBinding = {selector: '[' + attributeType + '="' + attributeName + '"]'};
                 bindings[attributeName] = attributeBinding;
 
                 if (converter) {
@@ -607,7 +624,7 @@
     // Helps you to combine 2 sets of bindings
     Backbone.ModelBinder.combineBindings = function (destination, source) {
         _.each(source, function (value, key) {
-            var elementBinding = { selector: value.selector };
+            var elementBinding = {selector: value.selector};
 
             if (value.converter) {
                 elementBinding.converter = value.converter;
