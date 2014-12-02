@@ -190,6 +190,7 @@
             var foundDataBinds = $("[data-bind]", this._rootEl);
             for (var elCount = 0; elCount < foundDataBinds.length; elCount++) {
                 var foundEl = $(foundDataBinds[elCount]);
+                var foundElId = foundEl.attr('id');
                 var bindKeyVal = foundEl.data("bind");
                 if (bindKeyVal) {
                     var parts = bindKeyVal.split(':');
@@ -199,34 +200,42 @@
                             case 'enabled':
                                 var computeFunctionName = parts[1];
                                 if (typeof this._model[computeFunctionName] === "function") {
-                                    var id = foundEl.attr('id');
-                                    if (!id) {
-                                        id = elCount;
-                                        foundEl.attr('id', id);
+                                    if (!foundElId) {
+                                        foundElId = elCount;
+                                        foundEl.attr('id', foundElId);
                                     }
-                                    this._statusBindings[id] = {
+                                    this._statusBindings[foundElId] = {
                                         boundEls: [foundEl],
                                         elAttribute: 'enabled',
                                         compute: this._model[computeFunctionName]
                                     };
-                                    console.log("statusBindings[" + id + "] = ", this._statusBindings[id]);
+                                    console.log("statusBindings[" + foundElId + "] = ", this._statusBindings[foundElId]);
                                 } else {
                                     console.log("Ignore status binding because compute function " + computeFunctionName + " does not exit in model");
                                 }
                                 break;
                             case 'datepicker':
                                 var modelAttributeName = parts[1];
-                                var id = foundEl.attr('id');
-                                if (!id) {
-                                    id = elCount;
-                                    foundEl.attr('id', id);
+                                if (this._model.attributes.hasOwnProperty(modelAttributeName)) {
+                                    if (!foundElId) {
+                                        foundElId = elCount;
+                                        foundEl.attr('id', foundElId);
+                                    }
+                                    this._datePickerBindings[foundElId] = {
+                                        boundEls: [foundEl],
+                                        elAttribute: modelAttributeName,
+                                        value: this._model.get(modelAttributeName),
+                                        language: this.lang
+                                    };
+                                    console.log("datePickerBindings[" + foundElId + "] = ", this._datePickerBindings[foundElId]);
+
+                                    foundEl.datetimepicker({language: this._options.lang, pickTime: false});
+                                    foundEl.data("DateTimePicker").setDate(moment(this._datePickerBindings[foundElId].value));
+
+                                } else
+                                {
+                                    console.log("Not binding to datePicker with id=" + foundElId + " because model has no " + modelAttributeName);
                                 }
-                                this._datePickerBindings[id] = {
-                                    boundEls: [foundEl],
-                                    elAttribute: 'enabled',
-                                    compute: this._model.has
-                                };
-                                console.log("statusBindings[" + id + "] = ", this._statusBindings[id]);
                                 break;
                         }
                     } else {

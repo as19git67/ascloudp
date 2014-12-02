@@ -58,7 +58,7 @@ var CalendarItem = Backbone.Model.extend({
 });
 
 var DatePickerView = Backbone.Marionette.LayoutView.extend({
-    template: Handlebars.compile($('*[data-template-name="components/date-picker"]').html()),
+    template: Handlebars.compile($('*[data-template-name="components/date-picker"]').html())
 
 });
 
@@ -92,6 +92,7 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         });
     },
     onRender: function () {
+        this.lang = navigator.language || navigator.userLanguage;
 
         var datePickerEls = $('.date');
 
@@ -105,7 +106,7 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
         // Bind with default bindings but specify custom changeTriggers.
         //   Note that the Modelbinder was enhanced to also bind element with data-bind="enabled:<computeFunction>",
         //   where computeFunction is a model function that is called to get the value for enabled.
-        this.modelbinder.bind(this.model, this.el, undefined, { changeTriggers: changeTriggers });
+        this.modelbinder.bind(this.model, this.el, undefined, { changeTriggers: changeTriggers, lang: this.lang });
 
         // show modal dialog
         this.ui.editCalendarEntry.modal({ backdrop: true });
