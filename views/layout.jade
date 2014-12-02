@@ -89,9 +89,9 @@ html
                                                         a(role="menuitem", tabindex="-1", href='/#{page.Name}') #{page.EntityNamePlural}
 
                             if user != null && user.menu
-                                form(action="/logoff", class="navbar-right", id="logoutForm", method="post")
+                                form(action="/logoff", class="nav navbar-nav navbar-right adjusted-nav-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
-                                    ul(class="nav navbar-nav navbar-right adjusted-nav-right")
+                                    ul(class="nav navbar-nav")
                                         if user.menu.admin
                                             li(id="fat-menu-admin", class="dropdown")
                                                 a(href="#", id="drop3", role="button", class="dropdown-toggle", data-toggle="dropdown") Verwaltung
