@@ -125,9 +125,9 @@
             this.el.on("dp.change", function (e) {
                 var changedDateAsMoment = e.date;
                 // check whether the changed date differs to the date in this.dateValueAsMoment
-                if (this.dateValueAsMoment) {
-                    if (this.dateValueAsMoment.isValid()) {
-                        if (!this.dateValueAsMoment.isSame(changedDateAsMoment)) {
+                if (self.dateValueAsMoment) {
+                    if (self.dateValueAsMoment.isValid()) {
+                        if (!self.dateValueAsMoment.isSame(changedDateAsMoment)) {
                             self._setDate(changedDateAsMoment);
                         }
                     }
