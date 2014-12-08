@@ -1,11 +1,11 @@
 (function(root, factory) {
 
-    // Set up ModelBinderElements appropriately for the environment. Start with AMD.
+    // Set up ComponentBinderDatePicker appropriately for the environment. Start with AMD.
     if (typeof define === 'function' && define.amd) {
         define(['underscore', 'jquery', 'exports'], function(_, $, exports) {
             // Export global even in AMD case in case this script is loaded with
-            // others that may still expect a global ModelBinderElements.
-            root.ModelBinderElements = factory(root, exports, _, $);
+            // others that may still expect a global ComponentBinderDatePicker.
+            root.ComponentBinderDatePicker = factory(root, exports, _, $);
         });
 
         // Next for Node.js or CommonJS. jQuery may not be needed as a module.
@@ -15,7 +15,7 @@
 
         // Finally, as a browser global.
     } else {
-        root.ModelBinderElements = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
+        root.ComponentBinderDatePicker = factory(root, {}, root._, (root.jQuery || root.Zepto || root.ender || root.$));
     }
 
 }(this, function(root, ModelBinderElements, _, $) {
@@ -23,22 +23,22 @@
     // Initial Setup
     // -------------
 
-    // Save the previous value of the `ModelBinderElements` variable, so that it can be
+    // Save the previous value of the `ComponentBinderDatePicker` variable, so that it can be
     // restored later on, if `noConflict` is used.
-    var previousModelBinderElements = root.ModelBinderElements;
+    var previousModelBinderElements = root.ComponentBinderDatePicker;
 
 
     // Current version of the library.
     ModelBinderElements.VERSION = '1.0.0';
 
-    // For ModelBinderElements purposes, jQuery, Zepto or Ender owns
+    // For ComponentBinderDatePicker purposes, jQuery, Zepto or Ender owns
     // the `$` variable.
     ModelBinderElements.$ = $;
 
-    // Runs ModelBinderElements in *noConflict* mode, returning the `ModelBinderElements` variable
-    // to its previous owner. Returns a reference to this ModelBinderElements object.
+    // Runs ComponentBinderDatePicker in *noConflict* mode, returning the `ComponentBinderDatePicker` variable
+    // to its previous owner. Returns a reference to this ComponentBinderDatePicker object.
     ModelBinderElements.noConflict = function () {
-        root.ModelBinderElements = previousModelBinderElements;
+        root.ComponentBinderDatePicker = previousModelBinderElements;
         return this;
     };
 
