@@ -51,7 +51,7 @@
                                     <div class="form-group">
                                         <label for="publish_start" class="col-md-3 control-label" >Veröffentlichung Start:</label>
                                         <div class="col-md-9">
-                                            <div class='input-group date' id="publish_start" data-bind="datePicker:publish_start">
+                                            <div class='input-group date' name="publish_start" id="publish_start">
                                                 <input type="text" class="form-control" >
                                                 <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                                             </div>
@@ -70,17 +70,6 @@
                         </div>
 
                     </div>
-                </div>
-            </div>
-        </div>
-    </script>
-    <script type="text/x-handlebars" data-template-name="components/date-picker">
-        <div class="form-group">
-            <label data-bind="for:label" name="label" class="col-md-3 control-label" ></label>
-            <div class="col-md-9">
-                <div class='input-group date' data-bind="id:label">
-                    <input type="text" class="form-control" data-bind="placeholder:placeholder" >
-                    <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
                 </div>
             </div>
         </div>

@@ -57,11 +57,6 @@ var CalendarItem = Backbone.Model.extend({
     }
 });
 
-var DatePickerView = Backbone.Marionette.LayoutView.extend({
-    template: Handlebars.compile($('*[data-template-name="components/date-picker"]').html())
-
-});
-
 var CalendarItemView = Backbone.Marionette.ItemView.extend({
     template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
     el: '#calendarItemView',

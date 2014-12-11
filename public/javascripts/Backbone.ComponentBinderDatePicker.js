@@ -23,10 +23,10 @@
     }
 
     var ComponentBinderDatePicker = Backbone.ComponentBinder.extend({
-        isResponsibleFor: function(el) {
-            if (el instanceof $)
+        isResponsible: function() {
+            if (this._el instanceof $)
             {
-                if (el.hasClass('date')) {
+                if (this._el.hasClass('date')) {
                     return true;
                 }
                 else
@@ -39,12 +39,11 @@
             }
         },
         initialize: function(){
-            this.language = options.language ? options.language : navigator ? navigator.language || navigator.userLanguage : undefined;
             var self = this;
-            this.el.datetimepicker({language: this.language, pickTime: false});
-            this.dateValueAsMoment = this.el.data("DateTimePicker").getDate();
+            this._el.datetimepicker({language: this._options.language, pickTime: false});
+            this.dateValueAsMoment = this._el.data("DateTimePicker").getDate();
 
-            this.el.on("dp.change", function (e) {
+            this._el.on("dp.change", function (e) {
                 var changedDateAsMoment = e.date;
                 // check whether the changed date differs to the date in this.dateValueAsMoment
                 if (self.dateValueAsMoment) {
@@ -59,7 +58,7 @@
                     }
                 }
             });
-            this.picker.on("dp.error", function (e){
+            this._el.on("dp.error", function (e){
                 // set date to null if picker raises error event (which will be done if the input field is emptied)
                 self._setDate(null);
             });
@@ -74,7 +73,7 @@
         setValue: function(value) {
             // todo: check for change and trigger change event if date value really changed
             this.dateValueAsMoment = moment(value);
-            this.el.data("DateTimePicker").setDate(this.dateValueAsMoment);
+            this._el.data("DateTimePicker").setDate(this.dateValueAsMoment);
         }
     });
 
