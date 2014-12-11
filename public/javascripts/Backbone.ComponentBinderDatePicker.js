@@ -64,8 +64,9 @@
             });
         },
         _setDate: function(dateAsMoment) {
+            var oldDate = this.dateValueAsMoment;
             this.dateValueAsMoment = dateAsMoment;
-            // todo: trigger change event
+            this.trigger('change', this, {oldDate: oldDate, date: dateAsMoment});
         },
         getValue: function() {
             return this.dateValueAsMoment ? this.dateValueAsMoment.toDate() : undefined;
