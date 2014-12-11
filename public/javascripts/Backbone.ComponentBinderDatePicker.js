@@ -3,7 +3,7 @@
         // AMD. Register as an anonymous module.
         define(['underscore', 'jquery', 'backbone', 'Backbone.ModelBinder', 'Backbone.ComponentBinder'], factory);
     }
-    else if(typeof module !== 'undefined' && module.exports) {
+    else if (typeof module !== 'undefined' && module.exports) {
         // CommonJS
         module.exports = factory(
             require('underscore'),
@@ -16,21 +16,19 @@
         factory(_, $, Backbone);
     }
 }
-(function(_, $, Backbone){
+(function (_, $, Backbone) {
 
-    if(!Backbone.ComponentBinder){
+    if (!Backbone.ComponentBinder) {
         throw 'Please include Backbone.ComponentBinder.js before Backbone.ComponentBinderDatePicker.js';
     }
 
     var ComponentBinderDatePicker = Backbone.ComponentBinder.extend({
-        isResponsible: function() {
-            if (this._el instanceof $)
-            {
+        isResponsible: function () {
+            if (this._el instanceof $) {
                 if (this._el.hasClass('date')) {
                     return true;
                 }
-                else
-                {
+                else {
                     return false;
                 }
             } else {
@@ -38,7 +36,7 @@
                 return false;
             }
         },
-        initialize: function(){
+        initialize: function () {
             var self = this;
             this._el.datetimepicker({language: this._options.language, pickTime: false});
             this.dateValueAsMoment = this._el.data("DateTimePicker").getDate();
@@ -58,20 +56,20 @@
                     }
                 }
             });
-            this._el.on("dp.error", function (e){
+            this._el.on("dp.error", function (e) {
                 // set date to null if picker raises error event (which will be done if the input field is emptied)
                 self._setDate(null);
             });
         },
-        _setDate: function(dateAsMoment) {
+        _setDate: function (dateAsMoment) {
             var oldDate = this.dateValueAsMoment;
             this.dateValueAsMoment = dateAsMoment;
-            this.trigger('change', this, {oldDate: oldDate, date: dateAsMoment});
+            this.trigger('change', this, {attributeName: this._options.attributeName, oldDate: oldDate, date: dateAsMoment});
         },
-        getValue: function() {
+        getValue: function () {
             return this.dateValueAsMoment ? this.dateValueAsMoment.toDate() : undefined;
         },
-        setValue: function(value) {
+        setValue: function (value) {
             // todo: check for change and trigger change event if date value really changed
             this.dateValueAsMoment = moment(value);
             this._el.data("DateTimePicker").setDate(this.dateValueAsMoment);
