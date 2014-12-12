@@ -61,6 +61,11 @@
                 self._setDate(null);
             });
         },
+        handleModelChanged: function (model, attributeName) {
+            if (attributeName == this._options.attributeName){
+                this.setValue(model.get(attributeName));
+            }
+        },
         _setDate: function (dateAsMoment) {
             var oldDate = this.dateValueAsMoment;
             this.dateValueAsMoment = dateAsMoment;

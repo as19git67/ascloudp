@@ -69,29 +69,9 @@ var CalendarItemView = Backbone.Marionette.ItemView.extend({
     },
     initialize: function () {
         this.modelbinder = new Backbone.ModelBinder();
-
-        Handlebars.registerHelper('date-picker', function (args, options) {
-            var data = args.data;
-            var hash = args.hash;
-            var keys = Object.keys(hash);
-            var datePickerTemplate = Handlebars.compile($('*[data-template-name="components/date-picker"]').html());
-            for (var idx = 0; idx < keys.length; idx++) {
-                var htmlElementAttributeName = keys[idx];
-                var dataAttributeName = hash[htmlElementAttributeName];
-                var values = data.root;
-                console.log("binding " + htmlElementAttributeName + " to model attribute " + dataAttributeName);
-            }
-            var html = datePickerTemplate({});
-            var result = '<a href="' + dataAttributeName + '">' + htmlElementAttributeName + '</a>';
-            return Handlebars.SafeString(result); // returns html as save string, which means it does not escape it
-        });
     },
     onRender: function () {
         this.lang = navigator.language || navigator.userLanguage;
-
-        var datePickerEls = $('.date');
-
-
 
         var changeTriggers = {
             'select': 'change', '[contenteditable]': 'keyup', ':text': 'keyup'   /* select input[type=text], textarea */
