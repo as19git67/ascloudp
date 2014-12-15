@@ -35,6 +35,7 @@ var model = require('./model');
 var PageContent = model.models.PageContent;
 var apiMembers = require('./routes/api/v1/members');
 var apiEvents = require('./routes/api/v1/events');
+var apiArticles = require('./routes/api/v1/articles');
 var apiCommunicationData = require('./routes/api/v1/communicationData');
 
 moment.locale("de"); // todo: use language from configuration or browser setting
@@ -81,6 +82,9 @@ app.use('/loginManageAccount', loginManageAccount);
 
 var rp = new rolePermissions(model.models);
 
+app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
+app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.put);
+app.post('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.post);
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.get);
 app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.put);
 app.get('/api/v1/members', passportStrategies.ensureAuthenticated, rp.middleware(), apiMembers.list);

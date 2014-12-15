@@ -1,0 +1,30 @@
+<div id="articleItemView">
+    <script type="text/x-handlebars" data-template-name="articleItem">
+
+        <!-- Modal -->
+        <div class="modal fade" id="editArticleEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog modal-dialog-full">
+                <div class="modal-content modal-content-full">
+                    <div class="modal-header modal-header-full">
+                        <button type="button" class="btn btn-primary" id="btSave" name="btSave" >Speichern und Zurück</button>
+                        <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
+                        <div class="container-fluid">
+                            <div class="row">
+                                <div class="col-md-12">
+
+                                    <div id="form"></div>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </script>
+</div>

@@ -103,6 +103,18 @@ module.exports = function () {
                 permissions: ["put", "post", "delete"],
                 menus: []
             },
+            api_article_read: {
+                description: "RESTAPI: Artikel anzeigen",
+                resources: ["/api/v1/articles"],
+                permissions: ["get"],
+                menus: []
+            },
+            api_article_edit: {
+                description: "RESTAPI: Artikel ändern",
+                resources: ["/api/v1/articles"],
+                permissions: ["put", "post", "delete"],
+                menus: []
+            },
             api_member_read: {
                 description: "RESTAPI: Mitgliedsdaten anzeigen",
                 resources: ["/api/v1/members", "/api/v1/addresses", "/api/v1/phoneNumbers", "/api/v1/accounts"],

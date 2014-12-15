@@ -66,6 +66,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
 
                         }).then(function (allArticleSections) {
                             var articleObj = {
+                                article_id: article.get('Article_id'),
                                 date: article.get('Date'),
                                 date_formatted: moment(article.get('Date')).format('dddd, D. MMMM YYYY'),
                                 title: article.get('Title'),
@@ -93,6 +94,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 res.render(page.View, {
                     csrfToken: req.csrfToken(),
                     bootstrapTheme: config.get('bootstrapStyle'),
+                    canEdit: canEdit,
                     appName: appName,
                     title: page.EntityNamePlural,
                     user: req.user,
@@ -105,6 +107,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             res.render(page.View, {
                 csrfToken: req.csrfToken(),
                 bootstrapTheme: config.get('bootstrapStyle'),
+                canEdit: canEdit,
                 appName: appName,
                 title: page.EntityNamePlural,
                 user: req.user,
