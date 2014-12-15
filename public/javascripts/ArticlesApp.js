@@ -75,66 +75,57 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
 
         this.ui.editArticleEntry.on('shown.bs.modal', function (e) {
             $("#form").alpaca({
-                "data": {
-                    "name": "Diego Maradona",
-                    "feedback": "Very impressive.",
-                    "ranking": "excellent"
-                },
                 "schema": {
-                    "title": "User Feedback",
-                    "description": "What do you think about Alpaca?",
-                    "type": "object",
+                    "type":"object",
                     "properties": {
                         "name": {
-                            "type": "string",
-                            "title": "Name",
-                            "required": true
+                            "type":"string"
                         },
-                        "feedback": {
-                            "type": "string",
-                            "title": "Feedback"
+                        "birthday": {
+                            "type": "string"
                         },
-                        "ranking": {
+                        "city": {
+                            "type":"string"
+                        },
+                        "phone":{
+                            "title": "Phone",
                             "type": "string",
-                            "title": "Ranking",
-                            "enum": ['excellent', 'ok', 'so so'],
-                            "required": true
+                            "format": "phone"
                         }
                     }
                 },
-                "options": {
-                    "form": {
-                        "attributes": {
-                            "action": "http://httpbin.org/post",
-                            "method": "post"
-                        },
-                        "buttons": {
-                            "submit": {}
-                        }
-                    },
-                    "helper": "Tell us what you think about Alpaca!",
+                "options":{
                     "fields": {
                         "name": {
                             "size": 20,
-                            "helper": "Please enter your name."
+                            "label": "Name"
                         },
-                        "feedback": {
-                            "type": "textarea",
-                            "name": "your_feedback",
-                            "rows": 5,
-                            "cols": 40,
-                            "helper": "Please enter your feedback."
+                        "birthday": {
+                            "type" : "date",
+                            "size": 20,
+                            "label": "Date of Birth"
                         },
-                        "ranking": {
-                            "type": "select",
-                            "helper": "Select your ranking.",
-                            "optionLabels": ["Awesome!",
-                                "It's Ok",
-                                "Hmm..."]
+                        "city": {
+                            "size": 30,
+                            "label": "City"
                         }
                     }
                 },
-                "view": "bootstrap-edit"
+                "view": {
+                    "parent": "bootstrap-edit",
+                    "template": "twoColumnGridLayout",
+                    "layout": {
+                        "bindings": {
+                            "name": "leftcolumn",
+                            "birthday": "leftcolumn",
+                            "city": "rightcolumn",
+                            "phone": "rightcolumn"
+                        }
+                    },
+                    "templates": {
+                        "twoColumnGridLayout": '<div class="col-md-6" id="leftcolumn"></div><div class="col-md-6" id="rightcolumn"></div>'
+                    }
+                }
             });
         });
 
