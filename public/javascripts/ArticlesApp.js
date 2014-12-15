@@ -86,11 +86,6 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                         },
                         "city": {
                             "type":"string"
-                        },
-                        "phone":{
-                            "title": "Phone",
-                            "type": "string",
-                            "format": "phone"
                         }
                     }
                 },
