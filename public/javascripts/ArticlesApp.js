@@ -98,7 +98,8 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                             prop.type = "string";
                             break;
                         case "timestamp with time zone":
-                            prop.type = "date";
+                            prop.format = "date";
+                            option.type = "date";
                     }
                     prop.required = !fieldSchema.nullable;
                     prop.title = fieldSchema.label;
@@ -111,7 +112,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
             $("#form").alpaca({
                 "schema": schema,
                 "options": options,
-                "view": "bootstrap-edit",
+                "view": "bootstrap-create",
                 "viewx": {
                     "parent": "bootstrap-edit",
                     "layout": {
