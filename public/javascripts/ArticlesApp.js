@@ -73,52 +73,57 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
     onRender: function () {
         this.lang = navigator.language || navigator.userLanguage;
 
+        var model = this.model;
+
         this.ui.editArticleEntry.on('shown.bs.modal', function (e) {
+            var schema = {
+                "type": "object",
+                "properties": {}
+            };
+            var options = {
+                "fields": {}
+            };
+            _.each(model.attributes, function (attr) {
+                console.log("ATTRIBUTE: ", attr);
+                if (attr instanceof Object) {
+                    var value = attr.value;
+                    var fieldSchema = attr.schema;
+                    var prop = schema.properties[fieldSchema.name] = {};
+                    var option = options.fields[fieldSchema.name] = {};
+                    switch (fieldSchema.type) {
+                        case "integer":
+                            prop.type = "integer";
+                            break;
+                        case "character varying":
+                            prop.type = "string";
+                            break;
+                        case "timestamp with time zone":
+                            prop.type = "date";
+                    }
+                    prop.required = !fieldSchema.nullable;
+                    prop.title = fieldSchema.label;
+                    prop.description = fieldSchema.description;
+                    option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
+                }
+            });
+            console.log("schema: ", schema);
+            console.log("options: ", options);
             $("#form").alpaca({
-                "schema": {
-                    "type":"object",
-                    "properties": {
-                        "name": {
-                            "type":"string"
-                        },
-                        "birthday": {
-                            "type": "string"
-                        },
-                        "city": {
-                            "type":"string"
-                        }
-                    }
-                },
-                "options":{
-                    "fields": {
-                        "name": {
-                            "size": 20,
-                            "label": "Name"
-                        },
-                        "birthday": {
-                            "type" : "date",
-                            "size": 20,
-                            "label": "Date of Birth"
-                        },
-                        "city": {
-                            "size": 30,
-                            "label": "City"
-                        }
-                    }
-                },
-                "view": {
+                "schema": schema,
+                "options": options,
+                "view": "bootstrap-edit",
+                "viewx": {
                     "parent": "bootstrap-edit",
-                    "template": "twoColumnGridLayout",
                     "layout": {
+                        "template": "twoColumnGridLayout",
                         "bindings": {
                             "name": "leftcolumn",
                             "birthday": "leftcolumn",
-                            "city": "rightcolumn",
-                            "phone": "rightcolumn"
+                            "city": "rightcolumn"
                         }
                     },
                     "templates": {
-                        "twoColumnGridLayout": '<div class="col-md-6" id="leftcolumn"></div><div class="col-md-6" id="rightcolumn"></div>'
+                        "twoColumnGridLayout": '<div class="row"><div class="col-md-6" id="leftcolumn"></div><div class="col-md-6" id="rightcolumn"></div></div>'
                     }
                 }
             });

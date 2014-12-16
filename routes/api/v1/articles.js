@@ -6,24 +6,63 @@ var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
 var Audit = model.models.Audit;
 
+var knex = model.bookshelf.knex;
+
 
 module.exports.get = function (req, res) {
     var articleId = req.params.id;
 
-    new ArticleItem({ Article_id: articleId, valid_end: null }).fetch().then(function (articleItem) {
+    new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
         if (articleItem) {
-            res.setHeader('X-CSRF-Token', req.csrfToken());
-            res.json(
-                {
-                    article_id: articleItem.get('Article_id'),
-                    date: articleItem.get('Date'),
-                    title: articleItem.get('Title'),
-                    subtitle: articleItem.get('Subtitle'),
-                    author: articleItem.get('Author'),
-                    publish_start: articleItem.get('publish_start'),
-                    publish_end: articleItem.get('publish_end')
-                }
-            );
+            knex(articleItem.tableName).columnInfo().then(function (info) {
+                console.log("ArticleItem Table: ", info);
+                res.setHeader('X-CSRF-Token', req.csrfToken());
+                res.json(
+                    {
+                        article_id: articleItem.get('Article_id'),
+                        date: {
+                            value: articleItem.get('Date'),
+                            schema: _.extend(info['Date'], {name: "date", label: "Datum", description: "Artikeldatum"})
+                        },
+                        title: {
+                            value: articleItem.get('Title'),
+                            schema: _.extend(info['Title'], {
+                                name: "title",
+                                label: "Überschrift",
+                                description: "Titel des Artikels"
+                            })
+                        },
+                        subtitle: {
+                            value: articleItem.get('Subtitle'),
+                            schema: _.extend(info['Subtitle'], {name: "subtitle", label: "Untertitel"})
+                        },
+                        author: {
+                            value: articleItem.get('Author'),
+                            schema: _.extend(info['Author'], {
+                                name: "author",
+                                label: "Verfasser",
+                                description: "Autor des Artikels"
+                            })
+                        },
+                        publish_start: {
+                            value: articleItem.get('publish_start'),
+                            schema: _.extend(info['publish_start'], {
+                                name: "publish_start",
+                                label: "Start Veröffentlichung",
+                                description: "Beginn der Veröffentlichung des Artikels"
+                            })
+                        },
+                        publish_end: {
+                            value: articleItem.get('publish_end'),
+                            schema: _.extend(info['publish_end'], {
+                                name: "publish_end",
+                                label: "Ende Veröffentlichung",
+                                description: "Ende der Veröffentlichung des Artikels"
+                            })
+                        }
+                    }
+                );
+            });
         } else {
             res.statusCode = 404;
             res.send('Error 404: ArticleItem with Article_id ' + articleId + ' not found');
@@ -42,12 +81,12 @@ module.exports.put = function (req, res) {
 
     model.bookshelf.transaction(function (t) {
 
-        new ArticleItem({ Article_id: articleId, valid_end: null }).fetch().then(function (articleItem) {
+        new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
             if (articleItem) {
                 // invalidate current eventItem record
                 var now = new Date();
                 articleItem.set('valid_end', now);
-                articleItem.save(null, { transacting: t }).then(function () {
+                articleItem.save(null, {transacting: t}).then(function () {
 
                     // create new eventItem
                     new ArticleItem({
@@ -59,7 +98,7 @@ module.exports.put = function (req, res) {
                         publish_start: req.body.publish_start,
                         publish_end: req.body.publish_end,
                         valid_start: now
-                    }).save(null, { transacting: t }).then(function (savedArticleItem) {
+                    }).save(null, {transacting: t}).then(function (savedArticleItem) {
                             var userName = req.user.UserName ? req.user.UserName : req.user.id;
                             new Audit({
                                     ChangedAt: new Date(),
@@ -72,27 +111,30 @@ module.exports.put = function (req, res) {
                                 }).catch(function (error) {
                                     console.log("Error while saving Audit for new ArticleItem to database:", error);
                                     console.log("Roll back transaction");
-                                    t.rollback({ statusCode: 500, message: 'Error 500: saving of article to database failed' });
+                                    t.rollback({
+                                        statusCode: 500,
+                                        message: 'Error 500: saving of article to database failed'
+                                    });
                                 });
                         }).catch(function (error) {
                             console.log("Error while saving new ArticleItem to database:", error);
                             console.log("Roll back transaction");
-                            t.rollback({ statusCode: 500, message: 'Error 500: saving of article to database failed' });
+                            t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
                         });
                 }).catch(function (error) {
                     console.log("Error while updating ArticleItem in database:", error);
                     console.log("Roll back transaction");
-                    t.rollback({ statusCode: 500, message: 'Error 500: saving of article to database failed' });
+                    t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
                 });
             } else {
                 console.log("Event with id " + eventId + " not found. Rolling back transaction");
-                t.rollback({ statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found' });
+                t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
             }
 
         }).catch(function (error) {
             console.log("Error while reading article from database:", error);
             console.log("Roll back transaction");
-            t.rollback({ statusCode: 500, message: 'Error 500: reading of article from database failed' });
+            t.rollback({statusCode: 500, message: 'Error 500: reading of article from database failed'});
         });
     }).then(function (savedItem) {
         console.log("Transaction (saving ArticleItem) committed");
