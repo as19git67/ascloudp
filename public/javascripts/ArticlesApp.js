@@ -79,6 +79,8 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
         this.ui.editArticleEntry.on('shown.bs.modal', function (e) {
             moment.locale(locale);
             var localeData = moment.localeData();
+            var longDateFormat = localeData._longDateFormat.L;
+
             var schema = {
                 "type": "object",
                 "properties": {}
@@ -102,7 +104,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                         case "timestamp with time zone":
                             prop.format = "date";
                             option.type = "date";
-                            option.dateFormat = ""
+                            option.dateFormat = longDateFormat;
                     }
                     prop.required = !fieldSchema.nullable;
                     prop.title = fieldSchema.label;
@@ -137,7 +139,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                             "tooManyItems": "Die Maximalanzahl von Elementen ist {0}",
                             "valueNotUnique": "Diese Werte sind nicht eindeutig",
                             "notAnArray": "Keine Liste von Werten",
-                            "invalidDate": "Falsches Datumsformat: {0}",
+                            "invalidDate": "Das Datum muss in folgender Form eingegben werden: {0}",
                             "invalidEmail": "Ungültige e-Mail Adresse, z.B.: info@cloudcms.com",
                             "stringNotAnInteger": "Eingabe ist keine Ganz Zahl.",
                             "invalidIPv4": "Ungültige IPv4 Adresse, z.B.: 192.168.0.1",
