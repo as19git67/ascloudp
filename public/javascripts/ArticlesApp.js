@@ -103,7 +103,8 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                     }
                     prop.required = !fieldSchema.nullable;
                     prop.title = fieldSchema.label;
-                    prop.description = fieldSchema.description;
+//                    prop.description = fieldSchema.description;
+                    option.helper = fieldSchema.description;
                     option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
                 }
             });
@@ -112,7 +113,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
             $("#form").alpaca({
                 "schema": schema,
                 "options": options,
-                "view": "bootstrap-create",
+                "view": "bootstrap-create-horizontal",
                 "viewx": {
                     "parent": "bootstrap-edit",
                     "layout": {
