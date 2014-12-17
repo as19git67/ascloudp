@@ -71,11 +71,14 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
     initialize: function () {
     },
     onRender: function () {
-        this.lang = navigator.language || navigator.userLanguage;
+        this.locale = navigator.language || navigator.userLanguage;
 
         var model = this.model;
+        var locale = this.locale;
 
         this.ui.editArticleEntry.on('shown.bs.modal', function (e) {
+            moment.locale(locale);
+            var localeData = moment.localeData();
             var schema = {
                 "type": "object",
                 "properties": {}
@@ -84,7 +87,6 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                 "fields": {}
             };
             _.each(model.attributes, function (attr) {
-                console.log("ATTRIBUTE: ", attr);
                 if (attr instanceof Object) {
                     var value = attr.value;
                     var fieldSchema = attr.schema;
@@ -100,20 +102,68 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                         case "timestamp with time zone":
                             prop.format = "date";
                             option.type = "date";
+                            option.dateFormat = ""
                     }
                     prop.required = !fieldSchema.nullable;
                     prop.title = fieldSchema.label;
 //                    prop.description = fieldSchema.description;
-                    option.helper = fieldSchema.description;
+                    option.placeholder = fieldSchema.description;
                     option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
                 }
             });
-            console.log("schema: ", schema);
-            console.log("options: ", options);
+            Alpaca.setDefaultLocale(locale);
             $("#form").alpaca({
                 "schema": schema,
                 "options": options,
-                "view": "bootstrap-create-horizontal",
+                "view": {
+                    "parent": "bootstrap-create-horizontal",
+                    "messages": {
+                        "de": {
+                            required: "Eingabe erforderlich",
+                            invalid: "Eingabe ungültig",
+                            months: ["Januar", "Februar", "März", "April", "Mai", "Juni", "Juli", "August", "September", "Oktober", "November", "Dezember"],
+                            timeUnits: {
+                                SECOND: "Sekunden",
+                                MINUTE: "Minuten",
+                                HOUR: "Stunden",
+                                DAY: "Tage",
+                                MONTH: "Monate",
+                                YEAR: "Jahre"
+                            },
+                            "notOptional": "Dieses Feld ist nicht optional",
+                            "disallowValue": "Diese Werte sind nicht erlaubt: {0}",
+                            "invalidValueOfEnum": "Diese Feld sollte einen der folgenden Werte enthalten: {0}. [{1}]",
+                            "notEnoughItems": "Die Mindestanzahl von Elementen ist {0}",
+                            "tooManyItems": "Die Maximalanzahl von Elementen ist {0}",
+                            "valueNotUnique": "Diese Werte sind nicht eindeutig",
+                            "notAnArray": "Keine Liste von Werten",
+                            "invalidDate": "Falsches Datumsformat: {0}",
+                            "invalidEmail": "Ungültige e-Mail Adresse, z.B.: info@cloudcms.com",
+                            "stringNotAnInteger": "Eingabe ist keine Ganz Zahl.",
+                            "invalidIPv4": "Ungültige IPv4 Adresse, z.B.: 192.168.0.1",
+                            "stringValueTooSmall": "Die Mindestanzahl von Zeichen ist {0}",
+                            "stringValueTooLarge": "Die Maximalanzahl von Zeichen ist {0}",
+                            "stringValueTooSmallExclusive": "Die Anzahl der Zeichen muss größer sein als {0}",
+                            "stringValueTooLargeExclusive": "Die Anzahl der Zeichen muss kleiner sein als {0}",
+                            "stringDivisibleBy": "Der Wert muss durch {0} dividierbar sein",
+                            "stringNotANumber": "Die Eingabe ist keine Zahl",
+                            "invalidPassword": "Ungültiges Passwort.",
+                            "invalidPhone": "Ungültige Telefonnummer, z.B.: (123) 456-9999",
+                            "invalidPattern": "Diese Feld stimmt nicht mit folgender Vorgabe überein {0}",
+                            "stringTooShort": "Dieses Feld sollte mindestens {0} Zeichen enthalten",
+                            "stringTooLong": "Dieses Feld sollte höchstens {0} Zeichen enthalten"
+                        }
+                    },
+                    "callbacks": {
+                        "required": function () {
+                            var fieldEl = this.getFieldEl();
+                            // required fields get a little star in their label
+                            var label = $(fieldEl).find("label.alpaca-control-label");
+                            $('<span class="alpaca-icon-required glyphicon glyphicon-star"></span>').appendTo(label);
+                        }
+                    }
+                },
+
                 "viewx": {
                     "parent": "bootstrap-edit",
                     "layout": {
