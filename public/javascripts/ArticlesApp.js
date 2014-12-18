@@ -88,6 +88,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
             var options = {
                 "fields": {}
             };
+            console.log("MODEL: ", model);
             _.each(model.attributes, function (attr) {
                 if (attr instanceof Object) {
                     var value = attr.value;
@@ -100,17 +101,17 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                             break;
                         case "character varying":
                             prop.type = "string";
+                            option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
                             break;
                         case "timestamp with time zone":
                             prop.format = "date";
                             option.type = "date";
                             option.dateFormat = longDateFormat;
+                            option.size = longDateFormat.length;
                     }
                     prop.required = !fieldSchema.nullable;
                     prop.title = fieldSchema.label;
-//                    prop.description = fieldSchema.description;
                     option.placeholder = fieldSchema.description;
-                    option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
                 }
             });
             Alpaca.setDefaultLocale(locale);

@@ -4,6 +4,7 @@ var model = require('../../../model');
 var moment = require('moment');
 var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
+var ArticleSectionItem = model.models.ArticleSectionItem;
 var Audit = model.models.Audit;
 
 var knex = model.bookshelf.knex;
@@ -14,54 +15,111 @@ module.exports.get = function (req, res) {
 
     new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
         if (articleItem) {
-            knex(articleItem.tableName).columnInfo().then(function (info) {
-                console.log("ArticleItem Table: ", info);
-                res.setHeader('X-CSRF-Token', req.csrfToken());
-                res.json(
-                    {
-                        article_id: articleItem.get('Article_id'),
-                        date: {
-                            value: articleItem.get('Date'),
-                            schema: _.extend(info['Date'], {name: "date", label: "Datum", description: "Artikeldatum"})
-                        },
-                        title: {
-                            value: articleItem.get('Title'),
-                            schema: _.extend(info['Title'], {
-                                name: "title",
-                                label: "Überschrift",
-                                description: "Titel des Artikels"
-                            })
-                        },
-                        subtitle: {
-                            value: articleItem.get('Subtitle'),
-                            schema: _.extend(info['Subtitle'], {name: "subtitle", label: "Untertitel"})
-                        },
-                        author: {
-                            value: articleItem.get('Author'),
-                            schema: _.extend(info['Author'], {
-                                name: "author",
-                                label: "Verfasser",
-                                description: "Autor des Artikels"
-                            })
-                        },
-                        publish_start: {
-                            value: articleItem.get('publish_start'),
-                            schema: _.extend(info['publish_start'], {
-                                name: "publish_start",
-                                label: "Start Veröffentlichung",
-                                description: "Beginn der Veröffentlichung des Artikels"
-                            })
-                        },
-                        publish_end: {
-                            value: articleItem.get('publish_end'),
-                            schema: _.extend(info['publish_end'], {
-                                name: "publish_end",
-                                label: "Ende Veröffentlichung",
-                                description: "Ende der Veröffentlichung des Artikels"
-                            })
-                        }
-                    }
-                );
+            knex(articleItem.tableName).columnInfo().then(function (articleItemSchema) {
+
+                new ArticleSectionItem().query(function (qb) {
+                    qb.innerJoin('ArticleSections', 'ArticleSections.id', 'ArticleSectionItems.ArticleSection_id');
+                    qb.innerJoin('Articles', 'Articles.id', 'ArticleSections.Article_id');
+                    qb.where('ArticleSections.Article_id', articleId).andWhere('valid_end', null);
+                    qb.orderBy('Order', 'ASC');
+                }).fetchAll().then(function (articleSectionItems) {
+                    knex(ArticleSectionItem.prototype.tableName).columnInfo().then(function (articleSectionItemSchema) {
+                        var articleSections = [];
+                        _.each(articleSectionItems.models, function (articleSectionItem) {
+                            console.log("Article section for article " + articleId + ": ", articleSectionItem.attributes);
+                            var articleSection = {
+                                article_id: articleId,
+                                section_id: articleSectionItem.get('ArticleSection_id'),
+                                section_order: articleSectionItem.get('order'),
+                                section_title: {
+                                    value: articleSectionItem.get('Title'),
+                                    schema: _.extend(articleSectionItemSchema['Title'], {
+                                        name: "title",
+                                        label: "Abschnittsüberschrift",
+                                        description: "Titel des Artikelabschnitts"
+                                    })
+                                },
+                                section_text: {
+                                    value: articleSectionItem.get('Text'),
+                                    schema: _.extend(articleSectionItemSchema['Text'], {
+                                        name: "text",
+                                        label: "Abschnittstext",
+                                        description: "Text des Artikelabschnitts"
+                                    })
+                                },
+                                section_image_url: {
+                                    value: articleSectionItem.get('ImageUrl'),
+                                    schema: _.extend(articleSectionItemSchema['ImageUrl'], {
+                                        name: "imageUrl",
+                                        label: "Bild URL",
+                                        description: "URL zu einem dem Artikelabschnitt zugehörigen Bild"
+                                    })
+                                },
+                                section_image_description: {
+                                    value: articleSectionItem.get('ImageDescription'),
+                                    schema: _.extend(articleSectionItemSchema['ImageDescription'], {
+                                        name: "imageDescription",
+                                        label: "Bild Beschreibung",
+                                        description: "Beschreibung von dem Artikelabschnitt zugehörigen Bild"
+                                    })
+                                }
+                            };
+                            articleSections.push(articleSection);
+                        });
+
+                        res.setHeader('X-CSRF-Token', req.csrfToken());
+                        res.json(
+                            {
+                                article: {
+                                    article_id: articleItem.get('Article_id'),
+                                    date: {
+                                        value: articleItem.get('Date'),
+                                        schema: _.extend(articleItemSchema['Date'], {name: "date", label: "Datum", description: "Artikeldatum"})
+                                    },
+                                    title: {
+                                        value: articleItem.get('Title'),
+                                        schema: _.extend(articleItemSchema['Title'], {
+                                            name: "title",
+                                            label: "Überschrift",
+                                            description: "Titel des Artikels"
+                                        })
+                                    },
+                                    subtitle: {
+                                        value: articleItem.get('Subtitle'),
+                                        schema: _.extend(articleItemSchema['Subtitle'], {name: "subtitle", label: "Untertitel"})
+                                    },
+                                    author: {
+                                        value: articleItem.get('Author'),
+                                        schema: _.extend(articleItemSchema['Author'], {
+                                            name: "author",
+                                            label: "Verfasser",
+                                            description: "Autor des Artikels"
+                                        })
+                                    },
+                                    publish_start: {
+                                        value: articleItem.get('publish_start'),
+                                        schema: _.extend(articleItemSchema['publish_start'], {
+                                            name: "publish_start",
+                                            label: "Start Veröffentlichung",
+                                            description: "Beginn der Veröffentlichung des Artikels"
+                                        })
+                                    },
+                                    publish_end: {
+                                        value: articleItem.get('publish_end'),
+                                        schema: _.extend(articleItemSchema['publish_end'], {
+                                            name: "publish_end",
+                                            label: "Ende Veröffentlichung",
+                                            description: "Ende der Veröffentlichung des Artikels"
+                                        })
+                                    }
+                                },
+                                article_sections: articleSections
+                            }
+                        );
+
+                    });
+                });
+
             });
         } else {
             res.statusCode = 404;
