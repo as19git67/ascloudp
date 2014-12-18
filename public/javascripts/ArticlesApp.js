@@ -89,31 +89,46 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                 "fields": {}
             };
             console.log("MODEL: ", model);
-            _.each(model.attributes, function (attr) {
+
+            function setAlpacaField(fieldSchema) {
+                var prop = schema.properties[fieldSchema.name] = {};
+                var option = options.fields[fieldSchema.name] = {};
+                switch (fieldSchema.type) {
+                    case "integer":
+                        prop.type = "integer";
+                        break;
+                    case "character varying":
+                        prop.type = "string";
+                        option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
+                        break;
+                    case "timestamp with time zone":
+                        prop.format = "date";
+                        option.type = "date";
+                        option.dateFormat = longDateFormat;
+                        option.size = longDateFormat.length;
+                }
+                prop.required = !fieldSchema.nullable;
+                prop.title = fieldSchema.label;
+                option.placeholder = fieldSchema.description;
+            }
+
+            _.each(model.get('article'), function (attr) {
                 if (attr instanceof Object) {
                     var value = attr.value;
                     var fieldSchema = attr.schema;
-                    var prop = schema.properties[fieldSchema.name] = {};
-                    var option = options.fields[fieldSchema.name] = {};
-                    switch (fieldSchema.type) {
-                        case "integer":
-                            prop.type = "integer";
-                            break;
-                        case "character varying":
-                            prop.type = "string";
-                            option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
-                            break;
-                        case "timestamp with time zone":
-                            prop.format = "date";
-                            option.type = "date";
-                            option.dateFormat = longDateFormat;
-                            option.size = longDateFormat.length;
-                    }
-                    prop.required = !fieldSchema.nullable;
-                    prop.title = fieldSchema.label;
-                    option.placeholder = fieldSchema.description;
+                    setAlpacaField(fieldSchema);
                 }
             });
+            _.each(model.get('article_sections'), function (sect) {
+                _.each(sect.attributes, function(attr) {
+                    if (attr instanceof Object) {
+                        var value = attr.value;
+                        var fieldSchema = attr.schema;
+                        setAlpacaField(fieldSchema);
+                    }
+                });
+            });
+
             Alpaca.setDefaultLocale(locale);
             $("#form").alpaca({
                 "schema": schema,
