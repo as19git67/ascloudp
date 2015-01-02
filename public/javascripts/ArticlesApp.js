@@ -90,44 +90,70 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
             };
             console.log("MODEL: ", model);
 
-            function setAlpacaField(fieldSchema) {
-                var prop = schema.properties[fieldSchema.name] = {};
-                var option = options.fields[fieldSchema.name] = {};
+            function setAlpacaField(fieldSchema, prop, option) {
                 switch (fieldSchema.type) {
                     case "integer":
                         prop.type = "integer";
                         break;
                     case "character varying":
                         prop.type = "string";
-                        option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
+                        if (option) {
+                            option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
+                        }
                         break;
                     case "timestamp with time zone":
                         prop.format = "date";
-                        option.type = "date";
-                        option.dateFormat = longDateFormat;
-                        option.size = longDateFormat.length;
+                        if (option) {
+                            option.type = "date";
+                            option.dateFormat = longDateFormat;
+                            option.size = longDateFormat.length;
+                        }
                 }
                 prop.required = !fieldSchema.nullable;
                 prop.title = fieldSchema.label;
-                option.placeholder = fieldSchema.description;
+                if (option) {
+                    option.placeholder = fieldSchema.description;
+                }
             }
 
             _.each(model.get('article'), function (attr) {
                 if (attr instanceof Object) {
                     var value = attr.value;
                     var fieldSchema = attr.schema;
-                    setAlpacaField(fieldSchema);
+                    var prop = {};
+                    schema.properties[fieldSchema.name] = prop;
+                    var option = {};
+                    options.fields[fieldSchema.name] = option;
+                    setAlpacaField(fieldSchema, prop, option);
                 }
             });
+
             _.each(model.get('article_sections'), function (sect) {
-                _.each(sect.attributes, function(attr) {
+                var sectionName = 'section' + sect.section_id;
+
+                var prop = {};
+                prop.type = "object";
+                var propprop = {};
+                prop.properties = propprop;
+                schema.properties[sectionName] = prop;
+
+                var option = {};
+                option.label = 'Abschnitt ' + sect.section_id;
+                var optionoption = {};
+                option.fields = optionoption;
+                //    options.fields[sectionName] = option;
+                _.each(Object.keys(sect), function (key) {
+                    var attr = sect[key];
                     if (attr instanceof Object) {
                         var value = attr.value;
                         var fieldSchema = attr.schema;
-                        setAlpacaField(fieldSchema);
+                        setAlpacaField(fieldSchema, propprop, null);
                     }
                 });
             });
+
+            console.log("SCHEMA", schema);
+            console.log("OPTIONS", options);
 
             Alpaca.setDefaultLocale(locale);
             $("#form").alpaca({
