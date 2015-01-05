@@ -88,7 +88,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
             var options = {
                 "fields": {}
             };
-            console.log("MODEL: ", model);
+            //console.log("MODEL: ", model);
 
             function setAlpacaField(fieldSchema, propertyObject, option) {
                 switch (fieldSchema.type) {
@@ -99,6 +99,14 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                         propertyObject.type = "string";
                         if (option) {
                             option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
+                            if (option.size > 30) {
+                                option.type = "textarea";
+                                option.cols = 80;
+                                option.rows = Math.round(option.size / option.cols);
+                                if (option.rows > 10) {
+                                    option.rows = 10;
+                                }
+                            }
                         }
                         break;
                     case "timestamp with time zone":
