@@ -99,7 +99,7 @@ var ArticleItemView = Backbone.Marionette.ItemView.extend({
                         propertyObject.type = "string";
                         if (option) {
                             option.size = fieldSchema.maxLength ? fieldSchema.maxLength : 10;
-                            if (option.size > 30) {
+                            if (option.size > 255) {
                                 option.type = "textarea";
                                 option.cols = 80;
                                 option.rows = Math.round(option.size / option.cols);
