@@ -1,31 +1,43 @@
 <div id="articleItemView">
-    <script type="text/x-handlebars" data-template-name="articleItem">
+    <!-- Modal -->
+    <div class="modal fade" id="editArticleEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" ng-app="articleEditApp">
+        <div class="modal-dialog modal-dialog-full">
+            <div class="modal-content modal-content-full" ng-controller="articleEditController">
+                <div class="modal-header modal-header-full">
+                    <button type="button" class="btn btn-primary" id="btSave" name="btSave">Speichern und Zurück</button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-md-12">
 
-        <!-- Modal -->
-        <div class="modal fade" id="editArticleEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-full">
-                <div class="modal-content modal-content-full">
-                    <div class="modal-header modal-header-full">
-                        <button type="button" class="btn btn-primary" id="btSave" name="btSave" >Speichern und Zurück</button>
-                        <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
-                        <div class="container-fluid">
-                            <div class="row">
-                                <div class="col-md-12">
-
-                                    <div id="form">
+                                <form class="form" role="form">
+                                    <div class="form-group col-md-3 hidden-xs hidden-sm">
+                                        <div class="text-center"><br><br>
+                                            <small class="text-center">kein Foto</small>
+                                        </div>
                                     </div>
+                                    <div class="col-md-9 ascloud-left-border-md">
+                                        <div class="form-group">
+                                            <label for="salutation" class="sr-only">Anrede</label>
 
-                                </div>
+                                            <div id="salutation">
+                                                <input type="text" class="form-control" value="{{salutation}}"
+                                                       placeholder="Anrede"/>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
                             </div>
                         </div>
-
                     </div>
+
                 </div>
             </div>
         </div>
-    </script>
+    </div>
 </div>
