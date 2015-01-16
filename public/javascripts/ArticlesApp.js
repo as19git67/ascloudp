@@ -12,61 +12,55 @@ $.extend($.expr[":"], {
         }
 });
 
-// create the application module
+// create the application module - no dependencies to other modules (empty array)
 var articleEditApp = angular.module('articleEditApp', []);
 
-// setup angularjs resource to use the rest api
-/*
- angular.module('articleEditApp.services').factory('Entry', function ($resource) {
- return $resource('/api/v1/articles/:id'); // Note the full endpoint address
- });
- */
-
-angular.module('articleEditApp.models', []).service('ArticleManager',
-    [
-        '$q',
-        '$http',
-        'Article',
-        function ($q, $http, Article) {
-            return {
-                get: function (id) {
-                    var deferred = $q.defer();
-
-                    $http.get('/api/v1/articles/' + id).success(function (data) {
-                        var articles = [];
-                        for (var i = 0; i < data.objects.length; i++) {
-                            articles.push(new Article(data.objects[i]));
-                        }
-                        deferred.resolve(articles);
-                    });
-
-                    return deferred.promise;
-                }
-            };
-        }
-    ]).factory('Article',
-    function () {
-        function Article(data) {
-            for (var attr in data) {
-                if (data.hasOwnProperty(attr)) {
-                    this[attr] = data[attr];
-                }
-            }
-        }
-
-        return Article;
-    }
-);
-
-articleEditApp.controller('articleEditController', ['$scope', 'ArticleManager', function ($scope, ArticleManager) {
+// add the article edit controller
+articleEditApp.controller('articleEditCtrl',
+    function ($log, $scope, articleService) {
         $scope.loadArticle = function (id) {
-            ArticleManager.get(id).then(function (articles) {
-                $scope.article = articles[0];
-            });
+            var promise = articleService.getArticle(id);
+            promise.then(function (payload) {
+                    $scope.salutation = payload.article.title.value;
+                },
+                function (error) {
+                    $log.error("Error while loading the article", error);
+                });
         };
 
-        $scope.loadArticle(id);
-    }]
+        // attach to click event (jquery)
+
+        $(".articleListItem").click(function () {
+            var clickedElement = $(this);
+            var id = clickedElement.attr('data-id');
+            $scope.loadArticle(id);
+            ui.editArticleEntry.on('shown.bs.modal', function (e) {
+                console.log("Modal dialog showed");
+            });
+
+            // show modal dialog
+            ui.editArticleEntry.modal({backdrop: true});
+
+            console.log("showing modal dialog...");
+        });
+    })
+    .factory('articleService', function ($http, $log, $q) {
+        return {
+            getArticle: function (id) {
+                var deferred = $q.defer();
+
+                $http.get('/api/v1/articles/' + id).success(function (data) {
+                    // todo: postprocessing of the data
+                    deferred.resolve(data);
+                }).error(function (msg, code) {
+                    deferred.reject(msg);
+                    $log.error(msg, code);
+                });
+
+                return deferred.promise;
+            }
+        }
+    }
 );
 
 var ui = {
@@ -74,26 +68,27 @@ var ui = {
     errorMessage: $("#errorMessage")
 };
 
+/*
+ $(function () {
+ $(".articleListItem").click(function () {
+ var clickedElement = $(this);
+ var id = clickedElement.attr('data-id');
+ articleEditApp.controller('articleEditCtrl', function ($scope, Entry) {
+ $scope.loadArticle(id);
+ });
 
-$(function () {
-    $(".articleListItem").click(function () {
-        var clickedElement = $(this);
-        var id = clickedElement.attr('data-id');
-        articleEditApp.controller('articleEditController', function ($scope, Entry) {
-            $scope.loadArticle(id);
-        });
+ ui.editArticleEntry.on('shown.bs.modal', function (e) {
+ console.log("Modal dialog showed");
+ });
 
-        ui.editArticleEntry.on('shown.bs.modal', function (e) {
-            console.log("Modal dialog showed");
-        });
+ // show modal dialog
+ ui.editArticleEntry.modal({backdrop: true});
 
-        // show modal dialog
-        ui.editArticleEntry.modal({backdrop: true});
+ console.log("showing modal dialog...");
 
-        console.log("showing modal dialog...");
-
-    });
-});
+ });
+ });
+ */
 
 function saveClicked() {
     ui.errorMessage.addClass("hidden");
