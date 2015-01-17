@@ -12,8 +12,8 @@ $.extend($.expr[":"], {
         }
 });
 
-// create the application module - no dependencies to other modules (empty array)
-var articleEditApp = angular.module('articleEditApp', []);
+// create the application module - dependencies to other modules are bootstrap modules for angularjs
+var articleEditApp = angular.module('articleEditApp', ['ui.bootstrap']);
 
 // add the article edit controller
 articleEditApp.controller('articleEditCtrl',
@@ -21,12 +21,20 @@ articleEditApp.controller('articleEditCtrl',
         $scope.loadArticle = function (id) {
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {
-                    $scope.salutation = payload.article.title.value;
+                    $scope.article = payload.article;
                 },
                 function (error) {
                     $log.error("Error while loading the article", error);
                 });
         };
+        // date picker event
+        $scope.open = function ($event) {
+            $event.preventDefault();
+            $event.stopPropagation();
+
+            $scope.opened = true;
+        };
+        $scope.format = 'dd.MM.yyyy';
 
         // attach to click event (jquery)
 

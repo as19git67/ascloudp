@@ -10,28 +10,90 @@
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
+                    <div class="row">
+                        <form class="form-horizontal" role="form">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div class="form-group has-feedback">
+                                    <label for="title" class="control-label col-xs-3">{{article.title.schema.label}}:</label>
+
+                                    <div id="title" class="col-xs-9">
+                                        <input type="text" class="form-control" value="{{article.title.value}}">
+                                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <form class="form-horizontal" role="form">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div class="form-group has-feedback">
+                                    <label for="subtitle" class="control-label col-xs-3">{{article.subtitle.schema.label}}:</label>
+
+                                    <div id="subtitle" class="col-xs-9">
+                                        <input type="textarea" rows="3" class="form-control" value="{{article.subtitle.value}}">
+                                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <hr>
+
                     <div class="container-fluid">
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                        <form class="form-horizontal" role="form">
+                                            <label for="artikeldatum" class="col-md-3 control-label">{{article.date.schema.description}}:</label>
 
-                                <form class="form" role="form">
-                                    <div class="form-group col-md-3 hidden-xs hidden-sm">
-                                        <div class="text-center"><br><br>
-                                            <small class="text-center">kein Foto</small>
-                                        </div>
+                                            <p class="input-group" id="artikeldatum">
+                                                <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.date.value" is-open="opened" min-date="minDate"
+                                                       datepicker-options="dateOptions"
+                                                       date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                        <i class="glyphicon glyphicon-calendar"></i>
+                                                    </button>
+                                                </span>
+                                            </p>
+                                        </form>
                                     </div>
-                                    <div class="col-md-9 ascloud-left-border-md">
-                                        <div class="form-group">
-                                            <label for="salutation" class="sr-only">Anrede</label>
+                                </div>
+                                <hr class="visible-xs">
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <form class="form-horizontal" role="form">
 
-                                            <div id="salutation">
-                                                <input type="text" class="form-control" value="{{salutation}}"
-                                                       placeholder="Anrede"/>
+                                            <div class="form-group">
+                                                <label for="LeavingReasonName" class="col-md-3 control-label">Grund:</label>
+
+                                                <div class="col-md-9" id="LeavingReasonName">
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </form>
+                                            <div class="form-group has-feedback">
+                                                <label for="membershipNumber" class="col-md-3 control-label">Mitgliedsnr.:</label>
 
+                                                <div class="col-md-9" id="membershipNumber">
+                                                </div>
+                                            </div>
+                                            <div class="form-group has-feedback">
+                                                <label for="membershipFeeName" class="col-md-3 control-label">Beitrag:</label>
+
+                                                <div class="col-md-9" id="membershipFeeName">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="membershipFeeAmount" class="col-md-3 control-label">Betrag (€):</label>
+
+                                                <div class="col-md-9" id="membershipFeeAmount">
+                                                    <div class="form-control-static">{{membershipFeeAmount}}</div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
