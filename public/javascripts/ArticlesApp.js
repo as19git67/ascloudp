@@ -28,6 +28,55 @@ articleEditApp.controller('articleEditCtrl',
                     $log.error("Error while loading the article", error);
                 });
         };
+        $scope.addSection = function () {
+            var maxSectionId = 0;
+            var maxSectionOrder = 0;
+            for (var i = 0; i < $scope.article_sections.length; i++) {
+                var article_section = $scope.article_sections[i];
+                if (article_section.section_id > maxSectionId) {
+                    maxSectionId = article_section.section_id;
+                }
+                if (article_section.section_order > maxSectionOrder) {
+                    maxSectionOrder = article_section.section_order;
+                }
+            }
+            var articleSection = {
+                article_id: $scope.article.articleId,
+                section_id: maxSectionId + 1,
+                section_order: maxSectionOrder + 1,
+                section_title: {
+                    schema: {
+                        name: "title",
+                        label: "Abschnittsüberschrift",
+                        description: "Titel des Artikelabschnitts"
+                    }
+                },
+                section_text: {
+                    schema: {
+                        name: "text",
+                        label: "Abschnittstext",
+                        description: "Text des Artikelabschnitts"
+                    }
+                },
+                section_image_url: {
+                    schema: {
+                        name: "imageUrl",
+                        label: "Bild URL",
+                        description: "URL zu einem dem Artikelabschnitt zugehörigen Bild"
+                    }
+                },
+                section_image_description: {
+                    schema: {
+                        name: "imageDescription",
+                        label: "Bild Beschreibung",
+                        description: "Beschreibung von dem Artikelabschnitt zugehörigen Bild"
+                    }
+                }
+            };
+
+            $scope.article_sections.push(articleSection);
+        };
+
         // date picker event
         $scope.open = function ($event) {
             $event.preventDefault();

@@ -30,7 +30,7 @@ module.exports.get = function (req, res) {
                             var articleSection = {
                                 article_id: articleId,
                                 section_id: articleSectionItem.get('ArticleSection_id'),
-                                section_order: articleSectionItem.get('order'),
+                                section_order: articleSectionItem.get('Order'),
                                 section_title: {
                                     value: articleSectionItem.get('Title'),
                                     schema: _.extend(articleSectionItemSchema['Title'], {

@@ -114,6 +114,12 @@
                     <hr>
                     <form class="form" role="form">
                         <div ng-repeat="articleSection in article_sections">
+                            <div class="form-group col-md-12">
+                                <label class="form-control-static col-xs-12">
+                                    <span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;"></span>
+                                    &nbsp;Abschnitt&nbsp;{{articleSection.section_order}}
+                                </label>
+                            </div>
                             <div class="form-group">
                                 <label for="{{'articleSectionTitle_' + articleSection.section_id}}" class="control-label">{{articleSection.section_title.schema.description}}:</label>
 
@@ -144,6 +150,7 @@
                             </div>
                             <hr>
                         </div>
+                        <button class="btn btn-default" ng-click="addSection()">Add Section&nbsp;<span class="glyphicon glyphicon-plus-sign"></span></button>
                     </form>
                 </div>
             </div>

@@ -6446,7 +6446,7 @@ var ffwMitglieder = [
         "verzogen": false,
         "Geboren": "1982-09-20T00:00:00",
         "Telefon": null,
-        "Mobiltelefon": "01728459398",
+        "Mobiltelefon": "01602814236",
         "Eingetreten": "1999-01-06T00:00:00",
         "Ausgetreten": null,
         "Übergang_Passiv": "2012-12-10T00:00:00",
