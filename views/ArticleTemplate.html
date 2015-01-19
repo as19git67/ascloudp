@@ -21,15 +21,11 @@
                                         <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
                                     </div>
                                 </div>
-                            </div>
-                        </form>
-                        <form class="form-horizontal" role="form">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group has-feedback">
                                     <label for="subtitle" class="control-label col-xs-3">{{article.subtitle.schema.label}}:</label>
 
                                     <div id="subtitle" class="col-xs-9">
-                                        <input type="textarea" rows="3" class="form-control" value="{{article.subtitle.value}}">
+                                        <textarea rows="3" class="form-control">{{article.subtitle.value}}</textarea>
                                         <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
                                     </div>
                                 </div>
@@ -44,18 +40,27 @@
                                 <div class="row">
                                     <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                         <form class="form-horizontal" role="form">
-                                            <label for="artikeldatum" class="col-md-3 control-label">{{article.date.schema.description}}:</label>
+                                            <div class="form-group">
+                                                <label for="author" class="control-label col-md-4">{{article.author.schema.label}}:</label>
 
-                                            <p class="input-group" id="artikeldatum">
-                                                <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.date.value" is-open="opened" min-date="minDate"
-                                                       datepicker-options="dateOptions"
-                                                       date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
-                                                <span class="input-group-btn">
-                                                    <button type="button" class="btn btn-default" ng-click="open($event)">
-                                                        <i class="glyphicon glyphicon-calendar"></i>
-                                                    </button>
-                                                </span>
-                                            </p>
+                                                <div id="author" class="col-md-8">
+                                                    <input type="text" class="form-control" value="{{article.author.value}}">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="artikeldatum" class="col-md-4 control-label">{{article.date.schema.description}}:</label>
+
+                                                <p class="input-group col-md-8" id="artikeldatum">
+                                                    <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.date.value" is-open="opened" min-date="minDate"
+                                                           datepicker-options="dateOptions"
+                                                           date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                            <i class="glyphicon glyphicon-calendar"></i>
+                                                        </button>
+                                                    </span>
+                                                </p>
+                                            </div>
                                         </form>
                                     </div>
                                 </div>
@@ -65,31 +70,33 @@
                                 <div class="row">
                                     <div class="col-xs-12">
                                         <form class="form-horizontal" role="form">
-
                                             <div class="form-group">
-                                                <label for="LeavingReasonName" class="col-md-3 control-label">Grund:</label>
+                                                <label for="publish_start" class="col-md-4 control-label">{{article.publish_start.schema.description}}:</label>
 
-                                                <div class="col-md-9" id="LeavingReasonName">
-                                                </div>
-                                            </div>
-                                            <div class="form-group has-feedback">
-                                                <label for="membershipNumber" class="col-md-3 control-label">Mitgliedsnr.:</label>
-
-                                                <div class="col-md-9" id="membershipNumber">
-                                                </div>
-                                            </div>
-                                            <div class="form-group has-feedback">
-                                                <label for="membershipFeeName" class="col-md-3 control-label">Beitrag:</label>
-
-                                                <div class="col-md-9" id="membershipFeeName">
-                                                </div>
+                                                <p class="input-group col-md-8" id="publish_start">
+                                                    <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.publish_start.value" is-open="opened" min-date="minDate"
+                                                           datepicker-options="dateOptions"
+                                                           date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                        <i class="glyphicon glyphicon-calendar"></i>
+                                                    </button>
+                                                </span>
+                                                </p>
                                             </div>
                                             <div class="form-group">
-                                                <label for="membershipFeeAmount" class="col-md-3 control-label">Betrag (€):</label>
+                                                <label for="publish_end" class="col-md-4 control-label">{{article.publish_end.schema.description}}:</label>
 
-                                                <div class="col-md-9" id="membershipFeeAmount">
-                                                    <div class="form-control-static">{{membershipFeeAmount}}</div>
-                                                </div>
+                                                <p class="input-group col-md-8" id="publish_end">
+                                                    <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.publish_end.value" is-open="opened" min-date="minDate"
+                                                           datepicker-options="dateOptions"
+                                                           date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
+                                                <span class="input-group-btn">
+                                                    <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                        <i class="glyphicon glyphicon-calendar"></i>
+                                                    </button>
+                                                </span>
+                                                </p>
                                             </div>
                                         </form>
                                     </div>
