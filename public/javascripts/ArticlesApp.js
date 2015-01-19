@@ -22,6 +22,7 @@ articleEditApp.controller('articleEditCtrl',
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {
                     $scope.article = payload.article;
+                    $scope.article_sections = payload.article_sections;
                 },
                 function (error) {
                     $log.error("Error while loading the article", error);
