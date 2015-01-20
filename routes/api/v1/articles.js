@@ -31,38 +31,10 @@ module.exports.get = function (req, res) {
                                 article_id: articleId,
                                 section_id: articleSectionItem.get('ArticleSection_id'),
                                 section_order: articleSectionItem.get('Order'),
-                                section_title: {
-                                    value: articleSectionItem.get('Title'),
-                                    schema: _.extend(articleSectionItemSchema['Title'], {
-                                        name: "title",
-                                        label: "Abschnittsüberschrift",
-                                        description: "Titel des Artikelabschnitts"
-                                    })
-                                },
-                                section_text: {
-                                    value: articleSectionItem.get('Text'),
-                                    schema: _.extend(articleSectionItemSchema['Text'], {
-                                        name: "text",
-                                        label: "Abschnittstext",
-                                        description: "Text des Artikelabschnitts"
-                                    })
-                                },
-                                section_image_url: {
-                                    value: articleSectionItem.get('ImageUrl'),
-                                    schema: _.extend(articleSectionItemSchema['ImageUrl'], {
-                                        name: "imageUrl",
-                                        label: "Bild URL",
-                                        description: "URL zu einem dem Artikelabschnitt zugehörigen Bild"
-                                    })
-                                },
-                                section_image_description: {
-                                    value: articleSectionItem.get('ImageDescription'),
-                                    schema: _.extend(articleSectionItemSchema['ImageDescription'], {
-                                        name: "imageDescription",
-                                        label: "Bild Beschreibung",
-                                        description: "Beschreibung von dem Artikelabschnitt zugehörigen Bild"
-                                    })
-                                }
+                                title: articleSectionItem.get('Title'),
+                                text: articleSectionItem.get('Text'),
+                                image_url: articleSectionItem.get('ImageUrl'),
+                                image_description: articleSectionItem.get('ImageDescription')
                             };
                             articleSections.push(articleSection);
                         });
@@ -72,48 +44,52 @@ module.exports.get = function (req, res) {
                             {
                                 article: {
                                     article_id: articleItem.get('Article_id'),
-                                    date: {
-                                        value: articleItem.get('Date'),
-                                        schema: _.extend(articleItemSchema['Date'], {name: "date", label: "Datum", description: "Artikeldatum"})
-                                    },
-                                    title: {
-                                        value: articleItem.get('Title'),
-                                        schema: _.extend(articleItemSchema['Title'], {
-                                            name: "title",
-                                            label: "Überschrift",
-                                            description: "Titel des Artikels"
-                                        })
-                                    },
-                                    subtitle: {
-                                        value: articleItem.get('Subtitle'),
-                                        schema: _.extend(articleItemSchema['Subtitle'], {name: "subtitle", label: "Untertitel"})
-                                    },
-                                    author: {
-                                        value: articleItem.get('Author'),
-                                        schema: _.extend(articleItemSchema['Author'], {
-                                            name: "author",
-                                            label: "Verfasser",
-                                            description: "Autor des Artikels"
-                                        })
-                                    },
-                                    publish_start: {
-                                        value: articleItem.get('publish_start'),
-                                        schema: _.extend(articleItemSchema['publish_start'], {
-                                            name: "publish_start",
-                                            label: "Start Veröffentlichung",
-                                            description: "Beginn der Veröffentlichung des Artikels"
-                                        })
-                                    },
-                                    publish_end: {
-                                        value: articleItem.get('publish_end'),
-                                        schema: _.extend(articleItemSchema['publish_end'], {
-                                            name: "publish_end",
-                                            label: "Ende Veröffentlichung",
-                                            description: "Ende der Veröffentlichung des Artikels"
-                                        })
-                                    }
+                                    date: articleItem.get('Date'),
+                                    title: articleItem.get('Title'),
+                                    subtitle: articleItem.get('Subtitle'),
+                                    author: articleItem.get('Author'),
+                                    publish_start: articleItem.get('publish_start'),
+                                    publish_end: articleItem.get('publish_end')
                                 },
-                                article_sections: articleSections
+                                article_schema: {
+                                    date: _.extend(articleItemSchema['Date'], {name: "date", label: "Datum", description: "Artikeldatum"}),
+                                    title: _.extend(articleItemSchema['Title'], {
+                                        label: "Überschrift",
+                                        description: "Titel des Artikels"
+                                    }),
+                                    subtitle: _.extend(articleItemSchema['Subtitle'], {label: "Untertitel"}),
+                                    author: _.extend(articleItemSchema['Author'], {
+                                        label: "Verfasser",
+                                        description: "Autor des Artikels"
+                                    }),
+                                    publish_start: _.extend(articleItemSchema['publish_start'], {
+                                        label: "Start Veröffentlichung",
+                                        description: "Beginn der Veröffentlichung des Artikels"
+                                    }),
+                                    publish_end: _.extend(articleItemSchema['publish_end'], {
+                                        label: "Ende Veröffentlichung",
+                                        description: "Ende der Veröffentlichung des Artikels"
+                                    })
+                                },
+                                article_sections: articleSections,
+                                article_section_schema: {
+                                    title: _.extend(articleSectionItemSchema['Title'], {
+                                        label: "Abschnittsüberschrift",
+                                        description: "Titel des Artikelabschnitts"
+                                    }),
+                                    text: _.extend(articleSectionItemSchema['Text'], {
+                                        label: "Abschnittstext",
+                                        description: "Text des Artikelabschnitts"
+                                    }),
+                                    image_url: _.extend(articleSectionItemSchema['ImageUrl'], {
+                                        label: "Bild URL",
+                                        description: "URL zu einem dem Artikelabschnitt zugehörigen Bild"
+                                    }),
+                                    image_description: _.extend(articleSectionItemSchema['ImageDescription'], {
+                                        label: "Bild Beschreibung",
+                                        description: "Beschreibung von dem Artikelabschnitt zugehörigen Bild"
+                                    })
+                                }
                             }
                         );
 

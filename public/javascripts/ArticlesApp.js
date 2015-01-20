@@ -22,7 +22,9 @@ articleEditApp.controller('articleEditCtrl',
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {
                     $scope.article = payload.article;
+                    $scope.article_schema = payload.article_schema;
                     $scope.article_sections = payload.article_sections;
+                    $scope.article_section_schema = payload.article_section_schema;
                 },
                 function (error) {
                     $log.error("Error while loading the article", error);
@@ -43,35 +45,7 @@ articleEditApp.controller('articleEditCtrl',
             var articleSection = {
                 article_id: $scope.article.articleId,
                 section_id: maxSectionId + 1,
-                section_order: maxSectionOrder + 1,
-                section_title: {
-                    schema: {
-                        name: "title",
-                        label: "Abschnittsüberschrift",
-                        description: "Titel des Artikelabschnitts"
-                    }
-                },
-                section_text: {
-                    schema: {
-                        name: "text",
-                        label: "Abschnittstext",
-                        description: "Text des Artikelabschnitts"
-                    }
-                },
-                section_image_url: {
-                    schema: {
-                        name: "imageUrl",
-                        label: "Bild URL",
-                        description: "URL zu einem dem Artikelabschnitt zugehörigen Bild"
-                    }
-                },
-                section_image_description: {
-                    schema: {
-                        name: "imageDescription",
-                        label: "Bild Beschreibung",
-                        description: "Beschreibung von dem Artikelabschnitt zugehörigen Bild"
-                    }
-                }
+                section_order: maxSectionOrder + 1
             };
 
             $scope.article_sections.push(articleSection);

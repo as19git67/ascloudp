@@ -8,6 +8,9 @@ block content
     if Records && Records.length > 0
         h1
             u #{page.EntityNamePlural}
+            if canEdit
+                | &nbsp;
+                span.calendarNew +
         each record in Records
             div(class="row articleListItem", data-id='#{record.article_id}')
                 div(class="col-lg-10 col-md-11 col-xs-12")
