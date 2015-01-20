@@ -400,45 +400,10 @@ exports.createSchema = function () {
                     t.increments('id').primary();
                     t.integer('Article_id').references('id').inTable('Articles');
                     t.datetime('Date').notNullable().index();
-                    t.string('Title').notNullable();
-                    t.string('Subtitle');
                     t.string('Author');
+                    t.string('Text', 100000);
                     t.timestamp('publish_start').notNullable().index();
                     t.timestamp('publish_end').index();
-                    t.timestamp('valid_start').index();
-                    t.timestamp('valid_end').index();
-                });
-            },
-            function () {
-                return knex.schema.createTable('ArticleSections', function (t) {
-                    t.increments('id').primary();
-                    t.integer('Article_id').references('id').inTable('Articles').notNullable();
-                });
-            },
-            function () {
-                return knex.schema.createTable('ArticleSectionItems', function (t) {
-                    t.increments('id').primary();
-                    t.integer('Order').notNullable().index();
-                    t.integer('ArticleSection_id').references('id').inTable('ArticleSections').notNullable();
-                    t.string('Title');
-                    t.string('Text', 50000).notNullable();
-                    t.string('ImageUrl');
-                    t.string('ImageDescription');
-                    t.timestamp('valid_start').index();
-                    t.timestamp('valid_end').index();
-                });
-            },
-            function () {
-                return knex.schema.createTable('ArticleReferences', function (t) {
-                    t.increments('id').primary();
-                    t.integer('ArticleSection_id').references('id').inTable('ArticleSections').notNullable();
-                });
-            },
-            function () {
-                return knex.schema.createTable('ArticleReferenceItems', function (t) {
-                    t.increments('id').primary();
-                    t.integer('ArticleReference_id').references('id').inTable('ArticleReferences').notNullable();
-                    t.string('Text').notNullable();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -933,12 +898,6 @@ var Article = bookshelf.Model.extend({
     Page: function () {
         return this.belongsTo(Page);
     },
-    ArticleSection: function () {
-        return this.hasMany(ArticleSection);
-    },
-    ArticleReference: function () {
-        return this.hasMany(ArticleReference).through(ArticleSection);
-    },
     ArticleItem: function () {
         return this.hasMany(ArticleItem);
     }
@@ -953,54 +912,6 @@ var ArticleItem = bookshelf.Model.extend({
 
 var Articles = bookshelf.Collection.extend({
     model: Article
-});
-
-var ArticleSection = bookshelf.Model.extend({
-    tableName: 'ArticleSections',
-    Article: function () {
-        return this.belongsTo(Article);
-    },
-    ArticleReference: function () {
-        return this.hasMany(ArticleReference);
-    },
-    ArticleSectionItem: function () {
-        return this.hasMany(ArticleSectionItem);
-    }
-});
-
-var ArticleSectionItem = bookshelf.Model.extend({
-    tableName: 'ArticleSectionItems',
-    ArticleSection: function () {
-        return this.belongsTo(ArticleSection);
-    }
-});
-
-var ArticleSections = bookshelf.Collection.extend({
-    model: ArticleSection
-});
-
-var ArticleReference = bookshelf.Model.extend({
-    tableName: 'ArticleReferences',
-    ArticleSection: function () {
-        return this.belongsTo(ArticleSection);
-    },
-    Article: function () {
-        return this.belongsTo(Article).through(ArticleSection);
-    },
-    ArticleReferenceItem: function () {
-        return this.hasMany(ArticleReferenceItem);
-    }
-});
-
-var ArticleReferenceItem = bookshelf.Model.extend({
-    tableName: 'ArticleReferenceItems',
-    ArticleReference: function () {
-        return this.belongsTo(ArticleReference);
-    }
-});
-
-var ArticleReferences = bookshelf.Collection.extend({
-    model: ArticleReference
 });
 
 var Contact = bookshelf.Model.extend({
@@ -1282,10 +1193,6 @@ module.exports.models = {
     Article: Article,
     ArticleItem: ArticleItem,
     Articles: Articles,
-    ArticleSection: ArticleSection,
-    ArticleSectionItem: ArticleSectionItem,
-    ArticleReference: ArticleReference,
-    ArticleReferenceItem: ArticleReferenceItem,
     Contact: Contact,
     ContactItem: ContactItem,
     Contacts: Contacts,

@@ -14,29 +14,10 @@ block content
         each record in Records
             div(class="row articleListItem", data-id='#{record.article_id}')
                 div(class="col-lg-10 col-md-11 col-xs-12")
-                    if record.title
-                        h3 #{record.title}
                     if record.author
                         p.small Von: #{record.author}, #{record.date_formatted}
-                    if record.subtitle
-                        h4 #{record.subtitle}
-                    if record.sections && record.sections.length > 0
-                        each section in record.sections
-                            if section.title
-                                h5 #{section.title}
-                            if section.rawHtml
-                            | !{section.rawHtml}
-                            if section.imageUrl
-                                if section.imageDescription
-                                    img(src='#{section.imageUrl}', alternate='#{section.imageDescription}')
-                                    br
-                                    div.small #{section.imageDescription}
-                                else
-                                    img(src='#{section.imageUrl}')
-                    if record.references && record.references.length > 0
-                        h4 Quellenangaben:
-                        each reference in record.references
-                            p #{reference.text}
+                    if record.rawHtml
+                        !{record.rawHtml}
 
         if canEdit
             script(src="/lib/underscore-1.7.0/underscore.js", type="text/javascript")
@@ -45,5 +26,5 @@ block content
             script(src="/lib/angular-bootstrap/ui-bootstrap-tpls.js", type="text/javascript")
             include ArticleTemplate.html
             script(src="/javascripts/ArticlesApp.js", type="text/javascript")
-        else
-            p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
+    else
+        p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

@@ -487,84 +487,25 @@ exports.importTestData = function () {
                     new model.models.ArticleItem({
                         "Article_id": newArticle.get('id'),
                         "Date": new Date(2014, 11, 13),
-                        "Title": "Comet Landing Bumpier Than Initially Thought",
-                        "Subtitle": "",
                         "Author": "KENNETH CHANG",
+                        "Text": "# Comet Landing Bumpier Than Initially Thought\r\n\r" +
+                        "![Philae on comet](http://static01.nyt.com/images/2014/11/13/science/13philae-on-comet/13philae-on-comet-master675.jpg)\r\n\r" +
+                        "A two-image panorama taken by the Philae lander from the surface of Comet 67P/Churyumov-Gerasimenko.\r\n\r" +
+                        "Ref.: European Space Agency\r\n\r" +
+                        "This historic landing of a spacecraft on a comet on Wednesday turned out to be not one but three landings as the craft hopped across the surface. " +
+                        "Because of the failure of a thruster that was to press it against the comet’s surface after touching down, the European Space Agency’s Philae lander, part of the $1.75 billion Rosetta mission, bounded up more than half a mile before falling to the surface of Comet 67P/Churyumov-Gerasimenko again nearly two hours later, more than half a mile away. That is a considerable distance across a comet that is only 2.5 miles wide. " +
+                        "Philae then bounced again, less high, and ended up with only two of its three legs on the surface, tipped against a boulder, a wall of rock or perhaps the side of a hole. " +
+                        "“We are almost vertical, one foot probably in the open air — open space. I’m sorry, there is no air around,” Jean-Pierre Bibring, the lead lander scientist, said at a news conference on Thursday. " +
+                        "In the skewed position, Philae’s solar panels are generating much less power than had been planned, and when its batteries drain in a couple of days, it may not be able to recharge. As the comet rotates once every 12 hours, the lander is receiving only about 1.5 hours of sunlight instead of the expected six to seven hours.\r\n\r" +
+                        "![Picture of Rosetta](http://graphics8.nytimes.com/newsgraphics/2014/11/08/rosetta-philae/5e378c5e4212594c134fc802fc7a3d82b7d6b5e5/rosetta_white-945.png)\r\n\r" +
+                        "CHASING A COMET  Rosetta launched in 2004, made several loops through the inner solar system gathering speed and then spent years chasing down Comet 67P/C-G. The spacecraft arrived in August.\r\n\r" +
+                        "Ref.: The New York Times\r\n\r",
                         "publish_start": now,
                         "publish_end": end,
                         "valid_start": now
                     }).save().then(function (newArticle) {
-                            new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection) {
-                                new model.models.ArticleSectionItem({
-                                    "ArticleSection_id": newArticleSection.get('id'),
-                                    "Order": 1,
-                                    "Title": undefined,
-                                    "Text": "",
-                                    "ImageUrl": "http://static01.nyt.com/images/2014/11/13/science/13philae-on-comet/13philae-on-comet-master675.jpg",
-                                    "ImageDescription": "A two-image panorama taken by the Philae lander from the surface of Comet 67P/Churyumov-Gerasimenko.",
-                                    "valid_start": now
-                                }).save().then(function (newArticleSectionItem) {
-                                        new model.models.ArticleReference({ArticleSection_id: newArticleSection.get('id')}).save().then(function (newArticleReference) {
-                                            new model.models.ArticleReferenceItem({
-                                                "ArticleReference_id": newArticleReference.get('id'),
-                                                "Text": "European Space Agency",
-                                                "valid_start": now
-                                            }).save().then(function (newArticleReferenceItem) {
-                                                    new model.models.ArticleSection({Article_id: newArticle.get('id')}).save().then(function (newArticleSection2) {
-                                                        new model.models.ArticleSectionItem({
-                                                            "ArticleSection_id": newArticleSection2.get('id'),
-                                                            "Order": 2,
-                                                            "Title": null,
-                                                            "Text": "This historic landing of a spacecraft on a comet on Wednesday turned out to be not one but three landings as the craft hopped across the surface. " +
-                                                            "Because of the failure of a thruster that was to press it against the comet’s surface after touching down, the European Space Agency’s Philae lander, part of the $1.75 billion Rosetta mission, bounded up more than half a mile before falling to the surface of Comet 67P/Churyumov-Gerasimenko again nearly two hours later, more than half a mile away. That is a considerable distance across a comet that is only 2.5 miles wide. " +
-                                                            "Philae then bounced again, less high, and ended up with only two of its three legs on the surface, tipped against a boulder, a wall of rock or perhaps the side of a hole. " +
-                                                            "“We are almost vertical, one foot probably in the open air — open space. I’m sorry, there is no air around,” Jean-Pierre Bibring, the lead lander scientist, said at a news conference on Thursday. " +
-                                                            "In the skewed position, Philae’s solar panels are generating much less power than had been planned, and when its batteries drain in a couple of days, it may not be able to recharge. As the comet rotates once every 12 hours, the lander is receiving only about 1.5 hours of sunlight instead of the expected six to seven hours. ",
-                                                            "ImageDescription": "CHASING A COMET  Rosetta launched in 2004, made several loops through the inner solar system gathering speed and then spent years chasing down Comet 67P/C-G. The spacecraft arrived in August.",
-                                                            "ImageUrl": "http://graphics8.nytimes.com/newsgraphics/2014/11/08/rosetta-philae/5e378c5e4212594c134fc802fc7a3d82b7d6b5e5/rosetta_white-945.png",
-                                                            "valid_start": now
-                                                        }).save().then(function (newArticleSectionItem2) {
-                                                                new model.models.ArticleReference({ArticleSection_id: newArticleSection2.get('id')}).save().then(function (newArticleReference2) {
-                                                                    new model.models.ArticleReferenceItem({
-                                                                        "ArticleReference_id": newArticleReference2.get('id'),
-                                                                        "Text": "The New York Times",
-                                                                        "valid_start": now
-                                                                    }).save().then(function (newArticleReferenceItem2) {
-                                                                            console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                                            resolve();
-                                                                        }).catch(function (error) {
-                                                                            console.log("Error while creating ArticleReferenceItem for page 'blog': " +
-                                                                            error);
-                                                                            reject(error);
-                                                                        });
-                                                                }).catch(function (error) {
-                                                                    console.log("Error while creating ArticleReference for page 'blog': " + error);
-                                                                    reject(error);
-                                                                });
-                                                            }).catch(function (error) {
-                                                                console.log("Error while creating ArticleSectionItem for page 'blog': " + error);
-                                                                reject(error);
-                                                            });
-                                                    }).catch(function (error) {
-                                                        console.log("Error while creating ArticleSection for page 'blog': " + error);
-                                                        reject(error);
-                                                    });
-                                                }).catch(function (error) {
-                                                    console.log("Error while creating ArticleReferenceItem for page 'blog': " + error);
-                                                    reject(error);
-                                                });
-                                        }).catch(function (error) {
-                                            console.log("Error while creating ArticleReference for page 'blog': " + error);
-                                            reject(error);
-                                        });
-                                    }).catch(function (error) {
-                                        console.log("Error while creating ArticleSectionItem for page 'blog': " + error);
-                                        reject(error);
-                                    });
-                            }).catch(function (error) {
-                                console.log("Error while creating ArticleSection for page 'blog': " + error);
-                                reject(error);
-                            });
+                            console.log("Article from " + newArticle.get('Author') + " (" + newArticle.get('Date') +  ") saved.");
+                            resolve();
                         }).catch(function (error) {
                             console.log("Error while creating Article for page 'blog': " + error);
                             reject(error);
@@ -600,18 +541,6 @@ exports.clearTablesFunctions = [
     },
     function () {
         return knex('Contacts').del();
-    },
-    function () {
-        return knex('ArticleReferenceItems').del();
-    },
-    function () {
-        return knex('ArticleReferences').del();
-    },
-    function () {
-        return knex('ArticleSectionItems').del();
-    },
-    function () {
-        return knex('ArticleSections').del();
     },
     function () {
         return knex('ArticleItems').del();
