@@ -17,7 +17,7 @@ block content
                     if record.author
                         p.small Von: #{record.author}, #{record.date_formatted}
                     if record.rawHtml
-                        !{record.rawHtml}
+                        div !{record.rawHtml}
 
         if canEdit
             script(src="/lib/underscore-1.7.0/underscore.js", type="text/javascript")
