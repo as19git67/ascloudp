@@ -17,7 +17,8 @@ module.exports.get = function (req, res) {
         if (articleItem) {
             knex(articleItem.tableName).columnInfo().then(function (articleItemSchema) {
 
-                res.setHeader('X-CSRF-Token', req.csrfToken());
+                var csrfToken = req.csrfToken();
+                res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
                 res.json(
                     {
                         article: {
@@ -30,7 +31,7 @@ module.exports.get = function (req, res) {
                         },
                         article_schema: {
                             date: _.extend(articleItemSchema['Date'], {name: "date", label: "Datum", description: "Artikeldatum"}),
-                            title: _.extend(articleItemSchema['Title'], {
+                            text: _.extend(articleItemSchema['Text'], {
                                 label: "Artikeltext",
                                 description: "Text des Artikels"
                             }),
@@ -62,14 +63,60 @@ module.exports.get = function (req, res) {
     });
 };
 
+function isDateDifferent(articleItem, dbTableColumn, reqBody, sentDateName) {
+    var pModelDate;
+    var mSentDate;
+
+    if (articleItem.get(dbTableColumn)) {
+        pModelDate = moment(articleItem.get(dbTableColumn));
+        if (pModelDate.isValid() == false) {
+            pModelDate = undefined;
+        }
+    }
+    if (reqBody[sentDateName]) {
+        mSentDate = moment(reqBody[sentDateName]);
+        if (mSentDate.isValid() == false) {
+            mSentDate = undefined;
+        }
+    }
+    if (pModelDate && mSentDate) {
+        return pModelDate.isSame(mSentDate) == false;
+    }
+    return !(pModelDate == undefined && mSentDate == undefined);
+}
+
+
 // edit article
 module.exports.put = function (req, res) {
     var articleId = req.params.id;
 
-    model.bookshelf.transaction(function (t) {
 
-        new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
-            if (articleItem) {
+    new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
+        if (articleItem) {
+            var articleDateIsDifferent = isDateDifferent(articleItem, "Date", req.body, "date");
+            if (!articleDateIsDifferent) {
+                var publishStartIsDifferent = isDateDifferent(articleItem, "publish_start", req.body, "publish_start");
+                if (!publishStartIsDifferent) {
+                    var publishEndIsDifferent = isDateDifferent(articleItem, "publish_end", req.body, "publish_end");
+                    if (!publishEndIsDifferent) {
+                        var authorIsDifferent = articleItem.get('Author') != req.body.author;
+                        if (!authorIsDifferent) {
+                            var textIsDifferent = articleItem.get('Text') != req.body.text;
+                            if (!textIsDifferent) {
+                                // until here, nothing has changed
+                                console.log("Not saving ArticleItem because nothing changed.");
+                                res.statusCode = 304;   // not changed
+                                res.send("304: Article not changed");
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // start a transaction because articleItem and audit are updated
+            model.bookshelf.transaction(function (t) {
+
                 // invalidate current eventItem record
                 var now = new Date();
                 articleItem.set('valid_end', now);
@@ -79,9 +126,8 @@ module.exports.put = function (req, res) {
                     new ArticleItem({
                         Article_id: articleId,
                         Date: req.body.date,
-                        Title: req.body.title,
-                        Subtitle: req.body.subtitle,
                         Author: req.body.author,
+                        Text: req.body.text,
                         publish_start: req.body.publish_start,
                         publish_end: req.body.publish_end,
                         valid_start: now
@@ -113,29 +159,29 @@ module.exports.put = function (req, res) {
                     console.log("Roll back transaction");
                     t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
                 });
-            } else {
-                console.log("Event with id " + eventId + " not found. Rolling back transaction");
-                t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
-            }
+            }).then(function (savedItem) {
+                console.log("Transaction (saving ArticleItem) committed");
+                if (savedItem) {
+                    // return put data again back to caller
+                    module.exports.get(req, res);
+                } else {
+                    res.statusCode = 304;   // not changed
+                    res.send("304: Article information not changed");
+                }
+            }).catch(function (error) {
+                console.log("Transaction (saving ArticleItem) rolled back");
+                res.statusCode = error.statusCode;
+                res.send(error.message);
+            });
 
-        }).catch(function (error) {
-            console.log("Error while reading article from database:", error);
-            console.log("Roll back transaction");
-            t.rollback({statusCode: 500, message: 'Error 500: reading of article from database failed'});
-        });
-    }).then(function (savedItem) {
-        console.log("Transaction (saving ArticleItem) committed");
-        if (savedItem) {
-            // return put data again back to caller
-            module.exports.get(req, res);
         } else {
-            res.statusCode = 304;   // not changed
-            res.send("304: Article information not changed");
+            console.log("Event with id " + eventId + " not found. Rolling back transaction");
+            t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
         }
     }).catch(function (error) {
-        console.log("Transaction (saving ArticleItem) rolled back");
-        res.statusCode = error.statusCode;
-        res.send(error.message);
+        console.log("Error while reading article from database:", error);
+        console.log("Roll back transaction");
+        t.rollback({statusCode: 500, message: 'Error 500: reading of article from database failed'});
     });
 };
 

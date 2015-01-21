@@ -5,34 +5,11 @@
         <div class="modal-dialog modal-dialog-full">
             <div class="modal-content modal-content-full" ng-controller="articleEditCtrl">
                 <div class="modal-header modal-header-full">
-                    <button type="button" class="btn btn-primary" id="btSave" name="btSave">Speichern und Zurück</button>
+                    <button type="button" class="btn btn-primary" id="btSave" name="btSave" ng-click="saveArticle($event)">Speichern und Zurück</button>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
                 </div>
                 <div class="modal-body">
                     <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
-                    <div class="row">
-                        <form class="form-horizontal" role="form">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <div class="form-group has-feedback">
-                                    <label for="title" class="control-label col-xs-2">{{article_schema.title.label}}:</label>
-
-                                    <div id="title" class="col-xs-10">
-                                        <input type="text" class="form-control" value="{{article.title}}">
-                                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                                    </div>
-                                </div>
-                                <div class="form-group has-feedback">
-                                    <label for="subtitle" class="control-label col-xs-2">{{article_schema.subtitle.label}}:</label>
-
-                                    <div id="subtitle" class="col-xs-10">
-                                        <textarea rows="3" class="form-control">{{article.subtitle}}</textarea>
-                                        <i class="glyphicon glyphicon-asterisk form-control-feedback"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                    <hr>
 
                     <div class="container-fluid">
                         <div class="row">
@@ -44,7 +21,7 @@
                                                 <label for="author" class="control-label">{{article_schema.author.label}}:</label>
 
                                                 <div id="author">
-                                                    <input type="text" class="form-control" value="{{article.author}}">
+                                                    <input type="text" class="form-control" ng-model="article.author">
                                                 </div>
                                             </div>
                                             <div class="form-group">
@@ -52,11 +29,11 @@
 
                                                 <div id="artikeldatum">
                                                     <p class="input-group">
-                                                        <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.date" is-open="opened" min-date="minDate"
+                                                        <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.date" is-open="article_date_opened" min-date="minDate"
                                                                datepicker-options="dateOptions"
                                                                date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
                                                     <span class="input-group-btn">
-                                                        <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                        <button type="button" class="btn btn-default" ng-click="openDatePicker($event, 'article_date_opened')">
                                                             <i class="glyphicon glyphicon-calendar"></i>
                                                         </button>
                                                     </span>
@@ -77,11 +54,12 @@
 
                                                 <div id="publish_start">
                                                     <p class="input-group">
-                                                        <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.publish_start" is-open="opened" min-date="minDate"
+                                                        <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.publish_start" is-open="publish_start_opened"
+                                                               min-date="minDate"
                                                                datepicker-options="dateOptions"
                                                                date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
                                                         <span class="input-group-btn">
-                                                            <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                            <button type="button" class="btn btn-default" ng-click="openDatePicker($event, 'publish_start_opened')">
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
@@ -93,11 +71,12 @@
 
                                                 <div id="publish_end">
                                                     <p class="input-group">
-                                                        <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.publish_end" is-open="opened" min-date="minDate"
+                                                        <input type="text" class="form-control" datepicker-popup="{{format}}" ng-model="article.publish_end" is-open="publish_end_opened"
+                                                               min-date="minDate"
                                                                datepicker-options="dateOptions"
                                                                date-disabled="disabled(date, mode)" ng-required="true" close-text="Close"/>
                                                         <span class="input-group-btn">
-                                                            <button type="button" class="btn btn-default" ng-click="open($event)">
+                                                            <button type="button" class="btn btn-default" ng-click="openDatePicker($event, 'publish_end_opened')">
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
@@ -109,53 +88,17 @@
                                 </div>
                             </div>
                         </div>
+
+                        <hr>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div class="form-group">
+                                    <textarea class="form-control" rows="{{article.text.length/70}}" ng-maxlength="article_schema.text.maxLength" ng-model="article.text" required="Ein Text muss eingegeben werden" ng-required="true" ></textarea>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
-
-                    <hr>
-                    <form class="form" role="form">
-                        <div class="col-lg-12" ng-repeat="articleSection in article_sections">
-                            <div class="form-group col-md-2">
-                                <label class="form-control-static">
-                                    <span class="glyphicon glyphicon-minus-sign" style="cursor: pointer;"></span>
-                                    &nbsp;Abschnitt&nbsp;{{articleSection.section_order}}
-                                </label>
-                            </div>
-                            <div class="col-md-10">
-                                <div class="form-group">
-                                    <label for="{{'articleSectionTitle_' + articleSection.section_id}}" class="control-label">{{article_section_schema.title.label}}:</label>
-
-                                    <div id="{{'articleSectionTitle_' + articleSection.section_id}}">
-                                        <input type="text" class="form-control" value="{{articleSection.title}}">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="{{'articleSectionText_' + articleSection.section_id}}" class="control-label">{{article_section_schema.text.label}}:</label>
-
-                                    <div id="{{'articleSectionText_' + articleSection.section_id}}">
-                                        <textarea class="form-control" rows="{{articleSection.text.length / 80}}">{{articleSection.text}}</textarea>
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="{{'articleSectionImageUrl_' + articleSection.section_id}}" class="control-label">{{article_section_schema.image_url.label}}:</label>
-
-                                    <div id="{{'articleSectionImageUrl_' + articleSection.section_id}}">
-                                        <input type="text" class="form-control" value="{{articleSection.image_url}}">
-                                    </div>
-                                </div>
-                                <div class="form-group">
-                                    <label for="{{'articleSectionImageDescription_' + articleSection.section_id}}" class="control-label">{{article_section_schema.image_description.label}}:</label>
-
-                                    <div id="{{'articleSectionImageDescription_' + articleSection.section_id}}">
-                                        <input type="text" class="form-control" value="{{articleSection.image_description}}">
-                                    </div>
-                                </div>
-                            </div>
-                            <hr class="col-lg-12">
-                        </div>
-                        <div class="col-lg-12">
-                            <button class="btn btn-default" ng-click="addSection()">Add Section&nbsp;<span class="glyphicon glyphicon-plus-sign"></span></button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>

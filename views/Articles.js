@@ -24,6 +24,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         _.each(dataCollection.models, function (articleItem) {
             var article = {};
             var text = articleItem.get('Text');
+            article.article_id = articleItem.get('Article_id');
             article.rawHtml = rho.toHtml(text);
             article.author = articleItem.get('Author');
             article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');

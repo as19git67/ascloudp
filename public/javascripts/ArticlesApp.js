@@ -15,6 +15,13 @@ $.extend($.expr[":"], {
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
 var articleEditApp = angular.module('articleEditApp', ['ui.bootstrap']);
 
+articleEditApp.config(['$httpProvider',
+    function(provider){
+        provider.defaults.xsrfHeaderName = 'X-CSRF-Token';
+        provider.defaults.xsrfCookieName = 'X-CSRF-Token';
+    }]
+);
+
 // add the article edit controller
 articleEditApp.controller('articleEditCtrl',
     function ($log, $scope, articleService) {
@@ -30,33 +37,31 @@ articleEditApp.controller('articleEditCtrl',
                     $log.error("Error while loading the article", error);
                 });
         };
-        $scope.addSection = function () {
-            var maxSectionId = 0;
-            var maxSectionOrder = 0;
-            for (var i = 0; i < $scope.article_sections.length; i++) {
-                var article_section = $scope.article_sections[i];
-                if (article_section.section_id > maxSectionId) {
-                    maxSectionId = article_section.section_id;
-                }
-                if (article_section.section_order > maxSectionOrder) {
-                    maxSectionOrder = article_section.section_order;
-                }
-            }
-            var articleSection = {
-                article_id: $scope.article.articleId,
-                section_id: maxSectionId + 1,
-                section_order: maxSectionOrder + 1
-            };
-
-            $scope.article_sections.push(articleSection);
+        $scope.saveArticle = function ($event) {
+            articleService.saveArticle($scope.article).then(function(){
+                ui.editArticleEntry.modal('hide');
+                location.reload();
+            }, function(error){
+                $log.error("Error while saving the article", error);
+            });
         };
 
         // date picker event
-        $scope.open = function ($event) {
+        $scope.openDatePicker = function ($event, isOpenAttrName) {
             $event.preventDefault();
             $event.stopPropagation();
 
-            $scope.opened = true;
+            // close other opened date pickers before opening a new one
+            if (!$scope.openedDatePicker) {
+                $scope.openedDatePicker = {};
+            } else {
+                _.each($scope.openedDatePicker, function(val, key){
+                    $scope.openedDatePicker[key] = false;
+                    $scope[key] = false;
+                });
+            }
+            $scope.openedDatePicker[isOpenAttrName] = true;
+            $scope[isOpenAttrName] = true;
         };
         $scope.format = 'dd.MM.yyyy';
 
@@ -81,12 +86,28 @@ articleEditApp.controller('articleEditCtrl',
             getArticle: function (id) {
                 var deferred = $q.defer();
 
-                $http.get('/api/v1/articles/' + id).success(function (data) {
-                    // todo: postprocessing of the data
+                $http.get('/api/v1/articles/' + id).success(function (data, resp, jqXHR) {
+                    //this.csrfToken = jqXHR('X-CSRF-Token');
                     deferred.resolve(data);
                 }).error(function (msg, code) {
                     deferred.reject(msg);
                     $log.error(msg, code);
+                });
+
+                return deferred.promise;
+            },
+            saveArticle:function (article) {
+                var deferred = $q.defer();
+
+                $http.put('/api/v1/articles/' + article.article_id, article).success(function (data) {
+                    deferred.resolve();
+                }).error(function (msg, code) {
+                    if (code == 304) {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject(msg);
+                        $log.error(msg, code);
+                    }
                 });
 
                 return deferred.promise;
