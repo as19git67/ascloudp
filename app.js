@@ -82,6 +82,7 @@ app.use('/loginManageAccount', loginManageAccount);
 
 var rp = new rolePermissions(model.models);
 
+app.get('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
 app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.put);
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.post);

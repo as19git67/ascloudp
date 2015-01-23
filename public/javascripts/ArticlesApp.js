@@ -16,10 +16,10 @@ $.extend($.expr[":"], {
 var articleEditApp = angular.module('articleEditApp', ['ui.bootstrap']);
 
 articleEditApp.config(['$httpProvider',
-    function(provider){
-        provider.defaults.xsrfHeaderName = 'X-CSRF-Token';
-        provider.defaults.xsrfCookieName = 'X-CSRF-Token';
-    }]
+        function (provider) {
+            provider.defaults.xsrfHeaderName = 'X-CSRF-Token';
+            provider.defaults.xsrfCookieName = 'X-CSRF-Token';
+        }]
 );
 
 // add the article edit controller
@@ -30,20 +30,33 @@ articleEditApp.controller('articleEditCtrl',
             promise.then(function (payload) {
                     $scope.article = payload.article;
                     $scope.article_schema = payload.article_schema;
-                    $scope.article_sections = payload.article_sections;
-                    $scope.article_section_schema = payload.article_section_schema;
                 },
                 function (error) {
                     $log.error("Error while loading the article", error);
                 });
         };
         $scope.saveArticle = function ($event) {
-            articleService.saveArticle($scope.article).then(function(){
+            articleService.saveArticle($scope.article, $scope.pageid).then(function () {
                 ui.editArticleEntry.modal('hide');
                 location.reload();
-            }, function(error){
+            }, function (error) {
+                $scope.errorMessage = error.toString();
                 $log.error("Error while saving the article", error);
             });
+        };
+        $scope.newArticle = function (pageid) {
+            return articleService.getArticleSchema().then(function (data) {
+                console.log("getArticleSchema returned schema");
+                $scope.article_schema = data.article_schema;
+                $scope.article = {};
+                $scope.article.pageid = pageid;
+
+                var today = new moment();
+                $scope.article.date = today.toISOString();
+                $scope.article.publish_start = today.add(2, 'days').toISOString();
+                $scope.article.publish_end = today.add(9, 'days').toISOString();
+            });
+
         };
 
         // date picker event
@@ -55,7 +68,7 @@ articleEditApp.controller('articleEditCtrl',
             if (!$scope.openedDatePicker) {
                 $scope.openedDatePicker = {};
             } else {
-                _.each($scope.openedDatePicker, function(val, key){
+                _.each($scope.openedDatePicker, function (val, key) {
                     $scope.openedDatePicker[key] = false;
                     $scope[key] = false;
                 });
@@ -80,26 +93,55 @@ articleEditApp.controller('articleEditCtrl',
 
             console.log("showing modal dialog...");
         });
+        ui.newItem.click(function () {
+            var clickedElement = $(this);
+            var pageid = clickedElement.attr('data-pageid');
+
+            ui.editArticleEntry.on('shown.bs.modal', function (e) {
+                console.log("Modal dialog showed");
+            });
+
+            $scope.newArticle(pageid).then(function () {
+                // show modal dialog
+                ui.editArticleEntry.modal({backdrop: true});
+
+                console.log("showing modal dialog...");
+            });
+            console.log("newArticle called");
+
+        });
     })
     .factory('articleService', function ($http, $log, $q) {
         return {
-            getArticle: function (id) {
+            getArticleSchema: function () {
                 var deferred = $q.defer();
-
-                $http.get('/api/v1/articles/' + id).success(function (data, resp, jqXHR) {
-                    //this.csrfToken = jqXHR('X-CSRF-Token');
+                $http.get('/api/v1/articles?type=schema').success(function (data, resp, jqXHR) {
                     deferred.resolve(data);
                 }).error(function (msg, code) {
                     deferred.reject(msg);
                     $log.error(msg, code);
                 });
-
                 return deferred.promise;
             },
-            saveArticle:function (article) {
+            getArticle: function (id) {
                 var deferred = $q.defer();
-
-                $http.put('/api/v1/articles/' + article.article_id, article).success(function (data) {
+                $http.get('/api/v1/articles/' + id).success(function (data, resp, jqXHR) {
+                    deferred.resolve(data);
+                }).error(function (msg, code) {
+                    deferred.reject(msg);
+                    $log.error(msg, code);
+                });
+                return deferred.promise;
+            },
+            saveArticle: function (article) {
+                var deferred = $q.defer();
+                var promise;
+                if (article.article_id) {
+                    promise = $http.put('/api/v1/articles/' + article.article_id, article);
+                } else {
+                    promise = $http.post('/api/v1/articles/', article);
+                }
+                promise.success(function (data) {
                     deferred.resolve();
                 }).error(function (msg, code) {
                     if (code == 304) {
@@ -109,7 +151,6 @@ articleEditApp.controller('articleEditCtrl',
                         $log.error(msg, code);
                     }
                 });
-
                 return deferred.promise;
             }
         }
@@ -118,7 +159,8 @@ articleEditApp.controller('articleEditCtrl',
 
 var ui = {
     editArticleEntry: $("#editArticleEntry"),
-    errorMessage: $("#errorMessage")
+    errorMessage: $("#errorMessage"),
+    newItem: $(".articleNew")
 };
 
 /*
@@ -142,17 +184,3 @@ var ui = {
  });
  });
  */
-
-function saveClicked() {
-    ui.errorMessage.addClass("hidden");
-
-    this.model.save().done(function () {
-        ui.editArticleEntry.modal('hide');
-        location.reload();
-    }).fail(function (req) {
-        if (req.responseText && req.responseText.substr(0, 14) != "<!DOCTYPE html") {
-            console.log("Saving event failed: " + req.responseText);
-        }
-        ui.errorMessage.text(req.status + " " + req.statusText).removeClass("hidden");
-    });
-}
