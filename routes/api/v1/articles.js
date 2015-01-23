@@ -245,7 +245,7 @@ module.exports.post = function (req, res) {
                                 ChangedAt: new Date(),
                                 Table: savedArticleItem.tableName,
                                 ChangedBy: userName,
-                                Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
+                                Description: "New Article created for page " + req.body.pageid + " by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
                             }
                         ).save().then(function () {
                                 t.commit(savedArticleItem);
