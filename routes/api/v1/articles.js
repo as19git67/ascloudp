@@ -49,8 +49,16 @@ module.exports.get = function (req, res) {
         });
     } else {
         var articleId = req.params.id;
+        var whereClause = {Article_id: articleId};
+        var includeDeleted = false;
+        if (req.query && req.query.include && req.query.include.indexOf("deleted") >= -1) {
+            includeDeleted = true;
+        }
+        if (includeDeleted == false) {
+            whereClause.valid_end = null;
+        }
 
-        new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
+        new ArticleItem(whereClause).fetch().then(function (articleItem) {
             if (articleItem) {
                 respondWithArticleItemData(req, res, articleItem);
             } else {
@@ -154,11 +162,11 @@ module.exports.put = function (req, res) {
             model.bookshelf.transaction(function (t) {
                 var now = new Date();
 
-                // invalidate current eventItem record
+                // invalidate current articleItem record
                 articleItem.set('valid_end', now);
                 articleItem.save(null, {transacting: t}).then(function () {
 
-                    // create new eventItem
+                    // create new ArticleItem
                     new ArticleItem({
                         Article_id: articleId,
                         Date: req.body.date,
@@ -211,7 +219,7 @@ module.exports.put = function (req, res) {
             });
 
         } else {
-            console.log("Event with id " + eventId + " not found. Rolling back transaction");
+            console.log("Article with id " + articleId + " not found. Rolling back transaction");
             t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
         }
     }).catch(function (error) {
@@ -230,7 +238,7 @@ module.exports.post = function (req, res) {
         new Article({
             Page_id: req.body.pageid
         }).save(null, {transacting: t}).then(function (newArticle) {
-                // create new eventItem
+                // create new ArticleItem
                 new ArticleItem({
                     Article_id: newArticle.get('id'),
                     Date: req.body.date,
@@ -285,3 +293,61 @@ module.exports.post = function (req, res) {
 
 };
 
+// delete article -> set valid_end to now
+module.exports.delete = function (req, res) {
+    var articleId = req.params.id;
+
+
+    new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
+        if (articleItem) {
+
+            // start a transaction because articleItem and audit are updated
+            model.bookshelf.transaction(function (t) {
+                var now = new Date();
+
+                // invalidate current ArticleItem record
+                articleItem.set('valid_end', now);
+                articleItem.save(null, {transacting: t}).then(function (savedArticleItem) {
+
+                    var userName = req.user.UserName ? req.user.UserName : req.user.id;
+                    new Audit({
+                            ChangedAt: new Date(),
+                            Table: new ArticleItem().tableName,
+                            ChangedBy: userName,
+                            Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
+                        }
+                    ).save().then(function () {
+                            t.commit(savedArticleItem);
+                        }).catch(function (error) {
+                            console.log("Error while saving Audit for new ArticleItem to database:", error);
+                            console.log("Roll back transaction");
+                            t.rollback({
+                                statusCode: 500,
+                                message: 'Error 500: deleting of article in database failed'
+                            });
+                        });
+                }).catch(function (error) {
+                    console.log("Error while updating ArticleItem in database:", error);
+                    console.log("Roll back transaction");
+                    t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                });
+            }).then(function (savedItem) {
+                console.log("Transaction (saving ArticleItem) committed");
+                res.statusCode = 204;   // HTTP 204 No Content: The server successfully processed the request, but is not returning any content
+                res.send("204: Article deleted");
+            }).catch(function (error) {
+                console.log("Transaction (deleting (update) ArticleItem) rolled back");
+                res.statusCode = error.statusCode;
+                res.send(error.message);
+            });
+
+        } else {
+            console.log("Article with id " + articleId + " not found. Rolling back transaction");
+            t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
+        }
+    }).catch(function (error) {
+        console.log("Error while reading article from database:", error);
+        console.log("Roll back transaction");
+        t.rollback({statusCode: 500, message: 'Error 500: reading of article from database failed'});
+    });
+};

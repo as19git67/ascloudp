@@ -160,7 +160,7 @@ module.exports = function () {
                     profiles[page.Name + '_edit'] = {
                         description: "Seite: ändern von " + entityName,
                         resources: ["/" + page.Name],
-                        permissions: ["get", "post"],
+                        permissions: ["get", "post", "delete"],
                         menus: [page.Name]
                     };
                 }

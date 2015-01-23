@@ -36,12 +36,21 @@ articleEditApp.controller('articleEditCtrl',
                 });
         };
         $scope.saveArticle = function ($event) {
-            articleService.saveArticle($scope.article, $scope.pageid).then(function () {
+            articleService.saveArticle($scope.article).then(function () {
                 ui.editArticleEntry.modal('hide');
                 location.reload();
             }, function (error) {
                 $scope.errorMessage = error.toString();
                 $log.error("Error while saving the article", error);
+            });
+        };
+        $scope.deleteArticle = function ($event) {
+            articleService.deleteArticle($scope.article).then(function () {
+                ui.editArticleEntry.modal('hide');
+                location.reload();
+            }, function (error) {
+                $scope.errorMessage = error.toString();
+                $log.error("Error while deleting the article", error);
             });
         };
         $scope.newArticle = function (pageid) {
@@ -145,6 +154,21 @@ articleEditApp.controller('articleEditCtrl',
                     deferred.resolve();
                 }).error(function (msg, code) {
                     if (code == 304) {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject(msg);
+                        $log.error(msg, code);
+                    }
+                });
+                return deferred.promise;
+            },
+            deleteArticle: function (article) {
+                var deferred = $q.defer();
+                var promise = $http.delete('/api/v1/articles/' + article.article_id, article);
+                promise.success(function (data) {
+                    deferred.resolve();
+                }).error(function (msg, code) {
+                    if (code == 204 || code == 200) {
                         deferred.resolve();
                     } else {
                         deferred.reject(msg);

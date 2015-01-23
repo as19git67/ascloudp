@@ -85,6 +85,7 @@ var rp = new rolePermissions(model.models);
 app.get('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
 app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.put);
+app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.delete);
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.post);
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.get);
 app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.put);
