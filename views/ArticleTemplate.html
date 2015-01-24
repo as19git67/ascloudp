@@ -92,8 +92,38 @@
                         <hr>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <a ng-click="isReplyFormOpen = !isReplyFormOpen">Eingabehilfe</a>
+
+                                <div class="form-group" ng-show="isReplyFormOpen">
+                                    <p class="help-block">Example block-level help text here.</p>
+                                    <dl class="dl-horizontal">
+                                        <dt>Überschriften</dt>
+                                        <dd>Überschriften starten mit einem oder mehreren #. Die Anzahl der #-Zeichen definieren die Ebene</dd>
+                                        <dt>Absätze</dt>
+                                        <dd>Jeder neue Absatz wird mit einer Leerzeile bestimmt.</dd>
+                                        <dt>Kursiv</dt>
+                                        <dd>Text, der mit _ umschlossen ist, wird kursiv dargestellt</dd>
+                                        <dt>Fettschrift</dt>
+                                        <dd>Text, der mit * umschlossen ist, wird fett dargestellt</dd>
+                                        <dt>Links</dt>
+                                        <dd>Links werden in folgender Form definiert: <code>[Link text](http://myurl.com)</code></dd>
+                                        <dt>Bilder</dt>
+                                        <dd>Bilder werden in folgender Weise eingebettet: <code>![Alternativer text](http://myurl.com/myimg.jpg)</code></dd>
+                                        <dt>Listen</dt>
+                                        <dd>Listen starten mit *. Jedes Listenelement muss die gleiche Einrückung haben. Nach jedem Listenelement eine Leerzeile einfügen. Weiter eingerückte * erzeugen
+                                            Listen in untergeordneten Ebenen.
+                                        </dd>
+                                        <dt>Nummerierte Listen</dt>
+                                        <dd>Nummerierte Listen starten mit 1 gefolgt von einem Punkt (1.)</dd>
+                                        <dt>Horizontale Linie</dt>
+                                        <dd>Ein Absatz mit genau drei Minuszeichen (---) erzeugt eine horizontale Linie. Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.</dd>
+                                        <dt>Weitere Informationen</dt>
+                                        <dd><a href="https://github.com/inca/rho/blob/master/SYNTAX.md" target="_blank">RHO Syntax (Englisch)</a></dd>
+                                    </dl>
+                                    <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                </div>
                                 <div class="form-group">
-                                    <textarea class="form-control" rows="{{article.text.length/50}}" ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
+                                    <textarea class="form-control textareaMonospace" rows="{{article.text.length/50}}" ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
                                               required="Ein Text muss eingegeben werden" ng-required="true"></textarea>
                                 </div>
                             </div>
