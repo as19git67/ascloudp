@@ -92,11 +92,14 @@
                         <hr>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <a ng-click="isReplyFormOpen = !isReplyFormOpen">Eingabehilfe</a>
-
-                                <div class="form-group" ng-show="isReplyFormOpen">
-                                    <p class="help-block">Example block-level help text here.</p>
-                                    <dl class="dl-horizontal">
+                                <div class="form-group">
+                                    <button class="btn btn-info" ng-click="isRhoHelpOpen = !isRhoHelpOpen">
+                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true">
+                                            <span ng-hide="isRhoHelpOpen">Eingabehilfe anzeigen</span>
+                                            <span ng-show="isRhoHelpOpen">Eingabehilfe verstecken</span>
+                                        </span>
+                                    </button>
+                                    <dl class="dl-horizontal" ng-show="isRhoHelpOpen">
                                         <dt>Überschriften</dt>
                                         <dd>Überschriften starten mit einem oder mehreren #. Die Anzahl der #-Zeichen definieren die Ebene</dd>
                                         <dt>Absätze</dt>
@@ -122,10 +125,14 @@
                                     </dl>
                                     <button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                                 </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                                 <div class="form-group">
-                                    <textarea class="form-control textareaMonospace" rows="{{article.text.length/50}}" ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
-                                              required="Ein Text muss eingegeben werden" ng-required="true"></textarea>
+                                    <textarea class="form-control textareaMonospace" rows="{{textareaRows}}" ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
+                                              required="Ein Text muss eingegeben werden" ng-required="true" ng-change="renderRhoText()"></textarea>
                                 </div>
+                            </div>
+                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6" ng-bind-html="trustedTextAsHtml">
                             </div>
                         </div>
                         <hr>

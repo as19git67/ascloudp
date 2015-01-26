@@ -23,103 +23,121 @@ articleEditApp.config(['$httpProvider',
 );
 
 // add the article edit controller
-articleEditApp.controller('articleEditCtrl',
-    function ($log, $scope, articleService) {
-        $scope.loadArticle = function (id) {
-            var promise = articleService.getArticle(id);
-            promise.then(function (payload) {
-                    $scope.article = payload.article;
-                    $scope.article_schema = payload.article_schema;
-                },
-                function (error) {
-                    $log.error("Error while loading the article", error);
-                });
-        };
-        $scope.saveArticle = function ($event) {
-            articleService.saveArticle($scope.article).then(function () {
-                ui.editArticleEntry.modal('hide');
-                location.reload();
-            }, function (error) {
-                $scope.errorMessage = error.toString();
-                $log.error("Error while saving the article", error);
+articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', 'articleService', function ($sce, $log, $scope, articleService) {
+    $scope.loadArticle = function (id) {
+        var promise = articleService.getArticle(id);
+        promise.then(function (payload) {
+                $scope.article = payload.article;
+                $scope.article_schema = payload.article_schema;
+
+                if ($scope.article.text) {
+                    $scope.renderRhoText();
+                }
+            },
+            function (error) {
+                $log.error("Error while loading the article", error);
             });
-        };
-        $scope.deleteArticle = function ($event) {
-            articleService.deleteArticle($scope.article).then(function () {
-                ui.editArticleEntry.modal('hide');
-                location.reload();
-            }, function (error) {
-                $scope.errorMessage = error.toString();
-                $log.error("Error while deleting the article", error);
+    };
+    $scope.saveArticle = function ($event) {
+        articleService.saveArticle($scope.article).then(function () {
+            ui.editArticleEntry.modal('hide');
+            location.reload();
+        }, function (error) {
+            $scope.errorMessage = error.toString();
+            $log.error("Error while saving the article", error);
+        });
+    };
+    $scope.deleteArticle = function ($event) {
+        articleService.deleteArticle($scope.article).then(function () {
+            ui.editArticleEntry.modal('hide');
+            location.reload();
+        }, function (error) {
+            $scope.errorMessage = error.toString();
+            $log.error("Error while deleting the article", error);
+        });
+    };
+    $scope.newArticle = function (pageid) {
+        return articleService.getArticleSchema().then(function (data) {
+            console.log("getArticleSchema returned schema");
+            $scope.article_schema = data.article_schema;
+            $scope.article = {};
+            $scope.article.pageid = pageid;
+
+            var today = new moment();
+            $scope.article.date = today.toISOString();
+            $scope.article.publish_start = today.add(2, 'days').toISOString();
+            $scope.article.publish_end = today.add(9, 'days').toISOString();
+        });
+
+    };
+    $scope.renderRhoText = function () {
+
+        $scope.textAsHtml = rho.toHtml($scope.article.text);
+        $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
+
+        // calculate rows for textarea
+        var charsPerLine = 40;
+
+        var lines = $scope.article.text.split(/\r\n|\r|\n/);
+        $scope.textareaRows = _.reduce(lines, function(neededRows, line) {
+            var additionalRows = Math.round((line.length / charsPerLine));
+            return neededRows + additionalRows;
+        }, lines.length);
+    };
+
+    // date picker event
+    $scope.openDatePicker = function ($event, isOpenAttrName) {
+        $event.preventDefault();
+        $event.stopPropagation();
+
+        // close other opened date pickers before opening a new one
+        if (!$scope.openedDatePicker) {
+            $scope.openedDatePicker = {};
+        } else {
+            _.each($scope.openedDatePicker, function (val, key) {
+                $scope.openedDatePicker[key] = false;
+                $scope[key] = false;
             });
-        };
-        $scope.newArticle = function (pageid) {
-            return articleService.getArticleSchema().then(function (data) {
-                console.log("getArticleSchema returned schema");
-                $scope.article_schema = data.article_schema;
-                $scope.article = {};
-                $scope.article.pageid = pageid;
+        }
+        $scope.openedDatePicker[isOpenAttrName] = true;
+        $scope[isOpenAttrName] = true;
+    };
+    $scope.format = 'dd.MM.yyyy';
 
-                var today = new moment();
-                $scope.article.date = today.toISOString();
-                $scope.article.publish_start = today.add(2, 'days').toISOString();
-                $scope.article.publish_end = today.add(9, 'days').toISOString();
-            });
+    // attach to click event (jquery)
 
-        };
+    $(".articleListItem").click(function () {
+        var clickedElement = $(this);
+        var id = clickedElement.attr('data-id');
+        $scope.loadArticle(id);
+        ui.editArticleEntry.on('shown.bs.modal', function (e) {
+            console.log("Modal dialog showed");
+        });
 
-        // date picker event
-        $scope.openDatePicker = function ($event, isOpenAttrName) {
-            $event.preventDefault();
-            $event.stopPropagation();
+        // show modal dialog
+        ui.editArticleEntry.modal({backdrop: true});
 
-            // close other opened date pickers before opening a new one
-            if (!$scope.openedDatePicker) {
-                $scope.openedDatePicker = {};
-            } else {
-                _.each($scope.openedDatePicker, function (val, key) {
-                    $scope.openedDatePicker[key] = false;
-                    $scope[key] = false;
-                });
-            }
-            $scope.openedDatePicker[isOpenAttrName] = true;
-            $scope[isOpenAttrName] = true;
-        };
-        $scope.format = 'dd.MM.yyyy';
+        console.log("showing modal dialog...");
+    });
+    ui.newItem.click(function () {
+        var clickedElement = $(this);
+        var pageid = clickedElement.attr('data-pageid');
 
-        // attach to click event (jquery)
+        ui.editArticleEntry.on('shown.bs.modal', function (e) {
+            console.log("Modal dialog showed");
+        });
 
-        $(".articleListItem").click(function () {
-            var clickedElement = $(this);
-            var id = clickedElement.attr('data-id');
-            $scope.loadArticle(id);
-            ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                console.log("Modal dialog showed");
-            });
-
+        $scope.newArticle(pageid).then(function () {
             // show modal dialog
             ui.editArticleEntry.modal({backdrop: true});
 
             console.log("showing modal dialog...");
         });
-        ui.newItem.click(function () {
-            var clickedElement = $(this);
-            var pageid = clickedElement.attr('data-pageid');
+        console.log("newArticle called");
 
-            ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                console.log("Modal dialog showed");
-            });
+    });
 
-            $scope.newArticle(pageid).then(function () {
-                // show modal dialog
-                ui.editArticleEntry.modal({backdrop: true});
-
-                console.log("showing modal dialog...");
-            });
-            console.log("newArticle called");
-
-        });
-    })
+}])
     .factory('articleService', function ($http, $log, $q) {
         return {
             getArticleSchema: function () {
