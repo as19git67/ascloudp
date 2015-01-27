@@ -92,7 +92,6 @@
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div flow-init
-                                     flow-files-submitted="$flow.upload()"
                                      flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
                                     <div class="drop" flow-drop ng-class="dropClass">
                                         <span class="btn btn-default" flow-btn>Bild hochladen</span>
@@ -137,10 +136,9 @@
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <button class="btn btn-info" ng-click="isRhoHelpOpen = !isRhoHelpOpen">
-                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true">
-                                            <span ng-hide="isRhoHelpOpen">Eingabehilfe anzeigen</span>
-                                            <span ng-show="isRhoHelpOpen">Eingabehilfe verstecken</span>
-                                        </span>
+                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                        <span ng-show="isRhoHelpOpen">Eingabehilfe verstecken</span>
+                                        <span ng-hide="isRhoHelpOpen">Eingabehilfe anzeigen</span>
                                     </button>
                                     <dl class="dl-horizontal" collapse="!isRhoHelpOpen">
                                         <dt>Überschriften</dt>
@@ -184,7 +182,8 @@
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <button class="btn btn-default btn-danger" data-toggle="modal" , data-target="#confirmModal">
-                                        <span class="glyphicon glyphicon-trash">&nbsp Artikel löschen</span>
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                        <span>Artikel löschen</span>
                                     </button>
 
                                     <div id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" class="modal fade">

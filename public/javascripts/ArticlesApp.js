@@ -13,7 +13,7 @@ $.extend($.expr[":"], {
 });
 
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
-var articleEditApp = angular.module('articleEditApp', ['ui.bootstrap', 'flow']);
+var articleEditApp = angular.module('articleEditApp', ['ngCookies', 'ui.bootstrap', 'flow']);
 
 articleEditApp.config(['$httpProvider',
         function (provider) {
@@ -23,135 +23,162 @@ articleEditApp.config(['$httpProvider',
 );
 articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
         flowFactoryProvider.defaults = {
-            target: 'upload.php',
+            //target: function (file, chunk, isTest) {
+            //    var article_id = $scope.article.article_id;
+            //    return '/api/v1/article/' + article_id + '/images'
+            //},
             permanentErrors: [404, 500, 501],
             maxChunkRetries: 1,
             chunkRetryInterval: 5000,
-            simultaneousUploads: 4
+            simultaneousUploads: 4,
+            //headers: function (file, chunk, isTest) {
+            //    return {
+            //        'X-CSRF-Token': cookie.get("X-CSRF-Token") // call func for getting a cookie
+            //    }
+            //}
         };
-        flowFactoryProvider.on('catchAll', function (event) {
-            console.log('catchAll', arguments);
-        });
+        //flowFactoryProvider.on('catchAll', function (event) {
+        //    console.log('catchAll', arguments);
+        //});
     }]
 );
 
 // add the article edit controller
-articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', 'articleService', function ($sce, $log, $scope, articleService) {
-    $scope.loadArticle = function (id) {
-        var promise = articleService.getArticle(id);
-        promise.then(function (payload) {
-                $scope.article = payload.article;
-                $scope.article_schema = payload.article_schema;
+articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'articleService',
+    function ($sce, $log, $scope, $cookies, articleService) {
+        $scope.initFlowForUploadRequest = {
+            query: function (flowFile, flowChunk) {
+                // function will be called for every request
+                return {
+                    article_id: $scope.article.article_id, csrfToken: $cookies.get('X-CSRF-Token')
+                };
+            }
+        };
+        $scope.$on('flow::filesSubmitted', function (event, $flow, flowFile) {
+            console.log("flow!!")
+            $flow.opts.target = '/api/v1/article/' + $scope.article.article_id + '/images';
+            $flow.opts.headers = {
+                'X-CSRF-Token': $cookies.get('X-CSRF-Token') // call func for getting a cookie
+            };
+            $flow.upload();
 
-                if ($scope.article.text) {
-                    $scope.renderRhoText();
-                }
-            },
-            function (error) {
-                $log.error("Error while loading the article", error);
+        });
+
+        $scope.loadArticle = function (id) {
+            var promise = articleService.getArticle(id);
+            promise.then(function (payload) {
+                    $scope.article = payload.article;
+                    $scope.article_schema = payload.article_schema;
+
+                    if ($scope.article.text) {
+                        $scope.renderRhoText();
+                    }
+                },
+                function (error) {
+                    $log.error("Error while loading the article", error);
+                });
+        };
+        $scope.saveArticle = function ($event) {
+            articleService.saveArticle($scope.article).then(function () {
+                ui.editArticleEntry.modal('hide');
+                location.reload();
+            }, function (error) {
+                $scope.errorMessage = error.toString();
+                $log.error("Error while saving the article", error);
             });
-    };
-    $scope.saveArticle = function ($event) {
-        articleService.saveArticle($scope.article).then(function () {
-            ui.editArticleEntry.modal('hide');
-            location.reload();
-        }, function (error) {
-            $scope.errorMessage = error.toString();
-            $log.error("Error while saving the article", error);
-        });
-    };
-    $scope.deleteArticle = function ($event) {
-        articleService.deleteArticle($scope.article).then(function () {
-            ui.editArticleEntry.modal('hide');
-            location.reload();
-        }, function (error) {
-            $scope.errorMessage = error.toString();
-            $log.error("Error while deleting the article", error);
-        });
-    };
-    $scope.newArticle = function (pageid) {
-        return articleService.getArticleSchema().then(function (data) {
-            console.log("getArticleSchema returned schema");
-            $scope.article_schema = data.article_schema;
-            $scope.article = {};
-            $scope.article.pageid = pageid;
-
-            var today = new moment();
-            $scope.article.date = today.toISOString();
-            $scope.article.publish_start = today.add(2, 'days').toISOString();
-            $scope.article.publish_end = today.add(9, 'days').toISOString();
-        });
-
-    };
-    $scope.renderRhoText = function () {
-
-        $scope.textAsHtml = rho.toHtml($scope.article.text);
-        $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
-
-        // calculate rows for textarea
-        var charsPerLine = 40;
-
-        var lines = $scope.article.text.split(/\r\n|\r|\n/);
-        $scope.textareaRows = _.reduce(lines, function (neededRows, line) {
-            var additionalRows = Math.round((line.length / charsPerLine));
-            return neededRows + additionalRows;
-        }, lines.length);
-    };
-
-    // date picker event
-    $scope.openDatePicker = function ($event, isOpenAttrName) {
-        $event.preventDefault();
-        $event.stopPropagation();
-
-        // close other opened date pickers before opening a new one
-        if (!$scope.openedDatePicker) {
-            $scope.openedDatePicker = {};
-        } else {
-            _.each($scope.openedDatePicker, function (val, key) {
-                $scope.openedDatePicker[key] = false;
-                $scope[key] = false;
+        };
+        $scope.deleteArticle = function ($event) {
+            articleService.deleteArticle($scope.article).then(function () {
+                ui.editArticleEntry.modal('hide');
+                location.reload();
+            }, function (error) {
+                $scope.errorMessage = error.toString();
+                $log.error("Error while deleting the article", error);
             });
-        }
-        $scope.openedDatePicker[isOpenAttrName] = true;
-        $scope[isOpenAttrName] = true;
-    };
-    $scope.format = 'dd.MM.yyyy';
+        };
+        $scope.newArticle = function (pageid) {
+            return articleService.getArticleSchema().then(function (data) {
+                console.log("getArticleSchema returned schema");
+                $scope.article_schema = data.article_schema;
+                $scope.article = {};
+                $scope.article.pageid = pageid;
+
+                var today = new moment();
+                $scope.article.date = today.toISOString();
+                $scope.article.publish_start = today.add(2, 'days').toISOString();
+                $scope.article.publish_end = today.add(9, 'days').toISOString();
+            });
+
+        };
+        $scope.renderRhoText = function () {
+
+            $scope.textAsHtml = rho.toHtml($scope.article.text);
+            $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
+
+            // calculate rows for textarea
+            var charsPerLine = 40;
+
+            var lines = $scope.article.text.split(/\r\n|\r|\n/);
+            $scope.textareaRows = _.reduce(lines, function (neededRows, line) {
+                var additionalRows = Math.round((line.length / charsPerLine));
+                return neededRows + additionalRows;
+            }, lines.length);
+        };
+
+        // date picker event
+        $scope.openDatePicker = function ($event, isOpenAttrName) {
+            $event.preventDefault();
+            $event.stopPropagation();
+
+            // close other opened date pickers before opening a new one
+            if (!$scope.openedDatePicker) {
+                $scope.openedDatePicker = {};
+            } else {
+                _.each($scope.openedDatePicker, function (val, key) {
+                    $scope.openedDatePicker[key] = false;
+                    $scope[key] = false;
+                });
+            }
+            $scope.openedDatePicker[isOpenAttrName] = true;
+            $scope[isOpenAttrName] = true;
+        };
+        $scope.format = 'dd.MM.yyyy';
 
 
-    // attach to click event (jquery)
+        // attach to click event (jquery)
 
-    $(".articleListItem").click(function () {
-        var clickedElement = $(this);
-        var id = clickedElement.attr('data-id');
-        $scope.loadArticle(id);
-        ui.editArticleEntry.on('shown.bs.modal', function (e) {
-            console.log("Modal dialog showed");
-        });
+        $(".articleListItem").click(function () {
+            var clickedElement = $(this);
+            var id = clickedElement.attr('data-id');
+            $scope.loadArticle(id);
+            ui.editArticleEntry.on('shown.bs.modal', function (e) {
+                console.log("Modal dialog showed");
+            });
 
-        // show modal dialog
-        ui.editArticleEntry.modal({backdrop: true});
-
-        console.log("showing modal dialog...");
-    });
-    ui.newItem.click(function () {
-        var clickedElement = $(this);
-        var pageid = clickedElement.attr('data-pageid');
-
-        ui.editArticleEntry.on('shown.bs.modal', function (e) {
-            console.log("Modal dialog showed");
-        });
-
-        $scope.newArticle(pageid).then(function () {
             // show modal dialog
             ui.editArticleEntry.modal({backdrop: true});
 
             console.log("showing modal dialog...");
         });
-        console.log("newArticle called");
+        ui.newItem.click(function () {
+            var clickedElement = $(this);
+            var pageid = clickedElement.attr('data-pageid');
 
-    });
+            ui.editArticleEntry.on('shown.bs.modal', function (e) {
+                console.log("Modal dialog showed");
+            });
 
-}])
+            $scope.newArticle(pageid).then(function () {
+                // show modal dialog
+                ui.editArticleEntry.modal({backdrop: true});
+
+                console.log("showing modal dialog...");
+            });
+            console.log("newArticle called");
+
+        });
+
+    }])
     .factory('articleService', function ($http, $log, $q) {
         return {
             getArticleSchema: function () {
