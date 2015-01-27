@@ -13,13 +13,26 @@ $.extend($.expr[":"], {
 });
 
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
-var articleEditApp = angular.module('articleEditApp', ['ui.bootstrap']);
+var articleEditApp = angular.module('articleEditApp', ['ui.bootstrap', 'flow']);
 
 articleEditApp.config(['$httpProvider',
         function (provider) {
             provider.defaults.xsrfHeaderName = 'X-CSRF-Token';
             provider.defaults.xsrfCookieName = 'X-CSRF-Token';
         }]
+);
+articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
+        flowFactoryProvider.defaults = {
+            target: 'upload.php',
+            permanentErrors: [404, 500, 501],
+            maxChunkRetries: 1,
+            chunkRetryInterval: 5000,
+            simultaneousUploads: 4
+        };
+        flowFactoryProvider.on('catchAll', function (event) {
+            console.log('catchAll', arguments);
+        });
+    }]
 );
 
 // add the article edit controller
@@ -79,7 +92,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', 'article
         var charsPerLine = 40;
 
         var lines = $scope.article.text.split(/\r\n|\r|\n/);
-        $scope.textareaRows = _.reduce(lines, function(neededRows, line) {
+        $scope.textareaRows = _.reduce(lines, function (neededRows, line) {
             var additionalRows = Math.round((line.length / charsPerLine));
             return neededRows + additionalRows;
         }, lines.length);
@@ -103,6 +116,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', 'article
         $scope[isOpenAttrName] = true;
     };
     $scope.format = 'dd.MM.yyyy';
+
 
     // attach to click event (jquery)
 
