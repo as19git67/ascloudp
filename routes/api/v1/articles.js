@@ -32,6 +32,7 @@ function respondWithArticleItemData(req, res, articleItem) {
         return res.send('Error 500: reading schema info for articles from database failed');
     });
 }
+
 module.exports.get = function (req, res) {
     if (req.query && req.query.type && req.query.type == "schema") {
         getArticleItemSchema().then(function (article_schema) {
@@ -71,6 +72,21 @@ module.exports.get = function (req, res) {
             res.statusCode = 500;
             return res.send('Error 500: reading of articles from database failed');
         });
+    }
+};
+module.exports.getImage = function (req, res) {
+    var articleId = req.params.id;
+
+    if (req.query && req.query.flowChunkNumber) {
+        // get requests from flow.js (if testChunks is true)
+        var flowChunkNumber = req.query.flowChunkNumber;
+        var flowIdentifier = req.query.flowIdentifier;
+        console.log("Flow asks for chunk id " + flowChunkNumber + " of file id " + flowIdentifier + " for article with id " + articleId);
+        res.statusCode = 200; // OK
+        res.send('200 OK');
+    } else {
+        res.statusCode = 500;
+        res.send('500 Wrong query parameter');
     }
 };
 

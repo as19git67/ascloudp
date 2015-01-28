@@ -92,6 +92,8 @@
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div flow-init
+                                     flow-name="flowObj.flow"
+                                     flow-files-submitted="filesSubmitted"
                                      flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
                                     <div class="drop" flow-drop ng-class="dropClass">
                                         <span class="btn btn-default" flow-btn>Bild hochladen</span>
@@ -104,25 +106,30 @@
 
                                     <div>
 
-                                        <div ng-repeat="file in $flow.files" class="gallery-box">
-                                            <span class="title">{{file.name}}</span>
+                                        <div ng-repeat="file in $flow.files" >
+                                            <div ng-if="file.error()" class="error"><span class="title">{{file.name}}</span>
+                                                Fehler beim Hochladen
+                                            </div>
+                                            <div ng-if="!file.isComplete()" class="gallery-box">
+                                                <span class="title">{{file.name}}</span>
 
-                                            <div class="thumbnail" ng-show="$flow.files.length">
-                                                <img flow-img="file"/>
-                                            </div>
-                                            <div class="progress progress-striped" ng-class="{active: file.isUploading()}">
-                                                <div class="progress-bar" role="progressbar"
-                                                     aria-valuenow="{{file.progress() * 100}}"
-                                                     aria-valuemin="0"
-                                                     aria-valuemax="100"
-                                                     ng-style="{width: (file.progress() * 100) + '%'}">
-                                                    <span class="sr-only">{{file.progress()}}% Fertig</span>
+                                                <div class="thumbnail" ng-show="$flow.files.length">
+                                                    <img flow-img="file"/>
                                                 </div>
-                                            </div>
-                                            <div class="btn-group">
-                                                <a class="btn btn-xs btn-danger" ng-click="file.cancel()">
-                                                    Abbrechen
-                                                </a>
+                                                <div class="progress progress-striped" ng-class="{active: file.isUploading()}">
+                                                    <div class="progress-bar" role="progressbar"
+                                                         aria-valuenow="{{file.progress() * 100}}"
+                                                         aria-valuemin="0"
+                                                         aria-valuemax="100"
+                                                         ng-style="{width: (file.progress() * 100) + '%'}">
+                                                        <span class="sr-only">{{file.progress()}}% Fertig</span>
+                                                    </div>
+                                                </div>
+                                                <div class="btn-group">
+                                                    <a class="btn btn-xs btn-danger" ng-click="file.cancel()">
+                                                        Abbrechen
+                                                    </a>
+                                                </div>
                                             </div>
                                         </div>
                                         <div class="clear"></div>

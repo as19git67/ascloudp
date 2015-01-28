@@ -83,6 +83,7 @@ app.use('/loginManageAccount', loginManageAccount);
 var rp = new rolePermissions(model.models);
 
 app.get('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
+app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.getImage);
 app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.put);
 app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.delete);
@@ -314,6 +315,21 @@ var httpPort = config.get('httpPort');
 var httpsPort = config.get('httpsPort');
 
 var model = require('./model');
+
+/*
+ var knex = model.bookshelf.knex;
+ var k = knex.initialize( {
+ client : 'mysql',
+ connection : {
+ host : '127.0.0.1',
+ user : 'root',
+ password : 'root',
+ database : 'testdb',
+ charset : 'utf8'
+ }
+ } );
+ */
+
 model.createSchemaIfNotExists().then(function () {
 
     passportStrategies.init(passport, model.bookshelf, function (error) {
@@ -343,7 +359,12 @@ model.createSchemaIfNotExists().then(function () {
     });
 
 }).catch(function (err) {
-    console.log("ERROR when creating the database schema: " + err);
+    if (err.syscall == "connect") {
+        console.log("Error: can't connect to database.");
+    } else {
+        console.log("ERROR when creating the database schema: ");
+        console.log(err);
+    }
 });
 
 function startHttpsServer(app, httpsPort) {

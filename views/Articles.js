@@ -5,8 +5,6 @@ var model = require('../model');
 var moment = require('moment');
 var rho = require('rho');
 var ArticleItem = model.models.ArticleItem;
-var ArticleSectionItem = model.models.ArticleSectionItem;
-var ArticleReferenceItem = model.models.ArticleReferenceItem;
 
 var appName = config.get('appName');
 

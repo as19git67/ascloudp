@@ -30,7 +30,7 @@ articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
             permanentErrors: [404, 500, 501],
             maxChunkRetries: 1,
             chunkRetryInterval: 5000,
-            simultaneousUploads: 4,
+            simultaneousUploads: 4
             //headers: function (file, chunk, isTest) {
             //    return {
             //        'X-CSRF-Token': cookie.get("X-CSRF-Token") // call func for getting a cookie
@@ -46,23 +46,7 @@ articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
 // add the article edit controller
 articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'articleService',
     function ($sce, $log, $scope, $cookies, articleService) {
-        $scope.initFlowForUploadRequest = {
-            query: function (flowFile, flowChunk) {
-                // function will be called for every request
-                return {
-                    article_id: $scope.article.article_id, csrfToken: $cookies.get('X-CSRF-Token')
-                };
-            }
-        };
-        $scope.$on('flow::filesSubmitted', function (event, $flow, flowFile) {
-            console.log("flow!!")
-            $flow.opts.target = '/api/v1/article/' + $scope.article.article_id + '/images';
-            $flow.opts.headers = {
-                'X-CSRF-Token': $cookies.get('X-CSRF-Token') // call func for getting a cookie
-            };
-            $flow.upload();
-
-        });
+        $scope.flowObj = {};
 
         $scope.loadArticle = function (id) {
             var promise = articleService.getArticle(id);
@@ -73,6 +57,15 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     if ($scope.article.text) {
                         $scope.renderRhoText();
                     }
+
+                    $scope.flowObj.flow.on('filesSubmitted', function (event) {
+                        $scope.flowObj.flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/images';
+                        var csrfToken = $cookies['X-CSRF-Token'];
+                        $scope.flowObj.flow.opts.headers = {
+                            'X-CSRF-Token': csrfToken
+                        };
+                        $scope.flowObj.flow.upload();
+                    });
                 },
                 function (error) {
                     $log.error("Error while loading the article", error);

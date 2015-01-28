@@ -40,6 +40,8 @@ exports.createSchemaIfNotExists = function () {
                     },
                     reject);
             }
+        }).catch(function(error){
+            reject(error);
         });
     });
 };
