@@ -82,8 +82,15 @@ module.exports.getImage = function (req, res) {
         var flowChunkNumber = req.query.flowChunkNumber;
         var flowIdentifier = req.query.flowIdentifier;
         console.log("Flow asks for chunk id " + flowChunkNumber + " of file id " + flowIdentifier + " for article with id " + articleId);
-        res.statusCode = 200; // OK
-        res.send('200 OK');
+        if (req.query.flowFilename.indexOf(" at ") > -1) {
+            setTimeout(function() {
+                res.statusCode = 200; // OK
+                res.send('200 OK');
+            }, 500);
+        } else {
+            res.statusCode = 403; // NOT OK
+            res.send('403 NOT');
+        }
     } else {
         res.statusCode = 500;
         res.send('500 Wrong query parameter');

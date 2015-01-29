@@ -58,14 +58,36 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         $scope.renderRhoText();
                     }
 
-                    $scope.flowObj.flow.on('filesSubmitted', function (event) {
-                        $scope.flowObj.flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/images';
+                    var flow = $scope.flowObj.flow;
+                    flow.off('filesSubmitted');
+                    flow.on('filesSubmitted', function (event) {
+                        console.log("Files in flow: " + flow.files.length);
+
+                        flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/images';
                         var csrfToken = $cookies['X-CSRF-Token'];
-                        $scope.flowObj.flow.opts.headers = {
+                        flow.opts.headers = {
                             'X-CSRF-Token': csrfToken
                         };
-                        $scope.flowObj.flow.upload();
+                        flow.upload();
                     });
+                    flow.on('fileAdded', function (file, event) {
+                        console.log("file added: ", file, event);
+                        // TODO: throw away old completed or error files
+                        var filesToProcess = flow.files.length;
+                        if (filesToProcess > 5) {
+                            console.log("Too many files. Rejecting more for upload");
+                            return false; // reject file
+                        }
+                    });
+                    flow.on('fileSuccess', function (file, message) {
+                        // TODO: refresh attachment list from server
+                        flow.removeFile(file);
+                        //console.log('fileSuccess: ', file, message);
+                    });
+                    flow.on('fileError', function (file, message) {
+                        console.log('fileError: ', file, message);
+                    });
+
                 },
                 function (error) {
                     $log.error("Error while loading the article", error);
