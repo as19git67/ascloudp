@@ -47,8 +47,8 @@ app.set('view engine', 'jade');
 
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded());
+app.use(bodyParser.json({defer: true}));
+app.use(bodyParser.urlencoded({defer: true}));
 var cookieSecret = config.get('cookieSecret');
 var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
 app.use(cookieParser(cookieSecret));
@@ -60,6 +60,8 @@ app.use(cookieSession({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use(bodyParser({defer: true})); // enables multipart form
 
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
@@ -83,11 +85,12 @@ app.use('/loginManageAccount', loginManageAccount);
 var rp = new rolePermissions(model.models);
 
 app.get('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
-app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.getImage);
 app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.get);
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.put);
 app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.delete);
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.post);
+app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.getImage);
+app.post('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticated, rp.middleware(3), apiArticles.postImage);
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.get);
 app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticated, rp.middleware(3), apiEvents.put);
 app.get('/api/v1/members', passportStrategies.ensureAuthenticated, rp.middleware(), apiMembers.list);

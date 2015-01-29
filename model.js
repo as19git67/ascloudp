@@ -79,6 +79,9 @@ exports.createSchema = function () {
                 return knex.schema.dropTableIfExists('ArticleSections');
             },
             function () {
+                return knex.schema.dropTableIfExists('ArticleImages');
+            },
+            function () {
                 return knex.schema.dropTableIfExists('ArticleItems');
             },
             function () {
@@ -406,6 +409,18 @@ exports.createSchema = function () {
                     t.string('Text', 100000);
                     t.timestamp('publish_start').notNullable().index();
                     t.timestamp('publish_end').index();
+                    t.timestamp('valid_start').index();
+                    t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return knex.schema.createTable('ArticleImages', function (t) {
+                    t.increments('id').primary();
+                    t.integer('Article_id').references('id').inTable('Articles');
+                    t.binary('Image').notNullable().index();
+                    t.string('Filename').notNullable();
+                    t.integer('Size').notNullable();
+                    t.string('Description');
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -907,6 +922,13 @@ var Article = bookshelf.Model.extend({
 
 var ArticleItem = bookshelf.Model.extend({
     tableName: 'ArticleItems',
+    Article: function () {
+        return this.belongsTo(Article);
+    }
+});
+
+var ArticleImage = bookshelf.Model.extend({
+    tableName: 'ArticleImages',
     Article: function () {
         return this.belongsTo(Article);
     }

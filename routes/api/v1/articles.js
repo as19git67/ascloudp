@@ -2,6 +2,10 @@ var _ = require('underscore');
 var Promise = require('bluebird/js/main/promise')();
 var model = require('../../../model');
 var moment = require('moment');
+var formidable = require('formidable');
+var tmp = require('tmp');
+var path = require('path');
+var fs = require('fs');
 var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
 var Audit = model.models.Audit;
@@ -74,6 +78,7 @@ module.exports.get = function (req, res) {
         });
     }
 };
+
 module.exports.getImage = function (req, res) {
     var articleId = req.params.id;
 
@@ -83,17 +88,59 @@ module.exports.getImage = function (req, res) {
         var flowIdentifier = req.query.flowIdentifier;
         console.log("Flow asks for chunk id " + flowChunkNumber + " of file id " + flowIdentifier + " for article with id " + articleId);
         if (req.query.flowFilename.indexOf(" at ") > -1) {
-            setTimeout(function() {
+            setTimeout(function () {
                 res.statusCode = 200; // OK
                 res.send('200 OK');
             }, 500);
         } else {
-            res.statusCode = 403; // NOT OK
-            res.send('403 NOT');
+            res.statusCode = 404; // NOT OK
+            res.send('404 NOT');
         }
     } else {
         res.statusCode = 500;
         res.send('500 Wrong query parameter');
+    }
+};
+
+var tmpDir;
+
+function handlePostImage(req, res, tmpdir) {
+    console.log("tmpDir: ", tmpDir);
+
+    var articleId = req.params.id;
+    var form = new formidable.IncomingForm();
+
+    form.parse(req, function(err, fields, files) {
+        setTimeout(function () {
+            res.statusCode = 200; // OK
+            res.send('200 OK');
+        }, 500);
+        //res.writeHead(200, {'content-type': 'text/plain'});
+        //res.write('received upload:\n\n');
+        //res.end(util.inspect({fields: fields, files: files}));
+    });
+
+}
+
+module.exports.postImage = function (req, res) {
+
+    if (tmpDir) {
+        handlePostImage(req, res, tmpDir);
+    } else {
+        tmp.dir(function _tempDirCreated(err, tdir, cleanupCallback) {
+            if (err) {
+                res.status = 500;
+                res.send('500 File Upload failed');
+            } else {
+                tmpDir = tdir + path.sep;
+
+                handlePostImage(req, res, tmpDir);
+
+                // Manual cleanup
+                //cleanupCallback();
+            }
+
+        });
     }
 };
 
