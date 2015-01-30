@@ -153,6 +153,7 @@ module.exports.postImage = function (req, res) {
                             });
                             fileBuffer = Buffer.concat(chunkBuffers);
                             // todo: remove upload files
+                            // todo: DB cleanup auch bei Fehler
                             if (fileBuffer) {
                                 fs.writeFile(imageFilename, fileBuffer, function (err) {
                                     if (err) {
