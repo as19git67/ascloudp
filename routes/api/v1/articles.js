@@ -135,24 +135,55 @@ module.exports.postImage = function (req, res) {
             tempFile: files.file.path
         }).save().then(function (savedUpload) {
                 if (fields.flowChunkNumber == fields.flowTotalChunks) {
-                    new Uploads({flowIdentifier: fields.flowIdentifier})
+                    new Uploads({flowIdentifier: fields.flowIdentifier}).query('orderBy', 'flowChunkNumber', 'asc')
                         .fetch()
                         .then(function (chunks) {
                             console.log("All chunks retrieved");
-                            // TODO: make single file from chunks and delete chunk files
+                            var fileBuffer = undefined;
+                            var chunkBuffers = new Array(chunks.models.length);
+                            var imageFilename;
+                            var idx = 0;
+                            chunks.each(function (chunk) {
+                                var tempFile = chunk.attributes.tempFile;
+                                var flowFilename = chunk.attributes.flowFilename;
+                                imageFilename = path.dirname(tempFile) + path.sep + flowFilename;
+                                var tf = chunk.attributes.tempFile;
+                                chunkBuffers[idx] = fs.readFileSync(tf);
+                                idx = idx + 1;
+                            });
+                            fileBuffer = Buffer.concat(chunkBuffers);
+                            // todo: remove upload files
+                            if (fileBuffer) {
+                                fs.writeFile(imageFilename, fileBuffer, function (err) {
+                                    if (err) {
+                                        console.log("Error while writing image file. ", err);
+                                        res.statusCode = 500;
+                                        res.send('500 Error while writing image file from chunks');
+                                    }
+                                    else {
+                                        model.bookshelf.knex('Uploads')
+                                            .where({flowIdentifier: fields.flowIdentifier})
+                                            .del()
+                                            .then(function () {
+                                                console.log("Image file: " + imageFilename);
 
-                            model.bookshelf.knex('Uploads')
-                                .where({flowIdentifier: fields.flowIdentifier})
-                                .del()
-                                .then(function () {
-                                    res.statusCode = 200; // OK
-                                    res.send('200 OK');
-                                })
-                                .catch(function (error) {
-                                    console.log("Error while deleting flowChunks from table Upload: ", error);
-                                    res.statusCode = 500;
-                                    res.send('500 Deleting chunks from upload table of database failed');
+                                                // todo: save in ArticleImage
+
+                                                res.statusCode = 200; // OK
+                                                res.send('200 OK');
+                                            })
+                                            .catch(function (error) {
+                                                console.log("Error while deleting flowChunks from table Upload: ", error);
+                                                res.statusCode = 500;
+                                                res.send('500 Deleting chunks from upload table of database failed');
+                                            });
+                                    }
                                 });
+                            } else {
+                                console.log("Error: fileBuffer is empty");
+                                res.statusCode = 500;
+                                res.send('500 Saving uploaded file failed');
+                            }
                         })
                         .catch(function (error) {
                             console.log("Error while retrieving flowChunks from table Upload: ", error);
