@@ -79,6 +79,9 @@ exports.createSchema = function () {
                 return knex.schema.dropTableIfExists('ArticleSections');
             },
             function () {
+                return knex.schema.dropTableIfExists('Uploads');
+            },
+            function () {
                 return knex.schema.dropTableIfExists('ArticleImages');
             },
             function () {
@@ -423,6 +426,19 @@ exports.createSchema = function () {
                     t.string('Description');
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return knex.schema.createTable('Uploads', function (t) {
+                    t.increments('id').primary();
+                    t.integer('flowChunkNumber').notNullable().index();
+                    t.integer('flowChunkSize').notNullable();
+                    t.integer('flowCurrentChunkSize').notNullable();
+                    t.string('flowFilename').notNullable();
+                    t.string('flowIdentifier').notNullable().index();
+                    t.string('flowRelativePath').notNullable();
+                    t.integer('flowTotalChunks').notNullable();
+                    t.integer('flowTotalSize').notNullable();
                 });
             },
             function () {
@@ -908,6 +924,10 @@ var EventItem = bookshelf.Model.extend({
 
 var Events = bookshelf.Collection.extend({
     model: Event
+});
+
+var Upload = bookshelf.Model.extend({
+    tableName: 'Uploads'
 });
 
 var Article = bookshelf.Model.extend({
