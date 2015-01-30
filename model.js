@@ -439,6 +439,9 @@ exports.createSchema = function () {
                     t.string('flowRelativePath').notNullable();
                     t.integer('flowTotalChunks').notNullable();
                     t.integer('flowTotalSize').notNullable();
+                    t.string('tempFile').notNullable().unique();
+                    t.string('mimeType').notNullable();
+                    t.unique(['flowIdentifier', 'flowChunkNumber']);
                 });
             },
             function () {
@@ -926,10 +929,6 @@ var Events = bookshelf.Collection.extend({
     model: Event
 });
 
-var Upload = bookshelf.Model.extend({
-    tableName: 'Uploads'
-});
-
 var Article = bookshelf.Model.extend({
     tableName: 'Articles',
     Page: function () {
@@ -954,8 +953,20 @@ var ArticleImage = bookshelf.Model.extend({
     }
 });
 
+var ArticleImages = bookshelf.Collection.extend({
+    model: ArticleImage
+});
+
 var Articles = bookshelf.Collection.extend({
     model: Article
+});
+
+var Upload = bookshelf.Model.extend({
+    tableName: 'Uploads'
+});
+
+var Uploads = bookshelf.Collection.extend({
+    model: Upload
 });
 
 var Contact = bookshelf.Model.extend({
@@ -1237,6 +1248,10 @@ module.exports.models = {
     Article: Article,
     ArticleItem: ArticleItem,
     Articles: Articles,
+    ArticleImage: ArticleImage,
+    ArticleImages: ArticleImages,
+    Upload: Upload,
+    Uploads: Uploads,
     Contact: Contact,
     ContactItem: ContactItem,
     Contacts: Contacts,

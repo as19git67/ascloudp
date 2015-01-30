@@ -8,6 +8,9 @@ var path = require('path');
 var fs = require('fs');
 var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
+var ArticleImage = model.models.ArticleImage;
+var Upload = model.models.Upload;
+var Uploads = model.models.Uploads;
 var Audit = model.models.Audit;
 
 var knex = model.bookshelf.knex;
@@ -87,61 +90,88 @@ module.exports.getImage = function (req, res) {
         var flowChunkNumber = req.query.flowChunkNumber;
         var flowIdentifier = req.query.flowIdentifier;
         console.log("Flow asks for chunk id " + flowChunkNumber + " of file id " + flowIdentifier + " for article with id " + articleId);
-        if (req.query.flowFilename.indexOf(" at ") > -1) {
-            setTimeout(function () {
-                res.statusCode = 200; // OK
-                res.send('200 OK');
-            }, 500);
-        } else {
-            res.statusCode = 404; // NOT OK
-            res.send('404 NOT');
-        }
+
+        new Upload({flowIdentifier: flowIdentifier, flowChunkNumber: flowChunkNumber})
+            .fetch()
+            .then(function (chunk) {
+                if (chunk) {
+                    console.log("chunk is already uploaded");
+                    res.statusCode = 200; // OK
+                    res.send('200 OK');
+                } else {
+                    console.log("chunk is unkown");
+                    res.statusCode = 404; // Not found
+                    res.send('404 Not Found');
+                }
+            })
+            .catch(function (error) {
+                console.log("Error while reading chunk from Upload table:", error);
+                res.statusCode = 500;
+                res.send('500 Error reading upload chunk from database');
+            });
     } else {
-        res.statusCode = 500;
-        res.send('500 Wrong query parameter');
+        res.statusCode = 400;
+        res.send('400 Wrong query parameter');
     }
 };
 
-var tmpDir;
-
-function handlePostImage(req, res, tmpdir) {
-    console.log("tmpDir: ", tmpDir);
+module.exports.postImage = function (req, res) {
 
     var articleId = req.params.id;
     var form = new formidable.IncomingForm();
 
-    form.parse(req, function(err, fields, files) {
-        setTimeout(function () {
-            res.statusCode = 200; // OK
-            res.send('200 OK');
-        }, 500);
-        //res.writeHead(200, {'content-type': 'text/plain'});
-        //res.write('received upload:\n\n');
-        //res.end(util.inspect({fields: fields, files: files}));
+    form.parse(req, function (err, fields, files) {
+
+        new Upload({
+            flowChunkNumber: fields.flowChunkNumber,
+            flowChunkSize: fields.flowChunkSize,
+            flowCurrentChunkSize: fields.flowCurrentChunkSize,
+            flowFilename: fields.flowFilename,
+            flowIdentifier: fields.flowIdentifier,
+            flowRelativePath: fields.flowRelativePath,
+            flowTotalChunks: fields.flowTotalChunks,
+            flowTotalSize: fields.flowTotalSize,
+            mimeType: files.file.type,
+            tempFile: files.file.path
+        }).save().then(function (savedUpload) {
+                if (fields.flowChunkNumber == fields.flowTotalChunks) {
+                    new Uploads({flowIdentifier: fields.flowIdentifier})
+                        .fetch()
+                        .then(function (chunks) {
+                            console.log("All chunks retrieved");
+                            // TODO: make single file from chunks and delete chunk files
+
+                            model.bookshelf.knex('Uploads')
+                                .where({flowIdentifier: fields.flowIdentifier})
+                                .del()
+                                .then(function () {
+                                    res.statusCode = 200; // OK
+                                    res.send('200 OK');
+                                })
+                                .catch(function (error) {
+                                    console.log("Error while deleting flowChunks from table Upload: ", error);
+                                    res.statusCode = 500;
+                                    res.send('500 Deleting chunks from upload table of database failed');
+                                });
+                        })
+                        .catch(function (error) {
+                            console.log("Error while retrieving flowChunks from table Upload: ", error);
+                            res.statusCode = 500;
+                            res.send('500 Reading chunks from upload table of database failed');
+                        });
+                    // make file from chunk
+                } else {
+                    res.statusCode = 200; // OK
+                    res.send('200 OK');
+                }
+            })
+            .catch(function (error) {
+                console.log("Error while inserting table Upload: ", error);
+                res.statusCode = 500;
+                res.send('500 insert into upload table of database failed');
+            });
     });
 
-}
-
-module.exports.postImage = function (req, res) {
-
-    if (tmpDir) {
-        handlePostImage(req, res, tmpDir);
-    } else {
-        tmp.dir(function _tempDirCreated(err, tdir, cleanupCallback) {
-            if (err) {
-                res.status = 500;
-                res.send('500 File Upload failed');
-            } else {
-                tmpDir = tdir + path.sep;
-
-                handlePostImage(req, res, tmpDir);
-
-                // Manual cleanup
-                //cleanupCallback();
-            }
-
-        });
-    }
 };
 
 function getArticleItemSchema() {

@@ -61,7 +61,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     var flow = $scope.flowObj.flow;
                     flow.off('filesSubmitted');
                     flow.on('filesSubmitted', function (event) {
-                        console.log("Files in flow: " + flow.files.length);
+                        //console.log("Files in flow: " + flow.files.length);
 
                         flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/images';
                         var csrfToken = $cookies['X-CSRF-Token'];
@@ -71,7 +71,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         flow.upload();
                     });
                     flow.on('fileAdded', function (file, event) {
-                        console.log("file added: ", file, event);
+                        //console.log("file added: ", file, event);
                         // TODO: throw away old completed or error files
                         var filesToProcess = flow.files.length;
                         if (filesToProcess > 5) {
@@ -92,14 +92,20 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 function (error) {
                     $log.error("Error while loading the article", error);
                 });
+            return promise;
         };
         $scope.saveArticle = function ($event) {
             articleService.saveArticle($scope.article).then(function () {
                 ui.editArticleEntry.modal('hide');
                 location.reload();
             }, function (error) {
-                $scope.errorMessage = error.toString();
-                $log.error("Error while saving the article", error);
+                if (error) {
+                    $scope.errorMessage = error.toString();
+                    $log.error("Error while saving the article", error);
+                } else {
+                    $scope.errorMessage = "Fehler beim Speichern des Artikels. Verbindungsaufbau mit dem Server nicht möglich.";
+                    $log.error("Error while saving the article. Connection problem.");
+                }
             });
         };
         $scope.deleteArticle = function ($event) {
@@ -165,15 +171,22 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         $(".articleListItem").click(function () {
             var clickedElement = $(this);
             var id = clickedElement.attr('data-id');
-            $scope.loadArticle(id);
-            ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                console.log("Modal dialog showed");
-            });
+            $scope.loadArticle(id)
+                .then(function () {
+                    ui.editArticleEntry.on('shown.bs.modal', function (e) {
+                        console.log("Modal dialog showed");
+                    });
 
-            // show modal dialog
-            ui.editArticleEntry.modal({backdrop: true});
+                    // show modal dialog
+                    ui.editArticleEntry.modal({backdrop: true});
 
-            console.log("showing modal dialog...");
+                    console.log("showing modal dialog...");
+                })
+                .catch(function(error) {
+                    if (error) {
+                        location.href = "/login";
+                    }
+                });
         });
         ui.newItem.click(function () {
             var clickedElement = $(this);

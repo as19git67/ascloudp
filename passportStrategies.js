@@ -324,6 +324,15 @@ var ensureAuthenticated = function (req, res, next) {
 
 module.exports.ensureAuthenticated = ensureAuthenticated;
 
+module.exports.ensureAuthenticatedForApi = function (req, res, next) {
+    if (req.isAuthenticated()) {
+        return next();
+    }
+    res.statusCode = 401;
+    res.send('401 Unauthorized');
+    return null;
+};
+
 function findByProviderKey(providerName, providerKey, fn) {
     new UserLogin({
         'LoginProvider': providerName,
