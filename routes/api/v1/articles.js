@@ -142,44 +142,54 @@ module.exports.postImage = function (req, res) {
                             var fileBuffer = undefined;
                             var chunkBuffers = new Array(chunks.models.length);
                             var imageFilename;
+                            var flowFilename;
+                            var flowSize;
                             var idx = 0;
                             chunks.each(function (chunk) {
                                 var tempFile = chunk.attributes.tempFile;
-                                var flowFilename = chunk.attributes.flowFilename;
+                                flowFilename = chunk.attributes.flowFilename;
+                                flowSize = chunk.attributes.flowTotalSize;
                                 imageFilename = path.dirname(tempFile) + path.sep + flowFilename;
                                 var tf = chunk.attributes.tempFile;
                                 chunkBuffers[idx] = fs.readFileSync(tf);
+                           //     fs.unlinkSync(tf); // todo
                                 idx = idx + 1;
                             });
                             fileBuffer = Buffer.concat(chunkBuffers);
                             // todo: remove upload files
                             // todo: DB cleanup auch bei Fehler
                             if (fileBuffer) {
-                                fs.writeFile(imageFilename, fileBuffer, function (err) {
-                                    if (err) {
-                                        console.log("Error while writing image file. ", err);
-                                        res.statusCode = 500;
-                                        res.send('500 Error while writing image file from chunks');
-                                    }
-                                    else {
-                                        model.bookshelf.knex('Uploads')
-                                            .where({flowIdentifier: fields.flowIdentifier})
-                                            .del()
-                                            .then(function () {
-                                                console.log("Image file: " + imageFilename);
+                                model.bookshelf.knex('Uploads')
+                                    .where({flowIdentifier: fields.flowIdentifier})
+                                    .del()
+                                    .then(function () {
+                                        console.log("Image file: " + imageFilename);
 
-                                                // todo: save in ArticleImage
-
+                                        new ArticleImage(
+                                            {
+                                                Article_id: articleId,
+                                                Image: fileBuffer,
+                                                Filename: flowFilename,
+                                                Size: flowSize,
+                                                valid_start: new Date()
+                                            }
+                                        ).save().then(function (savedImage) {
+                                                console.log("Image saved");
                                                 res.statusCode = 200; // OK
                                                 res.send('200 OK');
-                                            })
-                                            .catch(function (error) {
-                                                console.log("Error while deleting flowChunks from table Upload: ", error);
+
+                                            }).catch(function (error) {
+                                                console.log("Error while saving image in table ArticleImages: ", error);
                                                 res.statusCode = 500;
-                                                res.send('500 Deleting chunks from upload table of database failed');
+                                                res.send('500 Saving image in database failed');
                                             });
-                                    }
-                                });
+
+                                    })
+                                    .catch(function (error) {
+                                        console.log("Error while deleting flowChunks from table Upload: ", error);
+                                        res.statusCode = 500;
+                                        res.send('500 Deleting chunks from upload table of database failed');
+                                    });
                             } else {
                                 console.log("Error: fileBuffer is empty");
                                 res.statusCode = 500;

@@ -419,11 +419,11 @@ exports.createSchema = function () {
             function () {
                 return knex.schema.createTable('ArticleImages', function (t) {
                     t.increments('id').primary();
-                    t.integer('Article_id').references('id').inTable('Articles');
-                    t.binary('Image').notNullable().index();
-                    t.string('Filename').notNullable();
+                    t.integer('Article_id').references('id').inTable('Articles').index();
+                    t.binary('Image', 1024*1024*10).notNullable();
+                    t.string('Filename').notNullable().index();
                     t.integer('Size').notNullable();
-                    t.string('Description');
+                    t.string('Description').index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
