@@ -9,13 +9,14 @@ var fs = require('fs');
 var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
 var ArticleImage = model.models.ArticleImage;
+var ArticleImages = model.models.ArticleImages;
 var Upload = model.models.Upload;
 var Uploads = model.models.Uploads;
 var Audit = model.models.Audit;
 
 var knex = model.bookshelf.knex;
 
-function respondWithArticleItemData(req, res, articleItem) {
+function respondWithArticleItemData(req, res, articleItem, articleImages) {
     getArticleItemSchema().then(function (article_schema) {
 
         var csrfToken = req.csrfToken();
@@ -30,6 +31,7 @@ function respondWithArticleItemData(req, res, articleItem) {
                     publish_start: articleItem.get('publish_start'),
                     publish_end: articleItem.get('publish_end')
                 },
+                article_images: articleImages,
                 article_schema: article_schema
             }
         );
@@ -68,7 +70,29 @@ module.exports.get = function (req, res) {
 
         new ArticleItem(whereClause).fetch().then(function (articleItem) {
             if (articleItem) {
-                respondWithArticleItemData(req, res, articleItem);
+                var articleImages = [];
+                // todo: !!! specify comlumns and do not request for Image !!!
+                new ArticleImages({Article_id: articleId, valid_end:undefined})
+                    .fetch()
+                    .then(function(images){
+                        if (images) {
+                            images.each(function (image) {
+                                articleImages.push({
+                                    Article_id:image.get('Article_id'),
+                                    Description:image.get('Description'),
+                                    Filename: image.get('Filename'),
+                                    Size: image.get('Size'),
+                                    id: image.get('id')
+                                });
+                            });
+                        }
+                        respondWithArticleItemData(req, res, articleItem, articleImages);
+                    })
+                    .catch(function(error){
+                        console.log("Error while reading article images from database: " + error);
+                        res.statusCode = 500;
+                        return res.send('Error 500: reading of article images from database failed');
+                    });
             } else {
                 res.statusCode = 404;
                 res.send('Error 404: ArticleItem with Article_id ' + articleId + ' not found');
@@ -152,7 +176,7 @@ module.exports.postImage = function (req, res) {
                                 imageFilename = path.dirname(tempFile) + path.sep + flowFilename;
                                 var tf = chunk.attributes.tempFile;
                                 chunkBuffers[idx] = fs.readFileSync(tf);
-                           //     fs.unlinkSync(tf); // todo
+                                //     fs.unlinkSync(tf); // todo
                                 idx = idx + 1;
                             });
                             fileBuffer = Buffer.concat(chunkBuffers);
@@ -175,6 +199,11 @@ module.exports.postImage = function (req, res) {
                                             }
                                         ).save().then(function (savedImage) {
                                                 console.log("Image saved");
+                                                chunks.each(function (chunk) {
+                                                    var tf = chunk.attributes.tempFile;
+                                                    fs.unlinkSync(tf);
+                                                    idx = idx + 1;
+                                                });
                                                 res.statusCode = 200; // OK
                                                 res.send('200 OK');
 
@@ -349,7 +378,20 @@ module.exports.put = function (req, res) {
                 console.log("Transaction (saving ArticleItem) committed");
                 if (savedItem) {
                     // return put data again back to caller
-                    respondWithArticleItemData(req, res, savedItem);
+                    var articleImages = [];
+                    new ArticleImage({Article_id: articleId, valid_end:undefined})
+                        .fetchAll()
+                        .then(function(images){
+                            images.each(function(image){
+                                articleImages.push(image.attributes);
+                            });
+                            respondWithArticleItemData(req, res, savedItem, articleImages);
+                        })
+                        .catch(function(error){
+                            console.log("Error while reading article images from database: " + error);
+                            res.statusCode = 500;
+                            return res.send('Error 500: reading of article images from database failed');
+                        });
                 } else {
                     res.statusCode = 304;   // not changed
                     res.send("304: Article information not changed");
@@ -422,7 +464,20 @@ module.exports.post = function (req, res) {
         console.log("Transaction (saving ArticleItem) committed");
         if (savedItem) {
             // return put data again back to caller
-            respondWithArticleItemData(req, res, savedItem);
+            var articleImages = [];
+            new ArticleImage({Article_id: savedItem.get('Article_id'), valid_end:undefined})
+                .fetchAll()
+                .then(function(images){
+                    images.each(function(image){
+                        articleImages.push(image.attributes);
+                    });
+                    respondWithArticleItemData(req, res, savedItem, articleImages);
+                })
+                .catch(function(error){
+                    console.log("Error while reading article images from database: " + error);
+                    res.statusCode = 500;
+                    return res.send('Error 500: reading of article images from database failed');
+                });
         } else {
             res.statusCode = 304;   // not changed
             res.send("304: Article information not changed");
