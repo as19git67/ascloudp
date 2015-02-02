@@ -28,6 +28,7 @@ var logoff = require('./routes/logoff');
 var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
+var images = require('./routes/images');
 var settings = require('./routes/settings');
 
 var rolePermissions = require('./Roles');
@@ -81,6 +82,7 @@ app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
+app.use('/images', images);
 
 var rp = new rolePermissions(model.models);
 
@@ -89,7 +91,7 @@ app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.put);
 app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.delete);
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.post);
-app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImage);
+app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImageChunk);
 app.post('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.postImage);
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
 app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.put);
