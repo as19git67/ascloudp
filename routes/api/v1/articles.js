@@ -72,14 +72,18 @@ module.exports.get = function (req, res) {
             if (articleItem) {
                 var articleImages = [];
                 // todo: !!! specify comlumns and do not request for Image !!!
-                new ArticleImages({Article_id: articleId, valid_end:undefined})
-                    .fetch()
-                    .then(function(images){
+                new ArticleImages({Article_id: articleId, valid_end: undefined})
+                    .query(function (qb) {
+                        qb.orderBy('Filename', 'ASC');
+                        qb.orderBy('Description', 'ASC');
+                    })
+                    .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size']})
+                    .then(function (images) {
                         if (images) {
                             images.each(function (image) {
                                 articleImages.push({
-                                    Article_id:image.get('Article_id'),
-                                    Description:image.get('Description'),
+                                    Article_id: image.get('Article_id'),
+                                    Description: image.get('Description'),
                                     Filename: image.get('Filename'),
                                     Size: image.get('Size'),
                                     id: image.get('id')
@@ -88,7 +92,7 @@ module.exports.get = function (req, res) {
                         }
                         respondWithArticleItemData(req, res, articleItem, articleImages);
                     })
-                    .catch(function(error){
+                    .catch(function (error) {
                         console.log("Error while reading article images from database: " + error);
                         res.statusCode = 500;
                         return res.send('Error 500: reading of article images from database failed');
@@ -379,15 +383,15 @@ module.exports.put = function (req, res) {
                 if (savedItem) {
                     // return put data again back to caller
                     var articleImages = [];
-                    new ArticleImage({Article_id: articleId, valid_end:undefined})
+                    new ArticleImage({Article_id: articleId, valid_end: undefined})
                         .fetchAll()
-                        .then(function(images){
-                            images.each(function(image){
+                        .then(function (images) {
+                            images.each(function (image) {
                                 articleImages.push(image.attributes);
                             });
                             respondWithArticleItemData(req, res, savedItem, articleImages);
                         })
-                        .catch(function(error){
+                        .catch(function (error) {
                             console.log("Error while reading article images from database: " + error);
                             res.statusCode = 500;
                             return res.send('Error 500: reading of article images from database failed');
@@ -465,15 +469,15 @@ module.exports.post = function (req, res) {
         if (savedItem) {
             // return put data again back to caller
             var articleImages = [];
-            new ArticleImage({Article_id: savedItem.get('Article_id'), valid_end:undefined})
+            new ArticleImage({Article_id: savedItem.get('Article_id'), valid_end: undefined})
                 .fetchAll()
-                .then(function(images){
-                    images.each(function(image){
+                .then(function (images) {
+                    images.each(function (image) {
                         articleImages.push(image.attributes);
                     });
                     respondWithArticleItemData(req, res, savedItem, articleImages);
                 })
-                .catch(function(error){
+                .catch(function (error) {
                     console.log("Error while reading article images from database: " + error);
                     res.statusCode = 500;
                     return res.send('Error 500: reading of article images from database failed');

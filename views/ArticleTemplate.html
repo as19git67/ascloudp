@@ -89,6 +89,31 @@
                             </div>
                         </div>
                         <hr>
+                        <div class="row" ng-if="images_pages && images_pages.length > 0">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div ng-repeat="image in images_pages[current_images_page].images">
+                                    <p>{{image.Filename}}</p>
+                                </div>
+                                <nav>
+                                    <ul class="pagination">
+                                        <li>
+                                            <a href="#" aria-label="Previous">
+                                                <span aria-hidden="true">&laquo;</span>
+                                            </a>
+                                        </li>
+
+                                        <li ng-repeat="page in images_pages">
+                                            <a href="#">{{page.pageNumber}}</a>
+                                        </li>
+                                        <li>
+                                            <a href="#" aria-label="Next">
+                                                <span aria-hidden="true">&raquo;</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div flow-init

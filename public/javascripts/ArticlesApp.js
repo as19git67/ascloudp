@@ -47,12 +47,34 @@ articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
 articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'articleService',
     function ($sce, $log, $scope, $cookies, articleService) {
         $scope.flowObj = {};
+        $scope.current_images_page = 0;
+        $scope.images_pages = [];   // all pages
 
         $scope.loadArticle = function (id) {
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {
                     $scope.article = payload.article;
                     $scope.article_schema = payload.article_schema;
+                    $scope.article_images = payload.article_images;
+
+                    // arrange images in pages
+                    var pageSize = 4;
+                    var cnt = 0;
+                    var pageCnt=0;
+                    var currPageOfImages;
+                    _.each(payload.article_images, function (image) {
+                        if (cnt == 0) {
+                            currPageOfImages = [];
+                            pageCnt++;
+                            $scope.images_pages.push({pageNumber: pageCnt, images: currPageOfImages});
+                        }
+                        currPageOfImages.push(image);
+                        cnt++;
+                        if (cnt == pageSize) {
+                            cnt = 0;
+                        }
+                    });
+
 
                     if ($scope.article.text) {
                         $scope.renderRhoText();
@@ -121,6 +143,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             return articleService.getArticleSchema().then(function (data) {
                 console.log("getArticleSchema returned schema");
                 $scope.article_schema = data.article_schema;
+                $scope.article_images = [];
                 $scope.article = {};
                 $scope.article.pageid = pageid;
 
@@ -182,7 +205,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
                     console.log("showing modal dialog...");
                 })
-                .catch(function(error) {
+                .catch(function (error) {
                     if (error) {
                         location.href = "/login";
                     }

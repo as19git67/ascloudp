@@ -40,7 +40,7 @@ exports.createSchemaIfNotExists = function () {
                     },
                     reject);
             }
-        }).catch(function(error){
+        }).catch(function (error) {
             reject(error);
         });
     });
@@ -420,12 +420,15 @@ exports.createSchema = function () {
                 return knex.schema.createTable('ArticleImages', function (t) {
                     t.increments('id').primary();
                     t.integer('Article_id').references('id').inTable('Articles').index();
-                    t.binary('Image', 1024*1024*10).notNullable();
+                    t.binary('Image').notNullable();
+                    t.binary('Thumbnail').notNullable();
                     t.string('Filename').notNullable().index();
+                    t.string('MimeType').notNullable().index();
                     t.integer('Size').notNullable();
                     t.string('Description').index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
+                    t.unique(['Article_id', 'Filename'])
                 });
             },
             function () {
