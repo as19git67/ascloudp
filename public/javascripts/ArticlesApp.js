@@ -57,7 +57,10 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     $scope.article_schema = payload.article_schema;
                     $scope.article_images = payload.article_images;
 
+
                     // arrange images in pages
+                    $scope.images_pages = [];
+                    $scope.current_images_page = 0;
                     var pageSize = 4;
                     var cnt = 0;
                     var pageCnt=0;
@@ -81,34 +84,36 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     }
 
                     var flow = $scope.flowObj.flow;
-                    flow.off('filesSubmitted');
-                    flow.on('filesSubmitted', function (event) {
-                        //console.log("Files in flow: " + flow.files.length);
+                    if (flow) {
+                        flow.off('filesSubmitted');
+                        flow.on('filesSubmitted', function (event) {
+                            //console.log("Files in flow: " + flow.files.length);
 
-                        flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/images';
-                        var csrfToken = $cookies['X-CSRF-Token'];
-                        flow.opts.headers = {
-                            'X-CSRF-Token': csrfToken
-                        };
-                        flow.upload();
-                    });
-                    flow.on('fileAdded', function (file, event) {
-                        //console.log("file added: ", file, event);
-                        // TODO: throw away old completed or error files
-                        var filesToProcess = flow.files.length;
-                        if (filesToProcess > 5) {
-                            console.log("Too many files. Rejecting more for upload");
-                            return false; // reject file
-                        }
-                    });
-                    flow.on('fileSuccess', function (file, message) {
-                        // TODO: refresh attachment list from server
-                        flow.removeFile(file);
-                        //console.log('fileSuccess: ', file, message);
-                    });
-                    flow.on('fileError', function (file, message) {
-                        console.log('fileError: ', file, message);
-                    });
+                            flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/imagechunks';
+                            var csrfToken = $cookies['X-CSRF-Token'];
+                            flow.opts.headers = {
+                                'X-CSRF-Token': csrfToken
+                            };
+                            flow.upload();
+                        });
+                        flow.on('fileAdded', function (file, event) {
+                            //console.log("file added: ", file, event);
+                            // TODO: throw away old completed or error files
+                            var filesToProcess = flow.files.length;
+                            if (filesToProcess > 5) {
+                                console.log("Too many files. Rejecting more for upload");
+                                return false; // reject file
+                            }
+                        });
+                        flow.on('fileSuccess', function (file, message) {
+                            // TODO: refresh attachment list from server
+                            flow.removeFile(file);
+                            //console.log('fileSuccess: ', file, message);
+                        });
+                        flow.on('fileError', function (file, message) {
+                            console.log('fileError: ', file, message);
+                        });
+                    }
 
                 },
                 function (error) {
@@ -151,9 +156,21 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 $scope.article.date = today.toISOString();
                 $scope.article.publish_start = today.add(2, 'days').toISOString();
                 $scope.article.publish_end = today.add(9, 'days').toISOString();
+
+                $scope.current_images_page = 0;
+                $scope.images_pages = [];   // all pages
+
             });
 
         };
+        $scope.deleteImage = function ($event) {
+            articleService.deleteImage($scope.article, $event).then(function () {
+            }, function (error) {
+                $scope.errorMessage = error.toString();
+                $log.error("Error while deleting the image", error);
+            });
+        };
+
         $scope.renderRhoText = function () {
 
             $scope.textAsHtml = rho.toHtml($scope.article.text);
@@ -252,6 +269,16 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 });
                 return deferred.promise;
             },
+            getArticleImages: function (id) {
+                var deferred = $q.defer();
+                $http.get('/api/v1/articles/' + id + '/images').success(function (data, resp, jqXHR) {
+                    deferred.resolve(data);
+                }).error(function (msg, code) {
+                    deferred.reject(msg);
+                    $log.error(msg, code);
+                });
+                return deferred.promise;
+            },
             saveArticle: function (article) {
                 var deferred = $q.defer();
                 var promise;
@@ -285,6 +312,13 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         $log.error(msg, code);
                     }
                 });
+                return deferred.promise;
+            },
+            deleteImage: function(article, event) {
+                console.log("deleteImage:", event);
+                var deferred = $q.defer();
+                deferred.resolve();
+
                 return deferred.promise;
             }
         }

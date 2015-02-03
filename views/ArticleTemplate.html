@@ -107,13 +107,29 @@
                             </div>
                         </div>
                         <hr>
-                        <div class="row" ng-if="images_pages && images_pages.length > 0">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <div class="col-xs-6 col-md-3" ng-repeat="image in images_pages[current_images_page].images">
-                                    <a href="#" class="thumbnail">
-                                        <img src="/images/{{image.id}}?type=thumbnail" alt="{{image.Description}}">
-                                    </a>
+                        <div class="row">
+                                <div ng-if="images_pages && images_pages.length > 0">
+                                <div class="col-xs-4 col-md-2" ng-repeat="image in images_pages[current_images_page].images">
+                                    <div class="thumbnail">
+                                        <a href="#">
+                                            <img ng-src="/images/{{image.id}}?type=thumbnail" alt="{{image.Description}}">
+                                        </a>
+
+                                        <div class="caption">
+                                            <div style="text-overflow: ellipsis;white-space: nowrap;overflow:hidden">{{image.Filename}}</div>
+                                            <div>{{image.Description}}</div>
+
+                                            <button ng-if="false" class="btn btn-default btn-danger">
+                                                <span class="glyphicon glyphicon-trash"></span>
+                                                <span>Löschen</span>
+                                            </button>
+                                        </div>
+                                        <span class="btn glyphicon glyphicon-remove" ng-click="deleteImage($event)"></span>
+
+                                    </div>
                                 </div>
+                            </div>
+                            <div ng-if="images_pages && images_pages.length > 1" class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <nav>
                                     <ul class="pagination">
                                         <li>
@@ -134,7 +150,7 @@
                                 </nav>
                             </div>
                         </div>
-                        <div class="row">
+                        <div ng-if="article.id" class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div flow-init
                                      flow-name="flowObj.flow"

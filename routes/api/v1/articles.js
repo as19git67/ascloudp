@@ -74,7 +74,7 @@ module.exports.get = function (req, res) {
                 var articleImages = [];
                 new ArticleImages()
                     .query(function (qb) {
-                        qb.where('Article_id', articleId).andWhere('valid_end', undefined);
+                        qb.where({'Article_id': articleId}).andWhere({'valid_end': null});
                         qb.orderBy('Filename', 'ASC');
                         qb.orderBy('Description', 'ASC');
                     })
@@ -108,6 +108,45 @@ module.exports.get = function (req, res) {
             res.statusCode = 500;
             return res.send('Error 500: reading of articles from database failed');
         });
+    }
+};
+
+module.exports.getImages = function (req, res) {
+    var articleId = req.params.id;
+    if (articleId) {
+        var articleImages = [];
+        new ArticleImages()
+            .query(function (qb) {
+                qb.where({'Article_id': articleId}).andWhere({'valid_end': null});
+                qb.orderBy('Filename', 'ASC');
+                qb.orderBy('Description', 'ASC');
+            })
+            .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size']})
+            .then(function (images) {
+                if (images) {
+                    images.each(function (image) {
+                        articleImages.push({
+                            Article_id: image.get('Article_id'),
+                            Description: image.get('Description'),
+                            Filename: image.get('Filename'),
+                            Size: image.get('Size'),
+                            id: image.get('id')
+                        });
+                    });
+                }
+                var csrfToken = req.csrfToken();
+                res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+                res.json({article_images: articleImages}
+                );
+            })
+            .catch(function (error) {
+                console.log("Error while reading article images from database: " + error);
+                res.statusCode = 500;
+                return res.send('Error 500: reading of article images from database failed');
+            });
+    } else {
+        res.statusCode = 400;
+        res.send('400 Wrong query parameter');
     }
 };
 
@@ -164,10 +203,14 @@ module.exports.postImage = function (req, res) {
             mimeType: files.file.type,
             tempFile: files.file.path
         }).save().then(function (savedUpload) {
-                if (fields.flowChunkNumber == fields.flowTotalChunks) {
-                    new Uploads({flowIdentifier: fields.flowIdentifier}).query('orderBy', 'flowChunkNumber', 'asc')
-                        .fetch()
-                        .then(function (chunks) {
+                new Uploads()
+                    .query(function (qb) {
+                        qb.where('flowIdentifier', fields.flowIdentifier);
+                        qb.orderBy('flowChunkNumber', 'ASC');
+                    })
+                    .fetch()
+                    .then(function (chunks) {
+                        if (chunks.models.length == fields.flowTotalChunks) {
                             console.log("All chunks retrieved. Number of chunks: " + chunks.models.length);
                             var imageFileBuffer = undefined;
                             var chunkBuffers = new Array(chunks.models.length);
@@ -207,7 +250,7 @@ module.exports.postImage = function (req, res) {
                                             console.log("generate thumbnail");
                                             var jimpImage = new Jimp(imageFileBuffer, mimeType, function () {
                                                 var width = this.bitmap.width;
-                                                var factor = 134 / width;   // scale to 134 pixel width
+                                                var factor = 400 / width;   // scale to specific pixel width
                                                 this.scale(factor) // scale
                                                     .quality(60); // set JPEG quality
                                                 this.getBuffer(mimeType, function (thumbnailBuffer) {
@@ -259,18 +302,18 @@ module.exports.postImage = function (req, res) {
                                 res.statusCode = 500;
                                 res.send('500 Saving uploaded file failed');
                             }
-                        })
-                        .catch(function (error) {
-                            console.log("Error while retrieving flowChunks from table Upload: ", error);
-                            res.statusCode = 500;
-                            res.send('500 Reading chunks from upload table of database failed');
-                        });
-                    // make file from chunk
-                } else {
-                    console.log("Flow chunk saved: " + files.file.path);
-                    res.statusCode = 200; // OK
-                    res.send('200 OK');
-                }
+                        } else {
+                            console.log("Flow chunk saved: " + files.file.path);
+                            res.statusCode = 200; // OK
+                            res.send('200 OK');
+                        }
+
+                    })
+                    .catch(function (error) {
+                        console.log("Error while retrieving flowChunks from table Upload: ", error);
+                        res.statusCode = 500;
+                        res.send('500 Reading chunks from upload table of database failed');
+                    });
             })
             .catch(function (error) {
                 console.log("Error while inserting table Upload: ", error);
