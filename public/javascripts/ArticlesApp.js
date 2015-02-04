@@ -72,6 +72,12 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             });
         }
 
+        $scope.imagePageClicked = function ($event, pageNumber) {
+            var pageIdx = pageNumber - 1;
+
+            $scope.current_images_page = pageIdx;
+        };
+
         $scope.loadArticle = function (id) {
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {

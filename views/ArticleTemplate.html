@@ -139,7 +139,7 @@
                                         </li>
 
                                         <li ng-repeat="page in images_pages">
-                                            <a href="#">{{page.pageNumber}}</a>
+                                            <a href="#" ng-click="imagePageClicked($event, page.pageNumber)">{{page.pageNumber}}</a>
                                         </li>
                                         <li>
                                             <a href="#" aria-label="Next">
