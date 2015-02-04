@@ -49,6 +49,28 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         $scope.flowObj = {};
         $scope.current_images_page = 0;
         $scope.images_pages = [];   // all pages
+        $scope.relaoding_images = false;
+
+        function putImagesIntoPages(article_images) {
+            $scope.images_pages = [];
+            $scope.current_images_page = 0;
+            var pageSize = 4;
+            var cnt = 0;
+            var pageCnt = 0;
+            var currPageOfImages;
+            _.each(article_images, function (image) {
+                if (cnt == 0) {
+                    currPageOfImages = [];
+                    pageCnt++;
+                    $scope.images_pages.push({pageNumber: pageCnt, images: currPageOfImages});
+                }
+                currPageOfImages.push(image);
+                cnt++;
+                if (cnt == pageSize) {
+                    cnt = 0;
+                }
+            });
+        }
 
         $scope.loadArticle = function (id) {
             var promise = articleService.getArticle(id);
@@ -57,27 +79,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     $scope.article_schema = payload.article_schema;
                     $scope.article_images = payload.article_images;
 
-
-                    // arrange images in pages
-                    $scope.images_pages = [];
-                    $scope.current_images_page = 0;
-                    var pageSize = 4;
-                    var cnt = 0;
-                    var pageCnt = 0;
-                    var currPageOfImages;
-                    _.each(payload.article_images, function (image) {
-                        if (cnt == 0) {
-                            currPageOfImages = [];
-                            pageCnt++;
-                            $scope.images_pages.push({pageNumber: pageCnt, images: currPageOfImages});
-                        }
-                        currPageOfImages.push(image);
-                        cnt++;
-                        if (cnt == pageSize) {
-                            cnt = 0;
-                        }
-                    });
-
+                    putImagesIntoPages(payload.article_images);
 
                     if ($scope.article.text) {
                         $scope.renderRhoText();
@@ -107,6 +109,26 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     flow.on('fileSuccess', function (file, message) {
                         // TODO: refresh attachment list from server
                         flow.removeFile(file);
+                        if ($scope.promiseGetArticleImages) {
+                            console.log("Aborting current request to load images");
+                            $scope.promiseGetArticleImages.abort();
+                        }
+                        console.log("Reloading images");
+                        $scope.promiseGetArticleImages =
+                            articleService.getArticleImages($scope.article.article_id)
+                                .success(function (data, resp, jqXHR) {
+                                    $scope.promiseGetArticleImages = undefined;
+                                    $scope.article_images = data.article_images;
+                                    putImagesIntoPages($scope.article_images);
+                                })
+                                .error(function(data, status, headers, config) {
+                                    $scope.article_images = [];
+                                    console.log("ERROR while reloading images:", data);
+                                    $scope.promiseGetArticleImages = undefined;
+                                    putImagesIntoPages($scope.article_images);
+                                });
+
+
                         //console.log('fileSuccess: ', file, message);
                     });
                     flow.on('fileError', function (file, message) {
@@ -244,8 +266,10 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
         });
 
-    }])
-    .factory('articleService', function ($http, $log, $q) {
+    }
+])
+    .
+    factory('articleService', function ($http, $log, $q) {
         return {
             getArticleSchema: function () {
                 var deferred = $q.defer();
@@ -268,14 +292,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 return deferred.promise;
             },
             getArticleImages: function (id) {
-                var deferred = $q.defer();
-                $http.get('/api/v1/articles/' + id + '/images').success(function (data, resp, jqXHR) {
-                    deferred.resolve(data);
-                }).error(function (msg, code) {
-                    deferred.reject(msg);
-                    $log.error(msg, code);
-                });
-                return deferred.promise;
+                return $http.get('/api/v1/articles/' + id + '/images');
             },
             saveArticle: function (article) {
                 var deferred = $q.defer();
