@@ -2,6 +2,8 @@ var config = require('./config');
 var Promise = require('bluebird/js/main/promise')();
 var _ = require('underscore');
 var moment = require('moment');
+var fs = require('fs');
+
 var model = require('./model');
 var getProfiles = require('./Profiles');
 

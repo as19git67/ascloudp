@@ -93,7 +93,7 @@ app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi,
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.post);
 app.get('/api/v1/articles/:id/imagechunks', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImageChunk);
 app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImages);
-app.post('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.postImage);
+app.post('/api/v1/articles/:id/imagechunks', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.postImage);
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
 app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.put);
 app.get('/api/v1/members', passportStrategies.ensureAuthenticatedForApi, rp.middleware(), apiMembers.list);
@@ -337,33 +337,36 @@ var model = require('./model');
  */
 
 model.createSchemaIfNotExists().then(function () {
+    model.deleteInclompleteUploads().then(function () {
+        passportStrategies.init(passport, model.bookshelf, function (error) {
+            if (error) {
+                console.log("Initializing passport strategy " + error.strategy + " failed: " + error.error);
+            }
+            else {
 
-    passportStrategies.init(passport, model.bookshelf, function (error) {
-        if (error) {
-            console.log("Initializing passport strategy " + error.strategy + " failed: " + error.error);
-        }
-        else {
-
-            if (httpPort > 0) {
-                // create http server
-                http.createServer(app).listen(httpPort, function () {
-                    console.log('Express server listening on port ' + httpPort);
+                if (httpPort > 0) {
+                    // create http server
+                    http.createServer(app).listen(httpPort, function () {
+                        console.log('Express server listening on port ' + httpPort);
+                        if (httpsPort > 0) {
+                            // create https server
+                            startHttpsServer(app, httpsPort);
+                        }
+                    });
+                } else {
                     if (httpsPort > 0) {
                         // create https server
                         startHttpsServer(app, httpsPort);
+                    } else {
+                        console.log('httpPort and httpsPort are not specified in config.json. Not starting a http server.');
                     }
-                });
-            } else {
-                if (httpsPort > 0) {
-                    // create https server
-                    startHttpsServer(app, httpsPort);
-                } else {
-                    console.log('httpPort and httpsPort are not specified in config.json. Not starting a http server.');
                 }
             }
-        }
+        });
+    }).catch(function (err) {
+        console.log("ERROR in deleteInclompleteUploads: ");
+        console.log(err);
     });
-
 }).catch(function (err) {
     if (err.syscall == "connect") {
         console.log("Error: can't connect to database.");
