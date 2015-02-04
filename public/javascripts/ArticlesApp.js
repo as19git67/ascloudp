@@ -107,7 +107,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         }
                     });
                     flow.on('fileSuccess', function (file, message) {
-                        // TODO: refresh attachment list from server
                         flow.removeFile(file);
                         if ($scope.promiseGetArticleImages) {
                             console.log("Aborting current request to load images");
@@ -121,15 +120,12 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                                     $scope.article_images = data.article_images;
                                     putImagesIntoPages($scope.article_images);
                                 })
-                                .error(function(data, status, headers, config) {
+                                .error(function (data, status, headers, config) {
                                     $scope.article_images = [];
                                     console.log("ERROR while reloading images:", data);
                                     $scope.promiseGetArticleImages = undefined;
                                     putImagesIntoPages($scope.article_images);
                                 });
-
-
-                        //console.log('fileSuccess: ', file, message);
                     });
                     flow.on('fileError', function (file, message) {
                         console.log('fileError: ', file, message);
