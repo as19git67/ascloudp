@@ -63,7 +63,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     $scope.current_images_page = 0;
                     var pageSize = 4;
                     var cnt = 0;
-                    var pageCnt=0;
+                    var pageCnt = 0;
                     var currPageOfImages;
                     _.each(payload.article_images, function (image) {
                         if (cnt == 0) {
@@ -84,36 +84,34 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     }
 
                     var flow = $scope.flowObj.flow;
-                    if (flow) {
-                        flow.off('filesSubmitted');
-                        flow.on('filesSubmitted', function (event) {
-                            //console.log("Files in flow: " + flow.files.length);
+                    flow.off('filesSubmitted');
+                    flow.on('filesSubmitted', function (event) {
+                        //console.log("Files in flow: " + flow.files.length);
 
-                            flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/imagechunks';
-                            var csrfToken = $cookies['X-CSRF-Token'];
-                            flow.opts.headers = {
-                                'X-CSRF-Token': csrfToken
-                            };
-                            flow.upload();
-                        });
-                        flow.on('fileAdded', function (file, event) {
-                            //console.log("file added: ", file, event);
-                            // TODO: throw away old completed or error files
-                            var filesToProcess = flow.files.length;
-                            if (filesToProcess > 5) {
-                                console.log("Too many files. Rejecting more for upload");
-                                return false; // reject file
-                            }
-                        });
-                        flow.on('fileSuccess', function (file, message) {
-                            // TODO: refresh attachment list from server
-                            flow.removeFile(file);
-                            //console.log('fileSuccess: ', file, message);
-                        });
-                        flow.on('fileError', function (file, message) {
-                            console.log('fileError: ', file, message);
-                        });
-                    }
+                        flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/imagechunks';
+                        var csrfToken = $cookies['X-CSRF-Token'];
+                        flow.opts.headers = {
+                            'X-CSRF-Token': csrfToken
+                        };
+                        flow.upload();
+                    });
+                    flow.on('fileAdded', function (file, event) {
+                        //console.log("file added: ", file, event);
+                        // TODO: throw away old completed or error files
+                        var filesToProcess = flow.files.length;
+                        if (filesToProcess > 5) {
+                            console.log("Too many files. Rejecting more for upload");
+                            return false; // reject file
+                        }
+                    });
+                    flow.on('fileSuccess', function (file, message) {
+                        // TODO: refresh attachment list from server
+                        flow.removeFile(file);
+                        //console.log('fileSuccess: ', file, message);
+                    });
+                    flow.on('fileError', function (file, message) {
+                        console.log('fileError: ', file, message);
+                    });
 
                 },
                 function (error) {
@@ -314,7 +312,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 });
                 return deferred.promise;
             },
-            deleteImage: function(article, event) {
+            deleteImage: function (article, event) {
                 console.log("deleteImage:", event);
                 var deferred = $q.defer();
                 deferred.resolve();

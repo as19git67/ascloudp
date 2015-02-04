@@ -108,7 +108,7 @@
                         </div>
                         <hr>
                         <div class="row">
-                                <div ng-if="images_pages && images_pages.length > 0">
+                            <div ng-if="images_pages && images_pages.length > 0">
                                 <div class="col-xs-4 col-md-2" ng-repeat="image in images_pages[current_images_page].images">
                                     <div class="thumbnail">
                                         <a href="#">
@@ -150,7 +150,7 @@
                                 </nav>
                             </div>
                         </div>
-                        <div ng-if="article.id" class="row">
+                        <div ng-show="article.article_id" class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div flow-init
                                      flow-name="flowObj.flow"
@@ -209,8 +209,8 @@
 
                                 </div>
                             </div>
+                            <hr>
                         </div>
-                        <hr>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group">

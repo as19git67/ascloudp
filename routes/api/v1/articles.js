@@ -78,7 +78,7 @@ module.exports.get = function (req, res) {
                         qb.orderBy('Filename', 'ASC');
                         qb.orderBy('Description', 'ASC');
                     })
-                    .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size']})
+                    .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size', 'MimeType']})
                     .then(function (images) {
                         if (images) {
                             images.each(function (image) {
@@ -87,6 +87,7 @@ module.exports.get = function (req, res) {
                                     Description: image.get('Description'),
                                     Filename: image.get('Filename'),
                                     Size: image.get('Size'),
+                                    MimeType: image.get('MimeType'),
                                     id: image.get('id')
                                 });
                             });
@@ -121,7 +122,7 @@ module.exports.getImages = function (req, res) {
                 qb.orderBy('Filename', 'ASC');
                 qb.orderBy('Description', 'ASC');
             })
-            .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size']})
+            .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size', 'MimeType']})
             .then(function (images) {
                 if (images) {
                     images.each(function (image) {
@@ -130,6 +131,7 @@ module.exports.getImages = function (req, res) {
                             Description: image.get('Description'),
                             Filename: image.get('Filename'),
                             Size: image.get('Size'),
+                            MimeType: image.get('MimeType'),
                             id: image.get('id')
                         });
                     });
@@ -190,6 +192,7 @@ module.exports.postImage = function (req, res) {
 
     form.parse(req, function (err, fields, files) {
 
+        // todo transaction
         console.log("Storing new flowChunk. flowChunkNumber: " + fields.flowChunkNumber + " flowFilename: " + fields.flowFilename);
         new Upload({
             flowChunkNumber: fields.flowChunkNumber,
@@ -389,111 +392,129 @@ module.exports.put = function (req, res) {
     var articleId = req.params.id;
 
 
-    new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
-        if (articleItem) {
-            var articleDateIsDifferent = isDateDifferent(articleItem, "Date", req.body, "date");
-            if (!articleDateIsDifferent) {
-                var publishStartIsDifferent = isDateDifferent(articleItem, "publish_start", req.body, "publish_start");
-                if (!publishStartIsDifferent) {
-                    var publishEndIsDifferent = isDateDifferent(articleItem, "publish_end", req.body, "publish_end");
-                    if (!publishEndIsDifferent) {
-                        var authorIsDifferent = articleItem.get('Author') != req.body.author;
-                        if (!authorIsDifferent) {
-                            var textIsDifferent = articleItem.get('Text') != req.body.text;
-                            if (!textIsDifferent) {
-                                // until here, nothing has changed
-                                console.log("Not saving ArticleItem because nothing changed.");
-                                res.statusCode = 304;   // not changed
-                                res.send("304: Article not changed");
-                                return;
+    new ArticleItem({Article_id: articleId, valid_end: null})
+        .fetch()
+        .then(function (articleItem) {
+            if (articleItem) {
+                var articleDateIsDifferent = isDateDifferent(articleItem, "Date", req.body, "date");
+                if (!articleDateIsDifferent) {
+                    var publishStartIsDifferent = isDateDifferent(articleItem, "publish_start", req.body, "publish_start");
+                    if (!publishStartIsDifferent) {
+                        var publishEndIsDifferent = isDateDifferent(articleItem, "publish_end", req.body, "publish_end");
+                        if (!publishEndIsDifferent) {
+                            var authorIsDifferent = articleItem.get('Author') != req.body.author;
+                            if (!authorIsDifferent) {
+                                var textIsDifferent = articleItem.get('Text') != req.body.text;
+                                if (!textIsDifferent) {
+                                    // until here, nothing has changed
+                                    console.log("Not saving ArticleItem because nothing changed.");
+                                    res.statusCode = 304;   // not changed
+                                    res.send("304: Article not changed");
+                                    return;
+                                }
                             }
                         }
                     }
                 }
-            }
 
-            // start a transaction because articleItem and audit are updated
-            model.bookshelf.transaction(function (t) {
-                var now = new Date();
+                // start a transaction because articleItem and audit are updated
+                model.bookshelf.transaction(function (t) {
+                    var now = new Date();
 
-                // invalidate current articleItem record
-                articleItem.set('valid_end', now);
-                articleItem.save(null, {transacting: t}).then(function () {
+                    // invalidate current articleItem record
+                    articleItem.set('valid_end', now);
+                    articleItem.save(null, {transacting: t}).then(function () {
 
-                    // create new ArticleItem
-                    new ArticleItem({
-                        Article_id: articleId,
-                        Date: req.body.date,
-                        Author: req.body.author,
-                        Text: req.body.text,
-                        publish_start: req.body.publish_start,
-                        publish_end: req.body.publish_end,
-                        valid_start: now
-                    }).save(null, {transacting: t}).then(function (savedArticleItem) {
-                            var userName = req.user.UserName ? req.user.UserName : req.user.id;
-                            new Audit({
-                                    ChangedAt: new Date(),
-                                    Table: savedArticleItem.tableName,
-                                    ChangedBy: userName,
-                                    Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
-                                }
-                            ).save().then(function () {
-                                    t.commit(savedArticleItem);
-                                }).catch(function (error) {
-                                    console.log("Error while saving Audit for new ArticleItem to database:", error);
-                                    console.log("Roll back transaction");
-                                    t.rollback({
-                                        statusCode: 500,
-                                        message: 'Error 500: saving of article to database failed'
+                        // create new ArticleItem
+                        new ArticleItem({
+                            Article_id: articleId,
+                            Date: req.body.date,
+                            Author: req.body.author,
+                            Text: req.body.text,
+                            publish_start: req.body.publish_start,
+                            publish_end: req.body.publish_end,
+                            valid_start: now
+                        }).save(null, {transacting: t}).then(function (savedArticleItem) {
+                                var userName = req.user.UserName ? req.user.UserName : req.user.id;
+                                new Audit({
+                                        ChangedAt: new Date(),
+                                        Table: savedArticleItem.tableName,
+                                        ChangedBy: userName,
+                                        Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
+                                    }
+                                ).save().then(function () {
+                                        t.commit(savedArticleItem);
+                                        // goes to then of transaction
+
+                                    }).catch(function (error) {
+                                        console.log("Error while saving Audit for new ArticleItem to database:", error);
+                                        console.log("Roll back transaction");
+                                        t.rollback({
+                                            statusCode: 500,
+                                            message: 'Error 500: saving of article to database failed'
+                                        });
                                     });
-                                });
-                        }).catch(function (error) {
-                            console.log("Error while saving new ArticleItem to database:", error);
-                            console.log("Roll back transaction");
-                            t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
-                        });
-                }).catch(function (error) {
-                    console.log("Error while updating ArticleItem in database:", error);
-                    console.log("Roll back transaction");
-                    t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
-                });
-            }).then(function (savedItem) {
-                console.log("Transaction (saving ArticleItem) committed");
-                if (savedItem) {
-                    // return put data again back to caller
-                    var articleImages = [];
-                    new ArticleImage({Article_id: articleId, valid_end: undefined})
-                        .fetchAll()
-                        .then(function (images) {
-                            images.each(function (image) {
-                                articleImages.push(image.attributes);
+                            }).catch(function (error) {
+                                console.log("Error while saving new ArticleItem to database:", error);
+                                console.log("Roll back transaction");
+                                t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
                             });
-                            respondWithArticleItemData(req, res, savedItem, articleImages);
-                        })
-                        .catch(function (error) {
-                            console.log("Error while reading article images from database: " + error);
-                            res.statusCode = 500;
-                            return res.send('Error 500: reading of article images from database failed');
-                        });
-                } else {
-                    res.statusCode = 304;   // not changed
-                    res.send("304: Article information not changed");
-                }
-            }).catch(function (error) {
-                console.log("Transaction (saving ArticleItem) rolled back");
-                res.statusCode = error.statusCode;
-                res.send(error.message);
-            });
+                    }).catch(function (error) {
+                        console.log("Error while updating ArticleItem in database:", error);
+                        console.log("Roll back transaction");
+                        t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
+                    });
+                }).then(function (savedItem) {
 
-        } else {
-            console.log("Article with id " + articleId + " not found. Rolling back transaction");
-            t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
-        }
-    }).catch(function (error) {
-        console.log("Error while reading article from database:", error);
-        console.log("Roll back transaction");
-        t.rollback({statusCode: 500, message: 'Error 500: reading of article from database failed'});
-    });
+                    // come here after committing the tansaction
+
+                    console.log("Transaction (saving ArticleItem) committed");
+                    if (savedItem) {
+                        // return put data again back to caller
+                        var articleImages = [];
+                        new ArticleImages({Article_id: articleId, valid_end: undefined})
+                            .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size', 'MimeType']})
+                            .then(function (images) {
+                                if (images) {
+                                    images.each(function (image) {
+                                        articleImages.push({
+                                            Article_id: image.get('Article_id'),
+                                            Description: image.get('Description'),
+                                            Filename: image.get('Filename'),
+                                            Size: image.get('Size'),
+                                            MimeType: image.get('MimeType'),
+                                            id: image.get('id')
+                                        });
+                                    });
+                                }
+                                respondWithArticleItemData(req, res, savedItem, articleImages);
+                            })
+                            .catch(function (error) {
+                                console.log("Error while reading article images from database: " + error);
+                                res.statusCode = 500;
+                                return res.send('Error 500: reading of article images from database failed');
+                            });
+                    } else {
+                        res.statusCode = 304;   // not changed
+                        res.send("304: Article information not changed");
+                    }
+                }).catch(function (error) {
+                    console.log("Transaction (saving ArticleItem) rolled back");
+                    res.statusCode = error.statusCode;
+                    res.send(error.message);
+                });
+
+            } else {
+                console.log('ArticleItem with id ' + articleId + ' not found');
+                res.statusCode = 404;
+                res.send('Error 404: ArticleItem not found');
+            }
+        })
+        .catch(function (error) {
+            console.log("Error while reading ArticleItem from database:", error);
+            res.statusCode = 500;
+            res.send('500: reading of article from database failed');
+        });
 };
 
 // create new article
@@ -504,7 +525,9 @@ module.exports.post = function (req, res) {
 
         new Article({
             Page_id: req.body.pageid
-        }).save(null, {transacting: t}).then(function (newArticle) {
+        })
+            .save(null, {transacting: t})
+            .then(function (newArticle) {
                 // create new ArticleItem
                 new ArticleItem({
                     Article_id: newArticle.get('id'),
@@ -514,17 +537,21 @@ module.exports.post = function (req, res) {
                     publish_start: req.body.publish_start,
                     publish_end: req.body.publish_end,
                     valid_start: now
-                }).save(null, {transacting: t}).then(function (savedArticleItem) {
+                })
+                    .save(null, {transacting: t})
+                    .then(function (savedArticleItem) {
                         var userName = req.user.UserName ? req.user.UserName : req.user.id;
                         new Audit({
-                                ChangedAt: new Date(),
-                                Table: savedArticleItem.tableName,
-                                ChangedBy: userName,
-                                Description: "New Article created for page " + req.body.pageid + " by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
-                            }
-                        ).save().then(function () {
+                            ChangedAt: new Date(),
+                            Table: savedArticleItem.tableName,
+                            ChangedBy: userName,
+                            Description: "New Article created for page " + req.body.pageid + " by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
+                        })
+                            .save()
+                            .then(function () {
                                 t.commit(savedArticleItem);
-                            }).catch(function (error) {
+                            })
+                            .catch(function (error) {
                                 console.log("Error while saving Audit for new ArticleItem to database:", error);
                                 console.log("Roll back transaction");
                                 t.rollback({
@@ -532,12 +559,14 @@ module.exports.post = function (req, res) {
                                     message: 'Error 500: saving of article to database failed'
                                 });
                             });
-                    }).catch(function (error) {
+                    })
+                    .catch(function (error) {
                         console.log("Error while saving new ArticleItem to database:", error);
                         console.log("Roll back transaction");
                         t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
                     });
-            }).catch(function (error) {
+            })
+            .catch(function (error) {
                 console.log("Error while saving new Article to database:", error);
                 console.log("Roll back transaction");
                 t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
@@ -548,12 +577,21 @@ module.exports.post = function (req, res) {
         if (savedItem) {
             // return put data again back to caller
             var articleImages = [];
-            new ArticleImage({Article_id: savedItem.get('Article_id'), valid_end: undefined})
-                .fetchAll()
+            new ArticleImages({Article_id: savedItem.get('Article_id'), valid_end: undefined})
+                .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size', 'MimeType']})
                 .then(function (images) {
-                    images.each(function (image) {
-                        articleImages.push(image.attributes);
-                    });
+                    if (images) {
+                        images.each(function (image) {
+                            articleImages.push({
+                                Article_id: image.get('Article_id'),
+                                Description: image.get('Description'),
+                                Filename: image.get('Filename'),
+                                Size: image.get('Size'),
+                                MimeType: image.get('MimeType'),
+                                id: image.get('id')
+                            });
+                        });
+                    }
                     respondWithArticleItemData(req, res, savedItem, articleImages);
                 })
                 .catch(function (error) {

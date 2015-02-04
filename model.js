@@ -46,6 +46,47 @@ exports.createSchemaIfNotExists = function () {
     });
 };
 
+exports.deleteInclompleteUploads = function () {
+    return new Promise(function (resolve, reject) {
+        knex.schema.hasTable('Uploads').then(function (exists) {
+            if (exists) {
+                new Uploads()
+                    .fetch()
+                    .then(function (chunks) {
+
+                        chunks.each(function (chunk) {
+                            var tf = chunk.attributes.tempFile;
+                            if (fs.existsSync(tf)) {
+                                fs.unlinkSync(tf);
+                            }
+                        });
+
+                        console.log("deleting all chunks from Uploads table");
+                        model.bookshelf.knex('Uploads')
+                            .del()
+                            .then(function () {
+                                console.log("Uploads cleared");
+                                resolve();
+                            })
+                            .catch(function (error) {
+                                console.log("ERROR while deleting all entries from Uploads");
+                                reject(error);
+                            });
+                    })
+                    .catch(function(error){
+                        console.log("ERROR while reading all entries from Uploads");
+                        reject(error);
+                    });
+            }
+            else
+            {
+                console.log("Uploads table does not exist");
+                resolve();
+            }
+        });
+    });
+};
+
 exports.createSchema = function () {
     return Promise.reduce([
             function () {
