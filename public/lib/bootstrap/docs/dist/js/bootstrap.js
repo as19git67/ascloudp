@@ -1,6 +1,6 @@
 /*!
  * Bootstrap v3.3.0 (http://getbootstrap.com)
- * Copyright 2011-2014 [object Object]
+ * Copyright 2011-2015 [object Object]
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 

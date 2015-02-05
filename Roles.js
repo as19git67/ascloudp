@@ -67,7 +67,7 @@ Roles.prototype.canPost = function (req, numPathComponents) {
             roles.isAllowed(_userId, resource, actions, function (err, allowed) {
                 if (err) {
                     console.log('Error checking permissions to access resource');
-                    reject(error);
+                    reject(err);
                 } else if (allowed === false) {
                     console.log('Not allowed ' + actions + ' on ' + resource + ' by user ' + _userId);
                     resolve(false);

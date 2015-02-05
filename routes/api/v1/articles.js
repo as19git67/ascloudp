@@ -239,7 +239,9 @@ module.exports.postImage = function (req, res) {
                             function removeChunkFiles() {
                                 chunks.each(function (chunk) {
                                     var tf = chunk.attributes.tempFile;
-                                    fs.unlinkSync(tf);
+                                    if (fs.existsSync(tf)) {
+                                      fs.unlinkSync(tf);
+                                    }
                                 });
                             }
 
