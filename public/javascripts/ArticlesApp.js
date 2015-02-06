@@ -112,26 +112,33 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                             return false; // reject file
                         }
                     });
-                    flow.on('fileSuccess', function (file, message) {
-                        flow.removeFile(file);
-                        if ($scope.promiseGetArticleImages) {
-                            console.log("Aborting current request to load images");
-                            $scope.promiseGetArticleImages.abort();
-                        }
-                        console.log("Reloading images");
-                        $scope.promiseGetArticleImages =
-                            articleService.getArticleImages($scope.article.article_id)
-                                .success(function (data, resp, jqXHR) {
-                                    $scope.promiseGetArticleImages = undefined;
-                                    $scope.article_images = data.article_images;
-                                    putImagesIntoPages($scope.article_images);
-                                })
-                                .error(function (data, status, headers, config) {
-                                    $scope.article_images = [];
-                                    console.log("ERROR while reloading images:", data);
-                                    $scope.promiseGetArticleImages = undefined;
-                                    putImagesIntoPages($scope.article_images);
-                                });
+                    flow.on('complete', function (file, message) {
+                        articleService.commitImageUpload($scope.article, file.uniqueIdentifier, file.flowObj.files.length)
+                            .then(function () {
+                                flow.removeFile(file);
+                                if ($scope.promiseGetArticleImages) {
+                                    console.log("Aborting current request to load images");
+                                    $scope.promiseGetArticleImages.abort();
+                                }
+                                console.log("Reloading images");
+                                $scope.promiseGetArticleImages =
+                                    articleService.getArticleImages($scope.article.article_id)
+                                        .success(function (data, resp, jqXHR) {
+                                            $scope.promiseGetArticleImages = undefined;
+                                            $scope.article_images = data.article_images;
+                                            putImagesIntoPages($scope.article_images);
+                                        })
+                                        .error(function (data, status, headers, config) {
+                                            $scope.article_images = [];
+                                            console.log("ERROR while reloading images:", data);
+                                            $scope.promiseGetArticleImages = undefined;
+                                            putImagesIntoPages($scope.article_images);
+                                        });
+
+                            })
+                            .catch(function (error) {
+                                console.log('Failed commitImageUpload: ', error);
+                            });
                     });
                     flow.on('fileError', function (file, message) {
                         console.log('fileError: ', file, message);
@@ -296,6 +303,22 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             getArticleImages: function (id) {
                 return $http.get('/api/v1/articles/' + id + '/images');
             },
+
+            commitImageUpload: function (article, flowIdentifier, flowTotalChunks) {
+                var deferred = $q.defer();
+                var promise = $http.post('/api/v1/articles/' + article.article_id + '/images', {
+                    'flowIdentifier': flowIdentifier,
+                    'flowTotalChunks': flowTotalChunks
+                });
+                promise.success(function (data) {
+                    deferred.resolve();
+                }).error(function (msg, code) {
+                    deferred.reject(msg);
+                    $log.error(msg, code);
+                });
+                return deferred.promise;
+            },
+
             saveArticle: function (article) {
                 var deferred = $q.defer();
                 var promise;
