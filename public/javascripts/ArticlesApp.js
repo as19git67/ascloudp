@@ -175,7 +175,12 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 ui.editArticleEntry.modal('hide');
                 location.reload();
             }, function (error) {
-                $scope.errorMessage = error.toString();
+                if (error){
+                    $scope.errorMessage = error.toString();
+                }
+                else {
+                    $scope.errorMessage = "Unbekannter Fehler";
+                }
                 $log.error("Error while deleting the article", error);
             });
         };

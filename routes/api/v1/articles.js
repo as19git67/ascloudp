@@ -656,7 +656,6 @@ module.exports.post = function (req, res) {
 module.exports.delete = function (req, res) {
     var articleId = req.params.id;
 
-
     new ArticleItem({Article_id: articleId, valid_end: null}).fetch().then(function (articleItem) {
         if (articleItem) {
 
@@ -670,24 +669,48 @@ module.exports.delete = function (req, res) {
 
                     var userName = req.user.UserName ? req.user.UserName : req.user.id;
                     new Audit({
-                            ChangedAt: new Date(),
-                            Table: new ArticleItem().tableName,
-                            ChangedBy: userName,
-                            Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
-                        }
-                    ).save().then(function () {
-                            t.commit(savedArticleItem);
+                        ChangedAt: new Date(),
+                        Table: new ArticleItem().tableName,
+                        ChangedBy: userName,
+                        Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
+                    }).save(null, {transacting: t}).then(function () {
+                            new ArticleImages({Article_id: articleId}).fetch({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
+                                if (images) {
+                                    new Audit({
+                                        ChangedAt: new Date(),
+                                        Table: new ArticleImage().tableName,
+                                        ChangedBy: userName,
+                                        Description: "All ArticleImages for article " + articleId + " deleted by user " + userName
+                                    }).save(null, {transacting: t}).then(function () {
+                                            var now = new Date();
+                                            images.each(function (image) {
+                                                image.set('valid_end', now);
+                                            });
+                                            images.invokeThen('save', null, {transacting: t}).then(function () {
+                                                t.commit(savedArticleItem);
+                                            }).catch(function (error) {
+                                                console.log("Error while updating ArticleImages for article with id " + articleId + " from database:", error);
+                                                t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                                            });
+                                        })
+                                        .catch(function (error) {
+                                            console.log("Error while updating Audit for ArticleImages in database:", error);
+                                            t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                                        });
+                                } else {
+                                    t.commit(savedArticleItem);
+                                }
+                            })
+                                .catch(function (error) {
+                                    console.log("Error while reading ArticleImages from database:", error);
+                                    t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                                });
                         }).catch(function (error) {
-                            console.log("Error while saving Audit for new ArticleItem to database:", error);
-                            console.log("Roll back transaction");
-                            t.rollback({
-                                statusCode: 500,
-                                message: 'Error 500: deleting of article in database failed'
-                            });
+                            console.log("Error while saving Audit for updated ArticleItem in database:", error);
+                            t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
                         });
                 }).catch(function (error) {
                     console.log("Error while updating ArticleItem in database:", error);
-                    console.log("Roll back transaction");
                     t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
                 });
             }).then(function (savedItem) {
@@ -696,17 +719,14 @@ module.exports.delete = function (req, res) {
                 res.send("204: Article deleted");
             }).catch(function (error) {
                 console.log("Transaction (deleting (update) ArticleItem) rolled back");
-                res.statusCode = error.statusCode;
-                res.send(error.message);
+                res.status(error.statusCode).send(error.message);
             });
-
         } else {
             console.log("Article with id " + articleId + " not found. Rolling back transaction");
-            t.rollback({statusCode: 404, message: 'Error 404: ArticleItem with id ' + articleId + ' not found'});
+            res.status(404).send('ArticleItem with id ' + articleId + ' not found');
         }
     }).catch(function (error) {
         console.log("Error while reading article from database:", error);
-        console.log("Roll back transaction");
-        t.rollback({statusCode: 500, message: 'Error 500: reading of article from database failed'});
+        res.status(500).send('Reading of article from database failed');
     });
 };
