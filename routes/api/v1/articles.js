@@ -159,25 +159,44 @@ module.exports.getImageChunk = function (req, res) {
         // get requests from flow.js (if testChunks is true)
         var flowChunkNumber = req.query.flowChunkNumber;
         var flowIdentifier = req.query.flowIdentifier;
+        var flowFilename = req.query.flowFilename;
         console.log("Flow asks for chunk id " + flowChunkNumber + " of file id " + flowIdentifier + " for article with id " + articleId);
 
-        new Upload({flowIdentifier: flowIdentifier, flowChunkNumber: flowChunkNumber})
-            .fetch()
-            .then(function (chunk) {
-                if (chunk) {
-                    console.log("chunk is already uploaded");
-                    res.statusCode = 200; // OK
-                    res.send('200 OK');
+        new ArticleImage(
+            {
+                Article_id: articleId,
+                Filename: flowFilename
+            })
+            .fetch({columns: ['id']})
+            .then(function (image) {
+                if (image) {
+                    // image already exists
+                    res.status(409).send();// conflict
                 } else {
-                    console.log("chunk is unkown");
-                    res.statusCode = 404; // Not found
-                    res.send('404 Not Found');
+                    new Upload({flowIdentifier: flowIdentifier, flowChunkNumber: flowChunkNumber})
+                        .fetch()
+                        .then(function (chunk) {
+                            if (chunk) {
+                                console.log("chunk is already uploaded");
+                                res.status(200).send();
+                            } else {
+                                console.log("chunk is unkown");
+                                res.status(404).send();
+                            }
+                        })
+                        .catch(function (error) {
+                            console.log("Error while reading chunk from Upload table:", error);
+                            res.statusCode = 500;
+                            res.send('500 Error reading upload chunk from database');
+                        });
+
                 }
+
             })
             .catch(function (error) {
-                console.log("Error while reading chunk from Upload table:", error);
+                console.log("Error while reading ArticleImage table:", error);
                 res.statusCode = 500;
-                res.send('500 Error reading upload chunk from database');
+                res.send('500 Error looking for existing ArticleImage in database');
             });
     } else {
         res.statusCode = 400;
@@ -234,6 +253,7 @@ module.exports.postImage = function (req, res) {
     var articleId = req.params.id;
     var flowIdentifier = req.body.flowIdentifier;
     var flowTotalChunks = req.body.flowTotalChunks;
+    console.log("postImage: flowIdentifier=" + flowIdentifier + ", flowTotalChunks=" + flowTotalChunks + ", Article_id=" + articleId);
     new Uploads()
         .query(function (qb) {
             qb.where('flowIdentifier', flowIdentifier);

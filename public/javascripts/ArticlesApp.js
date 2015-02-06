@@ -27,8 +27,8 @@ articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
             //    var article_id = $scope.article.article_id;
             //    return '/api/v1/article/' + article_id + '/images'
             //},
-            permanentErrors: [404, 500, 501],
-            maxChunkRetries: 1,
+            permanentErrors: [401, 409, 500, 501],
+            maxChunkRetries: 2,
             chunkRetryInterval: 5000,
             simultaneousUploads: 4
             //headers: function (file, chunk, isTest) {
@@ -78,9 +78,16 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             $scope.current_images_page = pageIdx;
         };
 
+        $scope.isNotEmpty = function (item) {
+            if (!item) {
+                return false;
+            }
+            return !_.isEmpty(item);
+        };
         $scope.loadArticle = function (id) {
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {
+                    $scope.waitingImages = {};
                     $scope.article = payload.article;
                     $scope.article_schema = payload.article_schema;
                     $scope.article_images = payload.article_images;
@@ -92,10 +99,11 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     }
 
                     var flow = $scope.flowObj.flow;
+                    flow.off('fileAdded');
+                    flow.off('fileSuccess');
+                    flow.off('fileError');
                     flow.off('filesSubmitted');
                     flow.on('filesSubmitted', function (event) {
-                        //console.log("Files in flow: " + flow.files.length);
-
                         flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/imagechunks';
                         var csrfToken = $cookies['X-CSRF-Token'];
                         flow.opts.headers = {
@@ -104,7 +112,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         flow.upload();
                     });
                     flow.on('fileAdded', function (file, event) {
-                        //console.log("file added: ", file, event);
                         // TODO: throw away old completed or error files
                         var filesToProcess = flow.files.length;
                         if (filesToProcess > 5) {
@@ -112,32 +119,31 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                             return false; // reject file
                         }
                     });
-                    flow.on('complete', function (file, message) {
-                        articleService.commitImageUpload($scope.article, file.uniqueIdentifier, file.flowObj.files.length)
+                    flow.on('fileSuccess', function (file, message) {
+                        console.log("fileSuccess");
+                        $scope.waitingImages[file.uniqueIdentifier] = {name: file.name, status: 'wait'};
+                        articleService.commitImageUpload($scope.article, file.uniqueIdentifier, file.chunks.length)
                             .then(function () {
+                                delete $scope.waitingImages[file.uniqueIdentifier];
                                 flow.removeFile(file);
-                                if ($scope.promiseGetArticleImages) {
-                                    console.log("Aborting current request to load images");
-                                    $scope.promiseGetArticleImages.abort();
-                                }
                                 console.log("Reloading images");
-                                $scope.promiseGetArticleImages =
-                                    articleService.getArticleImages($scope.article.article_id)
-                                        .success(function (data, resp, jqXHR) {
-                                            $scope.promiseGetArticleImages = undefined;
-                                            $scope.article_images = data.article_images;
-                                            putImagesIntoPages($scope.article_images);
-                                        })
-                                        .error(function (data, status, headers, config) {
-                                            $scope.article_images = [];
-                                            console.log("ERROR while reloading images:", data);
-                                            $scope.promiseGetArticleImages = undefined;
-                                            putImagesIntoPages($scope.article_images);
-                                        });
+                                articleService.getArticleImages($scope.article.article_id)
+                                    .success(function (data, resp, jqXHR) {
+                                        $scope.promiseGetArticleImages = undefined;
+                                        $scope.article_images = data.article_images;
+                                        putImagesIntoPages($scope.article_images);
+                                    })
+                                    .error(function (data, status, headers, config) {
+                                        $scope.article_images = [];
+                                        console.log("ERROR while reloading images:", data);
+                                        $scope.promiseGetArticleImages = undefined;
+                                        putImagesIntoPages($scope.article_images);
+                                    });
 
                             })
                             .catch(function (error) {
                                 console.log('Failed commitImageUpload: ', error);
+                                $scope.waitingImages[file.uniqueIdentifier] = {name: file.name, status: 'error'};
                             });
                     });
                     flow.on('fileError', function (file, message) {
