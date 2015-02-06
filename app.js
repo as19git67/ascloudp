@@ -91,6 +91,7 @@ app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.put);
 app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.delete);
 app.post('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.postImage);
+app.delete('/api/v1/articles/:id/images/:imageid', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.deleteImage);
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.post);
 app.get('/api/v1/articles/:id/imagechunks', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImageChunk);
 app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImages);

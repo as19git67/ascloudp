@@ -129,14 +129,12 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                                 console.log("Reloading images");
                                 articleService.getArticleImages($scope.article.article_id)
                                     .success(function (data, resp, jqXHR) {
-                                        $scope.promiseGetArticleImages = undefined;
                                         $scope.article_images = data.article_images;
                                         putImagesIntoPages($scope.article_images);
                                     })
                                     .error(function (data, status, headers, config) {
                                         $scope.article_images = [];
                                         console.log("ERROR while reloading images:", data);
-                                        $scope.promiseGetArticleImages = undefined;
                                         putImagesIntoPages($scope.article_images);
                                     });
 
@@ -203,8 +201,19 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             });
 
         };
-        $scope.deleteImage = function ($event) {
-            articleService.deleteImage($scope.article, $event).then(function () {
+        $scope.deleteImage = function ($event, imageId) {
+            articleService.deleteImage($scope.article, imageId).then(function () {
+                articleService.getArticleImages($scope.article.article_id)
+                    .success(function (data, resp, jqXHR) {
+                        $scope.article_images = data.article_images;
+                        putImagesIntoPages($scope.article_images);
+                    })
+                    .error(function (data, status, headers, config) {
+                        $scope.article_images = [];
+                        console.log("ERROR while reloading images:", data);
+                        putImagesIntoPages($scope.article_images);
+                    });
+
             }, function (error) {
                 $scope.errorMessage = error.toString();
                 $log.error("Error while deleting the image", error);
@@ -365,11 +374,20 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 });
                 return deferred.promise;
             },
-            deleteImage: function (article, event) {
-                console.log("deleteImage:", event);
+            deleteImage: function (article, imageId) {
+                console.log("deleteImage " + imageId);
                 var deferred = $q.defer();
-                deferred.resolve();
-
+                var promise = $http.delete('/api/v1/articles/' + article.article_id + '/images/' + imageId);
+                promise.success(function (data) {
+                    deferred.resolve();
+                }).error(function (msg, code) {
+                    if (code == 204 || code == 200) {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject(msg);
+                        $log.error(msg, code);
+                    }
+                });
                 return deferred.promise;
             }
         }

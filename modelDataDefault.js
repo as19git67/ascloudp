@@ -543,6 +543,12 @@ exports.clearTablesFunctions = [
         return knex('Contacts').del();
     },
     function () {
+        return knex('Uploads').del();
+    },
+    function () {
+        return knex('ArticleImages').del();
+    },
+    function () {
         return knex('ArticleItems').del();
     },
     function () {
