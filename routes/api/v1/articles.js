@@ -675,7 +675,7 @@ module.exports.delete = function (req, res) {
                         Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
                     }).save(null, {transacting: t}).then(function () {
                             new ArticleImage()
-                                .where({'Article_id': articleId, 'valid_end': null})
+                            .where({'Article_id': articleId, 'valid_end': null})
                                 .fetchAll({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
                                     if (images) {
                                         new Audit({
