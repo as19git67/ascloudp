@@ -323,6 +323,7 @@ console.log("process.env.PORT: " + process.env.PORT);
 console.log("process.env", process.env);
 
 var httpPort = process.env.PORT || config.get('httpPort');
+console.log("httpPort: " + httpPort);
 var httpsPort = config.get('httpsPort');
 
 var model = require('./model');
@@ -349,7 +350,7 @@ model.createSchemaIfNotExists().then(function () {
             }
             else {
 
-                if (httpPort > 0) {
+                if (httpPort && httpPort != "") {
                     // create http server
                     http.createServer(app).listen(httpPort, function () {
                         console.log('Express server listening on port ' + httpPort);
@@ -359,7 +360,7 @@ model.createSchemaIfNotExists().then(function () {
                         }
                     });
                 } else {
-                    if (httpsPort > 0) {
+                    if (httpsPort && httpsPort != "") {
                         // create https server
                         startHttpsServer(app, httpsPort);
                     } else {
