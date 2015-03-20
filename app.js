@@ -319,7 +319,7 @@ app.use(function (err, req, res, next) {
     });
 });
 
-var httpPort = config.get('httpPort');
+var httpPort = process.env.PORT || config.get('httpPort');
 var httpsPort = config.get('httpsPort');
 
 var model = require('./model');
