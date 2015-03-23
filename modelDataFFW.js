@@ -112,13 +112,13 @@ exports.importTestData = function () {
                                                                     }).save()
                                                                         .then(function (newPersonContactDataEmail) {
                                                                             console.log('newPersonContactDataEmail added: ' + newPersonContactDataEmail.get('Account'));
-                                                                            resolvePerson({ person: newPerson, membership: newMember });
+                                                                            resolvePerson({person: newPerson, membership: newMember});
                                                                         }
                                                                     );
                                                                 }
                                                             );
                                                         } else {
-                                                            resolvePerson({ person: newPerson, membership: newMember });
+                                                            resolvePerson({person: newPerson, membership: newMember});
                                                         }
                                                         //"Ehrung_25_Jahre_aktiv": null, "Ehrung_40_Jahre_aktiv": null, "Ehrennadel_Silber": null, "Ehrennadel_Gold": null, "Ehrung_60_Jahre": null, "Ehrenkreuz_Silber": null, "Ehrenkreuz_Gold": null, "Ehrenmitgliedschaft": null
                                                         /*
@@ -289,7 +289,7 @@ exports.importTestData = function () {
             // SEITEN
             return new Promise(function (resolve, reject) {
                 var allPages = [
-                    { Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar" },
+                    {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
                     {
                         Order: 2,
                         Name: "ausbildung",
@@ -299,14 +299,14 @@ exports.importTestData = function () {
                         Model: "PageContent",
                         View: "genericHTML"
                     },
-                    { Order: 3, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles" },
-                    { Order: 4, Name: "fahrzeuge", AnonymousAccess: true, EntityNameSingular: "Fahrzeug", EntityNamePlural: "Fahrzeuge", Model: "PageContent", View: "genericHTML" },
-                    { Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts" },
-                    { Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links" },
-                    { Order: 7, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML" },
-                    { Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Bericht", EntityNamePlural: "Berichte", Collection: "Articles", View: "Articles" },
-                    { Order: 9, Name: "vorstand", AnonymousAccess: true, EntityNameSingular: "Vorstandsmitglied", EntityNamePlural: "Vorstand", Collection: "Contacts", View: "Contacts" },
-                    { Order: 10, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members" }
+                    {Order: 3, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles"},
+                    {Order: 4, Name: "fahrzeuge", AnonymousAccess: true, EntityNameSingular: "Fahrzeug", EntityNamePlural: "Fahrzeuge", Model: "PageContent", View: "genericHTML"},
+                    {Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
+                    {Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links"},
+                    {Order: 7, Name: "mitmachen", AnonymousAccess: true, EntityNameSingular: "Mitmachen", EntityNamePlural: "Mitmachinfos", Model: "PageContent", View: "genericHTML"},
+                    {Order: 8, Name: "wir", AnonymousAccess: true, EntityNameSingular: "Bericht", EntityNamePlural: "Berichte", Collection: "Articles", View: "Articles"},
+                    {Order: 9, Name: "vorstand", AnonymousAccess: true, EntityNameSingular: "Vorstandsmitglied", EntityNamePlural: "Vorstand", Collection: "Contacts", View: "Contacts"},
+                    {Order: 10, Name: "mitglieder", AnonymousAccess: false, EntityNameSingular: "Mitglied", EntityNamePlural: "Mitglieder", Collection: "Persons", View: "Members"}
                 ];
                 var pages = model.models.Pages.forge(allPages);
                 console.log("Adding pages.");
@@ -331,7 +331,7 @@ exports.importTestData = function () {
                         Page_id: "mitmachen",
                         Text: "## Mitglied bei der Freiwilligen Feuerwehr Merching werden\r\n\r### Wer kann beitreten?\r\n\rDie Freiwillige Feuerwehr Merching freut sich immer über neue Mitglieder. Ab dem Alter von 14 Jahren kann man beitreten. Mit 16 Jahren kann man dann beschränkt bei Einsätzen dabei sein und ab dem 18. Lebenjahr ist man voll einsatzfähig.\r\n\r"
                     },
-                    { Page_id: "fahrzeuge", Text: "## HLF 20/16\r\n\rHier wird das Bild erscheinen\r\n\r## LF 16\r\n\rHier wird das Bild erscheinen\r\n\r" }
+                    {Page_id: "fahrzeuge", Text: "## HLF 20/16\r\n\rHier wird das Bild erscheinen\r\n\r## LF 16\r\n\rHier wird das Bild erscheinen\r\n\r"}
                 ];
                 var pageContents = model.models.PageContents.forge(allPageContents);
                 console.log("Adding PageContents.");
@@ -347,12 +347,12 @@ exports.importTestData = function () {
         function () {
             return new Promise(function (resolve, reject) {
                 var allPageCollectionColumns = [
-                    { Order: 1, Page_id: "mitglieder", Name: "Salutation", Caption: "Anrede", Type: "string", Mandatory: false },
-                    { Order: 2, Page_id: "mitglieder", Name: "Firstname", Caption: "Vorname", Type: "string", Mandatory: false },
-                    { Order: 3, Page_id: "mitglieder", Name: "Lastname", Caption: "Nachname", Type: "string", Mandatory: true },
-                    { Order: 4, Page_id: "mitglieder", Name: "Suffix", Caption: "Suffix", Type: "string", Mandatory: false },
-                    { Order: 5, Page_id: "mitglieder", Name: "Birthday", Caption: "Geburtstag", Type: "date", Mandatory: false },
-                    { Order: 6, Page_id: "mitglieder", Name: "MembershipItem.MembershipNumber", Caption: "Mitgliedsnummer", Type: "integer", Mandatory: true }
+                    {Order: 1, Page_id: "mitglieder", Name: "Salutation", Caption: "Anrede", Type: "string", Mandatory: false},
+                    {Order: 2, Page_id: "mitglieder", Name: "Firstname", Caption: "Vorname", Type: "string", Mandatory: false},
+                    {Order: 3, Page_id: "mitglieder", Name: "Lastname", Caption: "Nachname", Type: "string", Mandatory: true},
+                    {Order: 4, Page_id: "mitglieder", Name: "Suffix", Caption: "Suffix", Type: "string", Mandatory: false},
+                    {Order: 5, Page_id: "mitglieder", Name: "Birthday", Caption: "Geburtstag", Type: "date", Mandatory: false},
+                    {Order: 6, Page_id: "mitglieder", Name: "MembershipItem.MembershipNumber", Caption: "Mitgliedsnummer", Type: "integer", Mandatory: true}
                 ];
                 var pageCollectionColumns = model.models.PageCollectionColumns.forge(allPageCollectionColumns);
                 console.log("Adding PageCollectionColumns.");
@@ -370,7 +370,7 @@ exports.importTestData = function () {
             return new Promise(function (resolve, reject) {
                 Promise.map(ffwEvents, function (value) {
                     return new Promise(function (resolveEvent, rejectEvent) {
-                        new model.models.Event({ Page_id: "termine" }).save().then(function (newEvent) {
+                        new model.models.Event({Page_id: "termine"}).save().then(function (newEvent) {
                             var publishDateStart = value.publishDateStart == null ? new Date() : value.publishDateStart;
                             var publishDateEnd = value.publishDateEnd == null ? value.eventDateEnd : value.publishDateEnd;
                             var evObj = {
@@ -408,7 +408,7 @@ exports.importTestData = function () {
             return new Promise(function (resolve, reject) {
                 Promise.map(ffwLinks, function (value) {
                     return new Promise(function (resolveLink, rejectLink) {
-                        new model.models.Link({ Page_id: "links", Url: value.href }).save().then(function (newLink) {
+                        new model.models.Link({Page_id: "links", Url: value.href}).save().then(function (newLink) {
                             var linkObj = {
                                 Link_id: newLink.get('id'),
                                 Url: value.href,
@@ -438,7 +438,7 @@ exports.importTestData = function () {
             // VORSTANDSCHAFT (Contacts)
             return new Promise(function (resolve, reject) {
                 var pageName = "vorstand";
-                var memberships = _.where(ffwMitglieder, { 'Vorstandsmitglied': true });
+                var memberships = _.where(ffwMitglieder, {'Vorstandsmitglied': true});
                 var membershipIds = _.map(memberships, function (membershipObj) {
                     return membershipObj.ID;
                 });
@@ -456,7 +456,7 @@ exports.importTestData = function () {
                         });
                         Promise.map(allContacts, function (contactItem) {
                             return new Promise(function (resolveContact, rejectContact) {
-                                new model.models.Contact({ Page_id: pageName }).save().then(function (newContact) {
+                                new model.models.Contact({Page_id: pageName}).save().then(function (newContact) {
                                     contactItem.Contact_id = newContact.get('id');
                                     new model.models.ContactItem(contactItem).save().then(function (newContactItem) {
                                         resolveContact(newContact);
@@ -487,175 +487,26 @@ exports.importTestData = function () {
                 var now = new Date();
                 var end = new Date();
                 end.setFullYear(end.getFullYear() + 1);
-                new model.models.Article({ "Page_id": "wir" }).save().then(function (newArticle) {
+                new model.models.Article({"Page_id": "wir"}).save().then(function (newArticle) {
                     new model.models.ArticleItem({
                         "Article_id": newArticle.get('id'),
-                        "Date": new Date(2014, 6, 3),
-                        "Title": "RETTUNGSEINSATZ MERCHING: Ich dachte ein Flugzeug stürzt ab",
-                        "Subtitle": "Stadel auf landwirtschaftlichem Anwesen in Merching stürzt ein. Das Wohnhaus ist momentan für die fünfköpfige Familie nicht mehr zu betreten",
-                        "Author": "Eva Weizenegger",
+                        "Date": new Date(2014, 11, 13),
+                        "Author": "Anton Schegg",
+                        "Text": "# Feuerwehr Merching ehrt langjährige Mitglieder\r\n\r" +
+                        "## *Hauptversammlung* Erstmals Alleinveranstalter des Faschingsballs in der Mehrzweckhalle\r\n\r" +
+                        "![Zeitungsartikel in der Friedberger Allgemeinen vom 5.2.2015](http://2015-02-05 Zeitungsartikel FA 001.jpg)\r\n\r",
                         "publish_start": now,
                         "publish_end": end,
                         "valid_start": now
                     }).save().then(function (newArticle) {
-                            new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection) {
-                                new model.models.ArticleSectionItem({
-                                    "ArticleSection_id": newArticleSection.get('id'),
-                                    "Order": 2,
-                                    "Title": undefined,
-                                    "Text": "Bericht in der Friedberger Allgemeinen (3. Juni 2013)",
-                                    "ImageUrl": "http://bilder.augsburger-allgemeine.de/img/aichach/origs25490156/6280418233-w900-h960/MCH-Stadeleinsturz-009.jpg",
-                                    "ImageDescription": "Ein Stadel eines landwirtschaftlichen Anwesens in Merching in der Bahnhofstraße stürzte gestern ein. Das angrenzende Wohnhaus ist zurzeit für die Familie nicht bewohnbar. Zunächst muss ein Statiker klären, wann die Familie das Haus wieder betreten darf.",
-                                    "valid_start": now
-                                }).save().then(function (newArticleSectionItem) {
-                                        new model.models.ArticleReference({ ArticleSection_id: newArticleSection.get('id') }).save().then(function (newArticleReference) {
-                                            new model.models.ArticleReferenceItem({
-                                                "ArticleReference_id": newArticleReference.get('id'),
-                                                "Text": "Friedberger Allgemeine, 3.6.2014",
-                                                "valid_start": now
-                                            }).save().then(function (newArticleReferenceItem) {
-                                                    new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection2) {
-                                                        new model.models.ArticleSectionItem({
-                                                            "ArticleSection_id": newArticleSection2.get('id'),
-                                                            "Order": 1,
-                                                            "Title": null,
-                                                            "Text": "Noch völlig unter Schock steht die fünfkopfige Familie in Merching, als sie auf die Trümmer ihres Stadels schaut. " +
-                                                            "„Es hat einen wahnsinnigen Schlag getan und dann dachte ich, eine Lawine geht ab“, schildert eine Betroffene die Ereignisse vom Montagmorgen. " +
-                                                            "Wie Polizeikommissar Michael Daschner informiert, wurden die Retter gegen 8.20 Uhr verständigt, um zu dem eingestürzten Stadel in der Bahnhofstraße, der direkt an das Wohnhaus angebaut ist, zu fahren und erste Sicherungsmaßnahmen vorzunehmen. " +
-                                                            "„Momentan darf die Familie ihr Wohnhaus nicht betreten, erst wenn der Statiker keine weitere Einsturzgefahr bescheinigt, kann das Haus wieder betreten werden.“ " +
-                                                            "Bürgermeister Martin Walch telefoniert bereits mit dem Landratsamt und versucht, einen Bausachverständigen zu organisieren. " + "Er läuft zwischen Baucontainern, alten Landwirtschaftsgeräten hin und her, beantwortet Fragen von Polizei und Abbruchunternehmen und redet gleichzeitig mit dem Hausbesitzer, der fassungslos auf die Trümmer des Stadels blickt. " +
-                                                            " „Was denn noch alles?“, sagt der Mann nur noch. Tiere waren in dem ehemaligen Kuhstall nicht. Einen Hund, der sich noch im Wohnhaus befindet, kann Martin Walch rauslocken.",
-                                                            "valid_start": now
-                                                        }).save().then(function (newArticleSectionItem2) {
-                                                                new model.models.ArticleReference({ ArticleSection_id: newArticleSection2.get('id') }).save().then(function (newArticleReference2) {
-                                                                    new model.models.ArticleReferenceItem({
-                                                                        "ArticleReference_id": newArticleReference2.get('id'),
-                                                                        "Text": "Feuerwehr Merching, 2.6.2014",
-                                                                        "valid_start": now
-                                                                    }).save().then(function (newArticleReferenceItem2) {
-                                                                            console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                                            resolve();
-                                                                        }).catch(function (error) {
-                                                                            console.log("Error while creating ArticleReferenceItem for page 'wir': " +
-                                                                            error);
-                                                                            reject(error);
-                                                                        });
-                                                                }).catch(function (error) {
-                                                                    console.log("Error while creating ArticleReference for page 'wir': " + error);
-                                                                    reject(error);
-                                                                });
-                                                            }).catch(function (error) {
-                                                                console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                                                reject(error);
-                                                            });
-                                                    }).catch(function (error) {
-                                                        console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                                        reject(error);
-                                                    });
-                                                }).catch(function (error) {
-                                                    console.log("Error while creating ArticleReferenceItem for page 'wir': " + error);
-                                                    reject(error);
-                                                });
-                                        }).catch(function (error) {
-                                            console.log("Error while creating ArticleReference for page 'wir': " + error);
-                                            reject(error);
-                                        });
-                                    }).catch(function (error) {
-                                        console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                        reject(error);
-                                    });
-                            }).catch(function (error) {
-                                console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                reject(error);
-                            });
+                            console.log("Article from " + newArticle.get('Author') + " (" + newArticle.get('Date') + ") saved.");
+                            resolve();
                         }).catch(function (error) {
-                            console.log("Error while creating Article for page 'wir': " + error);
+                            console.log("Error while creating Article for page 'blog': " + error);
                             reject(error);
                         });
                 }).catch(function (error) {
-                    console.log("Error while creating Article for page 'wir': " + error);
-                    reject(error);
-                });
-            });
-        },
-        function () {
-            return new Promise(function (resolve, reject) {
-                var now = new Date();
-                var end = new Date();
-                var now1 = new Date();
-                now1.setFullYear(end.getFullYear() - 1);
-                end.setFullYear(end.getFullYear() + 1);
-                new model.models.Article({ "Page_id": "wir" }).save().then(function (newArticle) {
-                    new model.models.ArticleItem({
-                        "Article_id": newArticle.get('id'),
-                        "Date": now,
-                        "Title": "Generationenwechsel bei der Merchinger Feuerwehr",
-                        "Subtitle": "Neuwahlen bei der Freiwilligen Feuerwehr",
-                        "Author": "Anton Schegg",
-                        "publish_start": now1,
-                        "publish_end": end,
-                        "valid_start": now
-                    }).save().then(function (newArticle) {
-                            new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection) {
-                                new model.models.ArticleSectionItem({
-                                    "ArticleSection_id": newArticleSection.get('id'),
-                                    "Order": 1,
-                                    "Title": "Artikel aus der Friedberger Allgemeinen",
-                                    "Text": "Alles Bestens im vergangenen Jahr.\r\n\rBei den Neuwahlen der Freiwilligen Feuerwehr Merching wurde das alte Team entlastet und die Neuwahlen bestätigten die Wahlvorschläge. Somit wurde der Ausschuss ziemlich verjüngt.",
-                                    "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_1.jpg",
-                                    "ImageDescription": null,
-                                    "valid_start": now
-                                }).save().then(function (newArticleSectionItem) {
-                                        new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection2) {
-                                            new model.models.ArticleSectionItem({
-                                                "ArticleSection_id": newArticleSection2.get('id'),
-                                                "Order": 3,
-                                                "Title": "Ergebnisse der Neuwahl",
-                                                "Text": "Gewählt wurden:\r\n\r* Vorsitzender: Markus Storch\r\n\r* Kommandant: Andreas Escher",
-                                                "valid_start": now
-                                            }).save().then(function (newArticleSectionItem2) {
-                                                    new model.models.ArticleSection({ Article_id: newArticle.get('id') }).save().then(function (newArticleSection) {
-                                                        new model.models.ArticleSectionItem({
-                                                            "ArticleSection_id": newArticleSection.get('id'),
-                                                            "Order": 2,
-                                                            "Title": null,
-                                                            "Text": "",
-                                                            "ImageUrl": "http://www.ff-merching.de/images/presse_20130207_FA_2.jpg",
-                                                            "ImageDescription": null,
-                                                            "valid_start": now
-                                                        }).save().then(function (newArticleSectionItem) {
-                                                                console.log("Article '" + newArticle.get('Title') + "' saved.");
-                                                                resolve();
-                                                            }).catch(function (error) {
-                                                                console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                                                reject(error);
-                                                            });
-                                                    }).catch(function (error) {
-                                                        console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                                        reject(error);
-                                                    });
-                                                }).catch(function (error) {
-                                                    console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                                    reject(error);
-                                                });
-                                        }).catch(function (error) {
-                                            console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                            reject(error);
-                                        });
-                                    }).catch(function (error) {
-                                        console.log("Error while creating ArticleSectionItem for page 'wir': " + error);
-                                        reject(error);
-                                    });
-                            }).catch(function (error) {
-                                console.log("Error while creating ArticleSection for page 'wir': " + error);
-                                reject(error);
-                            });
-                        }).catch(function (error) {
-                            console.log("Error while creating Article for page 'wir': " + error);
-                            reject(error);
-                        });
-                }).catch(function (error) {
-                    console.log("Error while creating Article for page 'wir': " + error);
+                    console.log("Error while creating Article for page 'blog': " + error);
                     reject(error);
                 });
             });
@@ -7566,7 +7417,7 @@ var ffwMitglieder = [
         "Eingetreten": "1945-01-01T00:00:00",
         "Ausgetreten": null,
         "Übergang_Passiv": "1900-01-01T00:00:00",
-        "verstorben": null,
+        "verstorben": "2015-03-23T00:00:00",
         "aktiv": false,
         "Einladung": false,
         "EinladungSeparat": false,
@@ -12449,65 +12300,65 @@ var ffwMitglieder = [
 ];
 
 var ffwFunktionen = [
-    { "IdFunktion": 1, "Name": "Schriftführer" },
-    { "IdFunktion": 2, "Name": "Beisitzer" },
-    { "IdFunktion": 3, "Name": "Kassenrevisor" },
-    { "IdFunktion": 4, "Name": "Kassier" },
-    { "IdFunktion": 5, "Name": "1. Kommandant" },
-    { "IdFunktion": 6, "Name": "2. Kommandant" },
-    { "IdFunktion": 7, "Name": "1. Vorsitzender" },
-    { "IdFunktion": 8, "Name": "Fahnenträger" },
-    { "IdFunktion": 9, "Name": "Fahnenbegleitung" },
-    { "IdFunktion": 10, "Name": "Zeugwart" },
-    { "IdFunktion": 11, "Name": "Kreisbrandmeister" },
-    { "IdFunktion": 13, "Name": "Atemschutz" },
-    { "IdFunktion": 14, "Name": "Jugendwart" },
-    { "IdFunktion": 15, "Name": "Ehren-KBM" },
-    { "IdFunktion": 16, "Name": "Ehrenmitglied" }
+    {"IdFunktion": 1, "Name": "Schriftführer"},
+    {"IdFunktion": 2, "Name": "Beisitzer"},
+    {"IdFunktion": 3, "Name": "Kassenrevisor"},
+    {"IdFunktion": 4, "Name": "Kassier"},
+    {"IdFunktion": 5, "Name": "1. Kommandant"},
+    {"IdFunktion": 6, "Name": "2. Kommandant"},
+    {"IdFunktion": 7, "Name": "1. Vorsitzender"},
+    {"IdFunktion": 8, "Name": "Fahnenträger"},
+    {"IdFunktion": 9, "Name": "Fahnenbegleitung"},
+    {"IdFunktion": 10, "Name": "Zeugwart"},
+    {"IdFunktion": 11, "Name": "Kreisbrandmeister"},
+    {"IdFunktion": 13, "Name": "Atemschutz"},
+    {"IdFunktion": 14, "Name": "Jugendwart"},
+    {"IdFunktion": 15, "Name": "Ehren-KBM"},
+    {"IdFunktion": 16, "Name": "Ehrenmitglied"}
 ];
 
 var ffwMitgliederFunktionen = [
-    { "IdMitglied": 1243, "IdFunktion": 2, "Beginn": "2013-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 1253, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 72, "IdFunktion": 8, "Beginn": "1996-05-17T00:00:00", "Ende": null },
-    { "IdMitglied": 110, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null },
-    { "IdMitglied": 244, "IdFunktion": 3, "Beginn": "1949-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 255, "IdFunktion": 1, "Beginn": "1959-01-06T00:00:00", "Ende": "1995-01-06T00:00:00" },
-    { "IdMitglied": 259, "IdFunktion": 2, "Beginn": "1959-01-06T00:00:00", "Ende": "1964-01-06T00:00:00" },
-    { "IdMitglied": 259, "IdFunktion": 5, "Beginn": "1949-03-06T00:00:00", "Ende": "1958-01-06T00:00:00" },
-    { "IdMitglied": 260, "IdFunktion": 4, "Beginn": "1949-03-06T00:00:00", "Ende": "1960-12-25T00:00:00" },
-    { "IdMitglied": 271, "IdFunktion": 3, "Beginn": "1967-01-01T00:00:00", "Ende": "1995-01-06T00:00:00" },
-    { "IdMitglied": 274, "IdFunktion": 4, "Beginn": "1948-01-11T00:00:00", "Ende": "1949-03-06T00:00:00" },
-    { "IdMitglied": 274, "IdFunktion": 6, "Beginn": "1949-03-06T00:00:00", "Ende": "1994-04-07T00:00:00" },
-    { "IdMitglied": 277, "IdFunktion": 5, "Beginn": "1970-01-10T00:00:00", "Ende": "1983-01-06T00:00:00" },
-    { "IdMitglied": 282, "IdFunktion": 4, "Beginn": "1960-12-26T00:00:00", "Ende": "1995-01-06T00:00:00" },
-    { "IdMitglied": 298, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-01-01T00:00:00" },
-    { "IdMitglied": 300, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-12-31T00:00:00" },
-    { "IdMitglied": 304, "IdFunktion": 6, "Beginn": "1958-01-06T00:00:00", "Ende": "1983-01-06T00:00:00" },
-    { "IdMitglied": 414, "IdFunktion": 5, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
-    { "IdMitglied": 515, "IdFunktion": 4, "Beginn": "2001-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 515, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null },
-    { "IdMitglied": 531, "IdFunktion": 5, "Beginn": "1983-01-06T00:00:00", "Ende": "1989-01-06T00:00:00" },
-    { "IdMitglied": 531, "IdFunktion": 7, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
-    { "IdMitglied": 557, "IdFunktion": 5, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
-    { "IdMitglied": 559, "IdFunktion": 1, "Beginn": "2001-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 568, "IdFunktion": 4, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
-    { "IdMitglied": 568, "IdFunktion": 7, "Beginn": "2001-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 569, "IdFunktion": 1, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00" },
-    { "IdMitglied": 1257, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2008-01-06T00:00:00" },
-    { "IdMitglied": 1239, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
-    { "IdMitglied": 565, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
-    { "IdMitglied": 62, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
-    { "IdMitglied": 548, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
-    { "IdMitglied": 114, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 110, "IdFunktion": 6, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00" },
-    { "IdMitglied": 1243, "IdFunktion": 10, "Beginn": "2007-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 277, "IdFunktion": 15, "Beginn": "1946-01-01T00:00:00", "Ende": null },
-    { "IdMitglied": 255, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": "2003-04-26T00:00:00" },
-    { "IdMitglied": 282, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 1251, "IdFunktion": 5, "Beginn": "2013-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 110, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null },
-    { "IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null }
+    {"IdMitglied": 1243, "IdFunktion": 2, "Beginn": "2013-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 1253, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 72, "IdFunktion": 8, "Beginn": "1996-05-17T00:00:00", "Ende": null},
+    {"IdMitglied": 110, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null},
+    {"IdMitglied": 244, "IdFunktion": 3, "Beginn": "1949-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 255, "IdFunktion": 1, "Beginn": "1959-01-06T00:00:00", "Ende": "1995-01-06T00:00:00"},
+    {"IdMitglied": 259, "IdFunktion": 2, "Beginn": "1959-01-06T00:00:00", "Ende": "1964-01-06T00:00:00"},
+    {"IdMitglied": 259, "IdFunktion": 5, "Beginn": "1949-03-06T00:00:00", "Ende": "1958-01-06T00:00:00"},
+    {"IdMitglied": 260, "IdFunktion": 4, "Beginn": "1949-03-06T00:00:00", "Ende": "1960-12-25T00:00:00"},
+    {"IdMitglied": 271, "IdFunktion": 3, "Beginn": "1967-01-01T00:00:00", "Ende": "1995-01-06T00:00:00"},
+    {"IdMitglied": 274, "IdFunktion": 4, "Beginn": "1948-01-11T00:00:00", "Ende": "1949-03-06T00:00:00"},
+    {"IdMitglied": 274, "IdFunktion": 6, "Beginn": "1949-03-06T00:00:00", "Ende": "1994-04-07T00:00:00"},
+    {"IdMitglied": 277, "IdFunktion": 5, "Beginn": "1970-01-10T00:00:00", "Ende": "1983-01-06T00:00:00"},
+    {"IdMitglied": 282, "IdFunktion": 4, "Beginn": "1960-12-26T00:00:00", "Ende": "1995-01-06T00:00:00"},
+    {"IdMitglied": 298, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-01-01T00:00:00"},
+    {"IdMitglied": 300, "IdFunktion": 9, "Beginn": "1952-01-01T00:00:00", "Ende": "2000-12-31T00:00:00"},
+    {"IdMitglied": 304, "IdFunktion": 6, "Beginn": "1958-01-06T00:00:00", "Ende": "1983-01-06T00:00:00"},
+    {"IdMitglied": 414, "IdFunktion": 5, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
+    {"IdMitglied": 515, "IdFunktion": 4, "Beginn": "2001-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 515, "IdFunktion": 9, "Beginn": "1996-05-17T00:00:00", "Ende": null},
+    {"IdMitglied": 531, "IdFunktion": 5, "Beginn": "1983-01-06T00:00:00", "Ende": "1989-01-06T00:00:00"},
+    {"IdMitglied": 531, "IdFunktion": 7, "Beginn": "1989-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
+    {"IdMitglied": 557, "IdFunktion": 5, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
+    {"IdMitglied": 559, "IdFunktion": 1, "Beginn": "2001-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 568, "IdFunktion": 4, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
+    {"IdMitglied": 568, "IdFunktion": 7, "Beginn": "2001-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 569, "IdFunktion": 1, "Beginn": "1995-01-06T00:00:00", "Ende": "2001-01-06T00:00:00"},
+    {"IdMitglied": 1257, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2008-01-06T00:00:00"},
+    {"IdMitglied": 1239, "IdFunktion": 14, "Beginn": "2007-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
+    {"IdMitglied": 565, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
+    {"IdMitglied": 62, "IdFunktion": 3, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
+    {"IdMitglied": 548, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
+    {"IdMitglied": 114, "IdFunktion": 2, "Beginn": "2001-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 110, "IdFunktion": 6, "Beginn": "2001-01-06T00:00:00", "Ende": "2013-01-06T00:00:00"},
+    {"IdMitglied": 1243, "IdFunktion": 10, "Beginn": "2007-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 277, "IdFunktion": 15, "Beginn": "1946-01-01T00:00:00", "Ende": null},
+    {"IdMitglied": 255, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": "2003-04-26T00:00:00"},
+    {"IdMitglied": 282, "IdFunktion": 16, "Beginn": "2003-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 1251, "IdFunktion": 5, "Beginn": "2013-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 110, "IdFunktion": 3, "Beginn": "2013-01-06T00:00:00", "Ende": null},
+    {"IdMitglied": 1239, "IdFunktion": 6, "Beginn": "2013-01-06T00:00:00", "Ende": null}
 ];
 
 var gesternStart = moment().subtract(1, 'days').subtract(3, 'hours').utc().toDate();
@@ -12891,9 +12742,9 @@ var ffwEvents = [
 ];
 
 var ffwLinks = [
-    { href: "http://www.merching.de", d: "Gemeinde Merching" },
-    { href: "http://www.pfarrei-merching.de", d: "Pfarrei Merching" },
-    { href: "http://www.kbv-merching.de", d: "Kath. Burschenverein Merching" },
-    { href: "http://www.hutv-bayermuenching.de", d: "Trachtenverein Bayermünching" },
-    { href: "http://www.paartaler-merching.de", d: "Trachtenverein D` Paartaler" }
+    {href: "http://www.merching.de", d: "Gemeinde Merching"},
+    {href: "http://www.pfarrei-merching.de", d: "Pfarrei Merching"},
+    {href: "http://www.kbv-merching.de", d: "Kath. Burschenverein Merching"},
+    {href: "http://www.hutv-bayermuenching.de", d: "Trachtenverein Bayermünching"},
+    {href: "http://www.paartaler-merching.de", d: "Trachtenverein D` Paartaler"}
 ];
