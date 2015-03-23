@@ -1,0 +1,16 @@
+extends layout
+block content
+    h2= title
+    if error
+        p.text-danger #{error}
+    if info
+        p.text-info #{info}
+    if error || info
+        br
+    h4 Details von Seite ändern
+    hr
+    div.col-md-12
+        form(class="form-horizontal", role="form", action="/admin/pagemanagementpageedit", method="post")
+            input(type="hidden", value="#{csrfToken}" name="_csrf")
+            input(type="hidden", value="#{userData.User_id}" name="User_id")
+            div.form-group
