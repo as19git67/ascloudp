@@ -319,9 +319,6 @@ app.use(function (err, req, res, next) {
     });
 });
 
-console.log("process.env.PORT: " + process.env.PORT);
-console.log("process.env", process.env);
-
 var httpPort = process.env.PORT || config.get('httpPort');
 console.log("httpPort: " + httpPort);
 var httpsPort = config.get('httpsPort');
