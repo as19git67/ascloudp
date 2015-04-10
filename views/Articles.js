@@ -16,7 +16,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         qb.innerJoin('Articles', 'Articles.id', 'ArticleItems.Article_id');
         if (canEdit) {
             // in case user can edit, include currently not published articles
-                qb.where({'Page_id': page.Name, 'valid_end': null});
+            qb.where({'Page_id': page.Name, 'valid_end': null});
         } else {
             qb.where({'Page_id': page.Name, 'valid_end': null})
                 .andWhere('publish_start', '<=', now)
@@ -31,8 +31,58 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 notPublished = true;
             }
             var article = {};
+            var title;
             var text = articleItem.get('Text');
+            var lineBreakLen = 2;
+            var i1 = text.indexOf('\r\n');
+            if (i1 < 0) {
+                lineBreakLen = 1;
+                i1 = text.indexOf('\n');
+            }
+            if (i1 >= 0) {
+                var line = text.substring(0, i1);
+                var i2 = line.lastIndexOf('#');
+                if (i2 >= 0) {
+                    title = line.substr(i2 + 1);
+                    text = text.substr(i1 + lineBreakLen);
+                }
+            }
+            if (text.length > 0 && text[0] == '\r') {
+                text = text.substr(1);
+            }
+            if (text.length > 0 && text[0] == '\n') {
+                text = text.substr(1);
+            }
+
+            var expectedMatches = 2;
+            var re = /.*\!\[(.*)\]\((.*)\).*/;
+            var ma = re.exec(text);
+            if (!ma) {
+                expectedMatches = 1;
+                re = /.*\!\((.*)\).*/;
+                ma = re.exec(text);
+            }
+
+            // Erstes gefundene Bild als image setzen
+            if (!article.image) {
+                if (ma && ma.length > expectedMatches) {
+                    article.imageAlt = expectedMatches - 1;
+                    article.image = ma[expectedMatches];
+                }
+            }
+
+            // Alle Bilder aus dem Text rausnehmen
+            if (expectedMatches == 2) {
+                re = /.*\!\[(.*)\]\((.*)\).*/;
+                text = text.replace(re, "");
+            }
+            if (expectedMatches == 1) {
+                re = /.*\!\((.*)\).*/;
+                text = text.replace(re, "");
+            }
+
             article.article_id = articleItem.get('Article_id');
+            article.title = title;
             article.rawHtml = rho.toHtml(text);
             article.author = articleItem.get('Author');
             article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');

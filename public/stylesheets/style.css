@@ -29,3 +29,8 @@ body {
 .transfer-box .progress {
     margin-bottom: 0;
 }
+
+.media-left a img {
+    max-height: 100px;
+    max-width: 100px;
+}
