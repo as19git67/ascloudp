@@ -76,7 +76,8 @@ module.exports.init = function (passport, bookshelf, callback) {
             passport.use(new GoogleStrategy({
                     clientID: config.get('authGoogleClientId'),
                     clientSecret: config.get('authGoogleClientSecret'),
-                    callbackURL: config.get('authGoogleCallbackURL')
+                    callbackURL: config.get('authGoogleCallbackURL'),
+                    passReqToCallback   : true
                 },
                 function (accessToken, refreshToken, profile, done) {
                     if (!profile) {
