@@ -390,7 +390,7 @@ function getArticleItemSchema() {
                         description: "Titel des Artikels"
                     }),
                     leadText: _.extend(articleItemSchema['LeadText'], {
-                        label: "Aufreißer",
+                        label: "Zusammenfassung",
                         description: "Zusammenfassung des Artikels"
                     }),
                     author: _.extend(articleItemSchema['Author'], {
