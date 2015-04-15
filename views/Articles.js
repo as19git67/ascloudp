@@ -31,8 +31,10 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 notPublished = true;
             }
             var article = {};
-            var title;
             var text = articleItem.get('Text');
+
+/*
+            var title;
             var lineBreakLen = 2;
             var i1 = text.indexOf('\r\n');
             if (i1 < 0) {
@@ -53,6 +55,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             if (text.length > 0 && text[0] == '\n') {
                 text = text.substr(1);
             }
+*/
 
             var expectedMatches = 2;
             var re = /.*\!\[(.*)\]\((.*)\).*/;
@@ -71,18 +74,21 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 }
             }
 
+/*
             // Alle Bilder aus dem Text rausnehmen
             if (expectedMatches == 2) {
-                re = /.*\!\[(.*)\]\((.*)\).*/;
+                re = /.*\!\[(.*)\]\((.*)\).*!/;
                 text = text.replace(re, "");
             }
             if (expectedMatches == 1) {
-                re = /.*\!\((.*)\).*/;
+                re = /.*\!\((.*)\).*!/;
                 text = text.replace(re, "");
             }
+*/
 
             article.article_id = articleItem.get('Article_id');
-            article.title = title;
+            article.title = articleItem.get('Title');
+            article.leadText = articleItem.get('LeadText');
             article.rawHtml = rho.toHtml(text);
             article.author = articleItem.get('Author');
             article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');

@@ -15,14 +15,275 @@ var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
 
+function extractFromArticleItem(articleItem) {
+    var title;
+    var text = articleItem.get('Text');
+    var lineBreakLen = 2;
+    var i1 = text.indexOf('\r\n');
+    if (i1 < 0) {
+        lineBreakLen = 1;
+        i1 = text.indexOf('\n');
+    }
+    var line;
+    if (i1 < 0) {
+        line = text;
+    } else {
+        line = text.substring(0, i1);
+    }
+    var i2 = line.lastIndexOf('#');
+    if (i2 >= 0) {
+        title = line.substr(i2 + 1).trim();
+        if (i1 < 0) {
+            text = "";
+        } else {
+            text = text.substr(i1 + lineBreakLen);
+        }
+    }
+
+
+    if (text.length > 0 && text[0] == '\r') {
+        text = text.substr(1);
+    }
+    if (text.length > 0 && text[0] == '\n') {
+        text = text.substr(1);
+    }
+
+    var textWithoutImages;
+    // Alle Bilder aus dem Text rausnehmen
+    re = /.*\!\[(.*)\]\((.*)\).*/;
+    textWithoutImages = text.replace(re, "");
+    re = /.*\!\((.*)\).*/;
+    textWithoutImages = textWithoutImages.replace(re, "").trim();
+
+    // take first paragraph as leadText
+    var leadText = "";
+    if (textWithoutImages.length > 0) {
+        lineBreakLen = 2;
+        i1 = textWithoutImages.indexOf('\r\n');
+        if (i1 < 0) {
+            lineBreakLen = 1;
+            i1 = textWithoutImages.indexOf('\n');
+        }
+        if (i1 < 0) {
+            leadText = textWithoutImages.trim();
+        } else {
+            leadText = textWithoutImages.substring(0, i1).trim();
+        }
+        // falls die erste Zeile nur eine Leerzeile war, nochmal mit der nächsten Zeile
+        if (leadText.length == 0) {
+            textWithoutImages = textWithoutImages.substr(i1 + lineBreakLen);
+            i1 = textWithoutImages.indexOf('\r\n');
+            if (i1 < 0) {
+                i1 = textWithoutImages.indexOf('\n');
+            }
+            if (i1 >= 0) {
+                leadText = textWithoutImages.substring(0, i1).trim();
+            }
+        }
+    }
+    if (!title) {
+        title = "";
+    }
+    if (!leadText) {
+        leadText = "";
+    }
+    return {title: title.substr(0, 255), text: text, leadText: leadText.substr(0, 1000)};
+}
+
+exports.upgradeSchema = function (upgradeVersion) {
+    return new Promise(function (resolve, reject) {
+            switch (upgradeVersion) {
+                case 1:
+                    model.bookshelf.transaction(function (t) {
+                        // upgrade Articles table to have title and leadtext
+                        knex.schema.table('ArticleItems', function (table) {
+                            table.string('Title');
+                            table.string('LeadText', 1000);
+                        }).then(function () {
+                            new ArticleItem()
+                                .query(function (qb) {
+                                    qb.orderBy('publish_start', 'DESC');
+                                })
+                                .fetchAll().then(function (articleItemList) {
+                                    Promise.reduce(articleItemList.models, function (total, articleItem) {
+                                        var __ret = extractFromArticleItem(articleItem);
+                                        var title = __ret.title;
+                                        var text = __ret.text;
+                                        var leadText = __ret.leadText;
+
+                                        articleItem.set('Title', title);
+                                        articleItem.set('LeadText', leadText);
+                                        articleItem.set('Text', text);
+
+                                        return articleItem.save(null, {transacting: t}).then(function (updatedArticleItem) {
+                                            console.log("ArticleItem saved. Article_id: " + updatedArticleItem.get('Article_id') + " Title: " + updatedArticleItem.get('Title'));
+                                            return total + 1;
+                                        });
+
+                                    }, 0).then(function (total) {
+                                        console.log(total + " Articles upgraded in ArticleItems");
+                                        t.commit();
+                                    })
+                                        .catch(function (err) {
+                                            console.log("ERROR while upgrading ArticleItems");
+                                            t.rollback(err);
+                                        });
+                                })
+                                .catch(function (err) {
+                                    console.log("ERROR while upgrading ArticleItems schema");
+                                    t.rollback(err);
+                                });
+                        }).catch(function (err) {
+                            console.log("ERROR while fetching all ArticleItems");
+                            t.rollback(err);
+                        });
+                    }).then(function () {
+                        console.log("Transaction (upgrading ArticleItems in upgrade " + upgradeVersion + ") committed");
+                        resolve();
+/*
+                        knex.schema.table('ArticleItems', function (table) {
+                            table.string('Title').notNullable();
+                            table.string('LeadText', 1000).notNullable();
+                        }).then(function () {
+                            resolve();
+                        }).catch(function (error) {
+                            console.log("ERROR while adding not null constrains");
+                            reject(error);
+                        });
+*/
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log("Transaction (upgrading ArticleItems in upgrade " + upgradeVersion + ") rolled back");
+                        reject(error);
+                    });
+
+                    break;
+                default:
+                    resolve();
+            }
+        }
+    );
+};
+
+exports.upgradeSchemaV0 = function (upgradeVersion) {
+    return new Promise(function (resolve, reject) {
+        switch (upgradeVersion) {
+            case 1:
+
+                var ArticleItem2 = bookshelf.Model.extend({
+                    tableName: 'ArticleItems2',
+                    Article: function () {
+                        return this.belongsTo(Article);
+                    }
+                });
+                model.bookshelf.transaction(function (t) {
+                    // upgrade Articles table to have title and leadtext
+                    knex.schema.createTable('ArticleItems2', function (t) {
+                        t.increments('id').primary();
+                        t.integer('Article_id').references('id').inTable('Articles');
+                        t.datetime('Date').notNullable().index();
+                        t.string('Author');
+                        t.string('Title').notNullable();
+                        t.string('LeadText').notNullable();
+                        t.string('Text', 100000);
+                        t.timestamp('publish_start').notNullable().index();
+                        t.timestamp('publish_end').index();
+                        t.timestamp('valid_start').index();
+                        t.timestamp('valid_end').index();
+                    }).then(function () {
+                        // kopiere alle Einträge von ArticleItems nach ArticleItems2
+                        new ArticleItem()
+                            .query(function (qb) {
+                                qb.orderBy('publish_start', 'DESC');
+                            })
+                            .fetchAll()
+                            .then(function (articleItemList) {
+                                Promise.reduce(articleItemList, function (total, articleItem) {
+                                    var __ret = extractFromArticleItem(articleItem);
+                                    var title = __ret.title;
+                                    var text = __ret.text;
+                                    var leadText = __ret.leadText;
+                                    return new ArticleItem2({
+                                        Article_id: articleItem.get('Article_id'),
+                                        Date: articleItem.get('Date'),
+                                        Author: articleItem.get('Author'),
+                                        Title: title,
+                                        LeadText: leadText,
+                                        Text: text,
+                                        publish_start: articleItem.get('publish_start'),
+                                        publish_end: articleItem.get('publish_end'),
+                                        valid_start: articleItem.get('valid_start'),
+                                        valid_end: articleItem.get('valid_end')
+                                    })
+                                        .save(null, {transacting: t})
+                                        .then(function (savedArticle) {
+                                            console.log("ArticleItem2 saved. Article_id: " + savedArticle.get('Article_id') + " Title: " + savedArticle.get('Title'));
+                                            return total + 1;
+                                        })
+                                }, 0)
+                                    .then(function (total) {
+                                        console.log(total + " Articles saved in ArticleItem2");
+                                        //Total is 30
+                                        knex.schema.dropTable('ArticleItems')
+                                            .then(function () {
+                                                knex.schema.renameTable('ArticleItems2', 'ArticleItems')
+                                                    .then(function () {
+                                                        t.commit();
+                                                    })
+                                                    .catch(function (err) {
+                                                        t.rollback(err);
+                                                    });
+                                            })
+                                            .catch(function (err) {
+                                                t.rollback(err);
+                                            });
+                                    })
+                                    .catch(function (err) {
+                                        console.log("ERROR while creating new ArticleItem2: ", err);
+                                        t.rollback(err);
+                                    });
+                            }).catch(function (err) {
+                                t.rollback(err);
+                            });
+                    })
+                        .catch(function (err) {
+                            console.log("Error while creating ArticleItem2 table", err);
+                            t.rollback(err);
+                        });
+                }).then(function () {
+                    console.log("Transaction (upgrading ArticleItems in upgrade " + upgradeVersion + ") committed");
+                    resolve();
+                }).catch(function (error) {
+                    console.log("Transaction (upgrading ArticleItems in upgrade " + upgradeVersion + ") rolled back");
+                    reject(error);
+                });
+                break;
+            default:
+                resolve();
+        }
+    });
+};
+
 exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
             if (exists) {
                 knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
                     if (exists) {
-                        console.log('DB schema exists.');
-                        resolve();
+                        knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
+                            if (exists) {
+                                console.log('DB schema up to date.');
+                                resolve();
+                            } else {
+                                console.log('Must upgrade DB schema.');
+                                exports.upgradeSchema(1).then(
+                                    function () {
+                                        console.log('DB schema upgraded.');
+                                        resolve();
+                                    },
+                                    reject);
+                            }
+                        });
                     } else {
                         console.log('Must create DB schema.');
                         exports.createSchema().then(
@@ -75,13 +336,12 @@ exports.deleteInclompleteUploads = function () {
                                 reject(error);
                             });
                     })
-                    .catch(function(error){
+                    .catch(function (error) {
                         console.log("ERROR while reading all entries from Uploads");
                         reject(error);
                     });
             }
-            else
-            {
+            else {
                 console.log("Uploads table does not exist");
                 resolve();
             }
@@ -108,18 +368,6 @@ exports.createSchema = function () {
             },
             function () {
                 return knex.schema.dropTableIfExists('Events');
-            },
-            function () {
-                return knex.schema.dropTableIfExists('ArticleReferenceItems');
-            },
-            function () {
-                return knex.schema.dropTableIfExists('ArticleReferences');
-            },
-            function () {
-                return knex.schema.dropTableIfExists('ArticleSectionItems');
-            },
-            function () {
-                return knex.schema.dropTableIfExists('ArticleSections');
             },
             function () {
                 return knex.schema.dropTableIfExists('Uploads');
@@ -452,6 +700,8 @@ exports.createSchema = function () {
                     t.integer('Article_id').references('id').inTable('Articles');
                     t.datetime('Date').notNullable().index();
                     t.string('Author');
+                    t.string('Title').notNullable();
+                    t.string('LeadText').notNullable();
                     t.string('Text', 100000);
                     t.timestamp('publish_start').notNullable().index();
                     t.timestamp('publish_end').index();

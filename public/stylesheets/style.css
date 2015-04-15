@@ -1,31 +1,39 @@
 body {
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
+
 .textareaMonospace {
     font-family: monospace;
 }
+
 .align-left {
-    text-align:left;
+    text-align: left;
 }
+
 .align-center {
-    text-align:center;
+    text-align: center;
 }
+
 .align-right {
-    text-align:right;
+    text-align: right;
 }
+
 .drop {
     padding: 15px;
     border: 2px #f1f1f1 dashed;
     border-radius: 5px;
     line-height: 34px;
 }
+
 .drop.drag-over {
     background: #5CB85C;
     color: #fff
 }
+
 .transfer-box {
     margin-bottom: 5px;
 }
+
 .transfer-box .progress {
     margin-bottom: 0;
 }
@@ -33,4 +41,11 @@ body {
 .media-left a img {
     max-height: 100px;
     max-width: 100px;
+}
+
+.media-body {
+    max-height: 100px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }

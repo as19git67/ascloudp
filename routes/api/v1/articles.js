@@ -27,6 +27,8 @@ function respondWithArticleItemData(req, res, articleItem, articleImages) {
                 article: {
                     article_id: articleItem.get('Article_id'),
                     date: articleItem.get('Date'),
+                    title: articleItem.get('Title'),
+                    leadText: articleItem.get('LeadText'),
                     text: articleItem.get('Text'),
                     author: articleItem.get('Author'),
                     publish_start: articleItem.get('publish_start'),
@@ -383,6 +385,14 @@ function getArticleItemSchema() {
                         label: "Artikeltext",
                         description: "Text des Artikels"
                     }),
+                    title: _.extend(articleItemSchema['Title'], {
+                        label: "Titel",
+                        description: "Titel des Artikels"
+                    }),
+                    leadText: _.extend(articleItemSchema['LeadText'], {
+                        label: "Aufreißer",
+                        description: "Zusammenfassung des Artikels"
+                    }),
                     author: _.extend(articleItemSchema['Author'], {
                         label: "Verfasser",
                         description: "Autor des Artikels"
@@ -447,11 +457,17 @@ module.exports.put = function (req, res) {
                             if (!authorIsDifferent) {
                                 var textIsDifferent = articleItem.get('Text') != req.body.text;
                                 if (!textIsDifferent) {
-                                    // until here, nothing has changed
-                                    console.log("Not saving ArticleItem because nothing changed.");
-                                    res.statusCode = 304;   // not changed
-                                    res.send("304: Article not changed");
-                                    return;
+                                    var titleIsDifferent = articleItem.get('Title') != req.body.title;
+                                    if (!titleIsDifferent) {
+                                        var leadTextIsDifferent = articleItem.get('LeadText') != req.body.leadText;
+                                        if (!leadTextIsDifferent) {
+                                            // until here, nothing has changed
+                                            console.log("Not saving ArticleItem because nothing changed.");
+                                            res.statusCode = 304;   // not changed
+                                            res.send("304: Article not changed");
+                                            return;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -472,6 +488,8 @@ module.exports.put = function (req, res) {
                             Date: req.body.date,
                             Author: req.body.author,
                             Text: req.body.text,
+                            Title: req.body.title,
+                            LeadText: req.body.leadText,
                             publish_start: req.body.publish_start,
                             publish_end: req.body.publish_end,
                             valid_start: now
@@ -575,6 +593,8 @@ module.exports.post = function (req, res) {
                     Date: req.body.date,
                     Author: req.body.author,
                     Text: req.body.text,
+                    Title: req.body.title,
+                    LeadText: req.body.leadText,
                     publish_start: req.body.publish_start,
                     publish_end: req.body.publish_end,
                     valid_start: now
@@ -675,7 +695,7 @@ module.exports.delete = function (req, res) {
                         Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
                     }).save(null, {transacting: t}).then(function () {
                             new ArticleImage()
-                            .where({'Article_id': articleId, 'valid_end': null})
+                                .where({'Article_id': articleId, 'valid_end': null})
                                 .fetchAll({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
                                     if (images) {
                                         new Audit({

@@ -297,8 +297,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
     }
 ])
-    .
-    factory('articleService', function ($http, $log, $q) {
+    .factory('articleService', function ($http, $log, $q) {
         return {
             getArticleSchema: function () {
                 var deferred = $q.defer();
