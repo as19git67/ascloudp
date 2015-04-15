@@ -79,7 +79,7 @@ module.exports.init = function (passport, bookshelf, callback) {
                     callbackURL: config.get('authGoogleCallbackURL'),
                     passReqToCallback   : true
                 },
-                function (accessToken, refreshToken, profile, done) {
+                function (request, accessToken, refreshToken, profile, done) {
                     if (!profile) {
                         return done(null, null);
                     }
