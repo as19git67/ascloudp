@@ -43,6 +43,11 @@ body {
     max-width: 100px;
 }
 
+
+h4.media-heading a {
+    color: inherit;
+}
+
 h4.media-heading span.glyphicon {
     padding-left: 0.5em;
     font-size: smaller;

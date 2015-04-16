@@ -5,14 +5,15 @@ block content
         style .articleNew:hover { cursor: pointer; }
     if error
         p.text-danger #{error}
-
     h1
         u #{page.EntityNamePlural}
         if canEdit
             | &nbsp;
             span(class='articleNew' data-pageid='#{page.Name}') +
+
     if !Records || Records.length == 0
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
+
     each record in Records
         div(class="media articleListItem", data-id='#{record.article_id}')
             if record.image
@@ -22,7 +23,7 @@ block content
             div.media-body
                 h4.media-heading
                     if record.title
-                        span(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.title}
+                        a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.title}
                         if canEdit
                             span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
                     else
