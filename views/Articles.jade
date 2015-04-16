@@ -50,6 +50,8 @@ block content
                         div.container-fluid
                             div.row
                                 | !{record.rawHtml}
+                    div.modal-footer
+                        button(data-dismiss="modal", class="btn btn-default") Schließen
 
     if canEdit
         script(src="/lib/underscore-1.7.0/underscore.js", type="text/javascript")
