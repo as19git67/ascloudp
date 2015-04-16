@@ -39,6 +39,8 @@ block content
                         button(type="button", class="close", data-dismiss="modal", aria-label="Close")
                             span(aria-hidden="true") &times;
                         h3(class="modal-title") #{record.title}
+                        if record.leadText
+                            p(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.leadText}
                         if record.author
                             p.small Von: #{record.author}, #{record.date_formatted}
                     div.modal-body
