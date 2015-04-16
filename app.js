@@ -145,6 +145,8 @@ app.use(function (req, res, next) {
                                         }
                                         rawRho = req.body.rawRho;
                                         rawHtml = rho.toHtml(rawRho);
+                                        // add class attribute to all image tags to apply bootstrap styles
+                                        rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         pageContent.set('Text', rawRho);
                                         pageContent.save().then(function (savedPageContent) {
                                             res.render(viewName, {

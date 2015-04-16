@@ -291,7 +291,7 @@ exports.importTestData = function () {
                 var allPages = [
                     {Order: 1, Name: "termine", AnonymousAccess: true, EntityNameSingular: "Termin", EntityNamePlural: "Termine", Collection: "Events", View: "Calendar"},
                     {
-                        Order: 2,
+                        Order: 3,
                         Name: "ausbildung",
                         AnonymousAccess: true,
                         EntityNameSingular: "Ausbildung",
@@ -299,7 +299,7 @@ exports.importTestData = function () {
                         Model: "PageContent",
                         View: "genericHTML"
                     },
-                    {Order: 3, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles"},
+                    {Order: 2, Name: "einsaetze", AnonymousAccess: true, EntityNameSingular: "Einsatz", EntityNamePlural: "Einsätze", Collection: "Articles", View: "Articles"},
                     {Order: 4, Name: "fahrzeuge", AnonymousAccess: true, EntityNameSingular: "Fahrzeug", EntityNamePlural: "Fahrzeuge", Model: "PageContent", View: "genericHTML"},
                     {Order: 5, Name: "kontakte", AnonymousAccess: true, EntityNameSingular: "Kontakt", EntityNamePlural: "Kontakte", Collection: "Persons", View: "Contacts"},
                     {Order: 6, Name: "links", AnonymousAccess: true, EntityNameSingular: "Link", EntityNamePlural: "Links", Collection: "Links", View: "Links"},
