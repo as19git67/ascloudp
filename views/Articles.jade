@@ -1,7 +1,7 @@
 extends layout
 block content
+    style [data-toggle="modal"]:hover {cursor: pointer;}
     if canEdit
-        style .articleListItem:hover { cursor: pointer; }
         style .articleNew:hover { cursor: pointer; }
     if error
         p.text-danger #{error}
@@ -18,17 +18,33 @@ block content
         div(class="media articleListItem", data-id='#{record.article_id}')
             if record.image
                 div.media-left
-                    a(href="#")
+                    a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}")
                         img(src="#{record.image}?type=thumbnail")
             div.media-body
-                if record.title
-                    h4.media-heading #{record.title}
-                else
-                    h4.media-heading Artikel: #{record.article_id}
-                //if record.author
-                //    p.small Von: #{record.author}, #{record.date_formatted}
+                h4.media-heading
+                    if record.title
+                        span(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.title}
+                        if canEdit
+                            span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
+                    else
+                        span(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
+                        if canEdit
+                            span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
                 if record.leadText
-                    p #{record.leadText}
+                    p(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.leadText}
+        div(class="modal fade", id='modal_for_article_#{record.article_id}', tabindex="-1", role="dialog", aria-labelledby="myLargeModalLabel", aria-hidden="true")
+            div(class="modal-dialog modal-lg")
+                div.modal-content
+                    div.modal-header
+                        button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+                            span(aria-hidden="true") &times;
+                        h3(class="modal-title") #{record.title}
+                        if record.author
+                            p.small Von: #{record.author}, #{record.date_formatted}
+                    div.modal-body
+                        div.container-fluid
+                            div.row
+                                | !{record.rawHtml}
 
     if canEdit
         script(src="/lib/underscore-1.7.0/underscore.js", type="text/javascript")

@@ -173,7 +173,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 ui.editArticleEntry.modal('hide');
                 location.reload();
             }, function (error) {
-                if (error){
+                if (error) {
                     $scope.errorMessage = error.toString();
                 }
                 else {
@@ -222,7 +222,9 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
         $scope.renderRhoText = function () {
 
-            $scope.textAsHtml = rho.toHtml($scope.article.text);
+            var rawHtml = rho.toHtml($scope.article.text);
+            // add class attribute to all image tags to apply bootstrap styles
+            $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
             $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
 
             // calculate rows for textarea
@@ -257,25 +259,30 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
         // attach to click event (jquery)
 
-        $(".articleListItem").click(function () {
+        $(".media-heading .glyphicon.glyphicon-edit").click(function () {
             var clickedElement = $(this);
             var id = clickedElement.attr('data-id');
-            $scope.loadArticle(id)
-                .then(function () {
-                    ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                        console.log("Modal dialog showed");
+            if (id) {
+                $scope.loadArticle(id)
+                    .then(function () {
+                        ui.editArticleEntry.on('shown.bs.modal', function (e) {
+                            console.log("Modal dialog showed");
+                        });
+
+                        // show modal dialog
+                        ui.editArticleEntry.modal({backdrop: true});
+
+                        console.log("showing modal dialog...");
+                    })
+                    .catch(function (error) {
+                        if (error) {
+                            location.href = "/login";
+                        }
                     });
-
-                    // show modal dialog
-                    ui.editArticleEntry.modal({backdrop: true});
-
-                    console.log("showing modal dialog...");
-                })
-                .catch(function (error) {
-                    if (error) {
-                        location.href = "/login";
-                    }
-                });
+            }
+            else {
+                console.log("Can't open article because data-id on clicked element is missing");
+            }
         });
         ui.newItem.click(function () {
             var clickedElement = $(this);

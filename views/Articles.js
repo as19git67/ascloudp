@@ -86,10 +86,14 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             }
 */
 
+            // add image-responsive class to image tags
+            var rawHtml = rho.toHtml(text);
+            // add class attribute to all image tags to apply bootstrap styles
+            rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
             article.article_id = articleItem.get('Article_id');
             article.title = articleItem.get('Title');
             article.leadText = articleItem.get('LeadText');
-            article.rawHtml = rho.toHtml(text);
+            article.rawHtml = rawHtml;
             article.author = articleItem.get('Author');
             article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');
             article.publish_start_formatted = moment(articleItem.get('publish_start')).format('dddd, D. MMMM YYYY');

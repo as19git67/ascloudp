@@ -43,6 +43,15 @@ body {
     max-width: 100px;
 }
 
+h4.media-heading span.glyphicon {
+    padding-left: 0.5em;
+    font-size: smaller;
+}
+
+h4.media-heading span.glyphicon:hover {
+    cursor: pointer;
+}
+
 .media-body {
     max-height: 100px;
     white-space: nowrap;

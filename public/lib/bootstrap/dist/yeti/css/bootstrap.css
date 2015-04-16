@@ -5445,14 +5445,14 @@ a.list-group-item-danger.active:focus {
   font-size: 22.5px;
   font-weight: bold;
   line-height: 1;
-  color: #ffffff;
+  color: rgba(165, 165, 165, 0.86);
   text-shadow: 0 1px 0 #ffffff;
   opacity: 0.2;
   filter: alpha(opacity=20);
 }
 .close:hover,
 .close:focus {
-  color: #ffffff;
+  color: rgba(165, 165, 165, 0.86);
   text-decoration: none;
   cursor: pointer;
   opacity: 0.5;
