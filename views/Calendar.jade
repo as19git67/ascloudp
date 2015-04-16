@@ -9,9 +9,8 @@ block content
         if canEdit
             | &nbsp;
             span(class='calendarNew' data-pageid='#{page.Name}') +
-        else
-            if !Records || Records.length == 0
-                p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
+    if !Records || Records.length == 0
+        p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
 
     each record in Records
         div(class="row calendarListItem", data-id='#{record.id}')

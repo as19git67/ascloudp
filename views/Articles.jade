@@ -11,9 +11,8 @@ block content
         if canEdit
             | &nbsp;
             span(class='articleNew' data-pageid='#{page.Name}') +
-        else
-            if !Records || Records.length == 0
-                p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
+    if !Records || Records.length == 0
+        p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
     each record in Records
         div(class="media articleListItem", data-id='#{record.article_id}')
             if record.image
