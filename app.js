@@ -183,6 +183,8 @@ app.use(function (req, res, next) {
                                         if (pageContent) {
                                             rawRho = pageContent.get('Text');
                                             rawHtml = rho.toHtml(rawRho);
+                                            // add class attribute to all image tags to apply bootstrap styles
+                                            rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         } else {
                                             console.log("Warning: rendering page " + page.Name + " without content");
                                         }
