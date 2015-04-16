@@ -30,11 +30,12 @@ block content
                 button(class="btn btn-default cancel", id="cancel", value="cancel", name="cancel")
                     span(class="glyphicon glyphicon-remove")
                     | &nbsp Abbrechen
-        div(class="container", id="readonlyContainer")
-            if RawHTML
-                | !{RawHTML}
-            hr
-            button(class="btn btn-primary", onclick="toggleEdit();", id="btEdit") Edit
+        div(class="container-fluid", id="readonlyContainer")
+            div.row
+                if RawHTML
+                    | !{RawHTML}
+                hr
+                button(class="btn btn-primary", onclick="toggleEdit();", id="btEdit") Edit
     else
         if RawHTML
             | !{RawHTML}
