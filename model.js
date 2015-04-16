@@ -1329,7 +1329,7 @@ var getPages = function () {
     return new Promise(function (resolve, reject) {
         var pages = [];
         new Page().query(function (qb) {
-            qb.orderBy('Order', 'ASC');
+            qb.orderBy('Order', 'ASC'); // index.js depends on the order: redirects always to the first page
         }).fetchAll()
             .then(function (pageList) {
                 pageList.each(function (page) {
