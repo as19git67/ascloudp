@@ -113,7 +113,8 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 title: page.EntityNamePlural,
                 user: req.user,
                 pages: pages,
-                page: page
+                page: page,
+                Records: []
             });
         }
     }).catch(function (error) {
