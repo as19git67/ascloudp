@@ -174,7 +174,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 }
             }
 
-            var article = _.clone($scope);
+            var article = _.clone($scope.article);
 
             article.date = makeMidnightUtc($scope.article.date);
             article.publish_start = makeMidnightUtc($scope.article.publish_start);
