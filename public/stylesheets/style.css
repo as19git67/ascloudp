@@ -43,7 +43,6 @@ body {
     max-width: 100px;
 }
 
-
 h4.media-heading a {
     color: inherit;
 }
@@ -61,4 +60,12 @@ h4.media-heading span.glyphicon:hover {
     max-height: 100px;
     text-overflow: ellipsis;
     overflow: hidden;
+}
+
+.calendarListItem span.glyphicon {
+    padding-left: 0.5em;
+}
+
+.calendarListItem span.glyphicon:hover {
+    cursor: pointer;
 }

@@ -1,77 +1,159 @@
-<div id="calendarItemView">
-    <script type="text/x-handlebars" data-template-name="calendarItem">
-
-        <!-- Modal -->
-        <div class="modal fade" id="editCalendarEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog modal-dialog-full">
-                <div class="modal-content modal-content-full">
-                    <div class="modal-header modal-header-full">
-                        <button type="button" class="btn btn-primary" id="btSave" name="btSave" >Speichern und Zurück</button>
-                        <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
+<div id="eventItemView">
+    <!-- Modal -->
+    <div class="modal fade" id="editCalendarEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true" ng-app="calendarEditApp">
+        <div class="modal-dialog modal-dialog-full">
+            <div class="modal-content modal-content-full" ng-controller="calendarEditCtrl">
+                <div class="modal-header modal-header-full">
+                    <button type="button" class="btn btn-primary" id="btSave" name="btSave"
+                            ng-click="saveEvent($event)">Speichern und Zurück
+                    </button>
+                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-danger" role="alert" ng-show="errorMessage" id="errorMessage">
+                        {{errorMessage}}
                     </div>
-                    <div class="modal-body">
-                        <div class="alert alert-danger hidden" role="alert" id="errorMessage"></div>
-                        <div class="container-fluid">
-                            <div class="row">
-                                <form class="form-horizontal" role="form">
-                                    <div class="form-group">
-                                        <label for="title" class="col-md-3 control-label">Titel:</label>
 
-                                        <div class="col-md-9" id="title">
-                                            <input type="text" class="form-control" name="title"
-                                                   placeholder="Titel">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="location" class="col-md-3 control-label">Ort:</label>
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <form class="form" role="form">
+                                            <div class="form-group">
+                                                <label for="event_start" class="control-label">{{event_schema.event_start.label}}:</label>
 
-                                        <div class="col-md-9" id="location">
-                                            <input type="text" class="form-control" name="location"
-                                                   placeholder="Ort">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="begin" class="col-xs-2 col-md-3 control-label">Beginn:</label>
-
-                                        <div class="col-xs-10 col-md-9" id="begin">
-                                            <input type="text" class="form-control" value=""
-                                                   placeholder="Beginn">
-                                        </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="end" class="col-xs-2 col-md-3 control-label">Ende:</label>
-
-                                        <div class="col-xs-10 col-md-9" id="end">
-                                            <input type="text" class="form-control" value=""
-                                                   placeholder="Ende">
-                                        </div>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <label for="publish_start" class="col-md-3 control-label" >Veröffentlichung Start:</label>
-                                        <div class="col-md-9">
-                                            <div class='input-group date' name="publish_start" id="publish_start">
-                                                <input type="text" class="form-control" >
-                                                <span class="input-group-addon"><span class="glyphicon glyphicon-calendar"></span></span>
+                                                <div id="event_start">
+                                                    <div class="input-group">
+                                                        <input type="text" class="form-control"
+                                                               datepicker-popup="{{format}}"
+                                                               ng-model="event.event_start"
+                                                               is-open="event_start_opened"
+                                                               min-date="minDate"
+                                                               datepicker-options="dateOptions"
+                                                               date-disabled="disabled(date, mode)" ng-required="true"
+                                                               close-text="Close"/>
+                                                        <span class="input-group-btn">
+                                                            <button type="button" class="btn btn-default"
+                                                                    ng-click="openDatePicker($event, 'event_start_opened')">
+                                                                <i class="glyphicon glyphicon-calendar"></i>
+                                                            </button>
+                                                        </span>
+                                                    </div>
+                                                </div>
                                             </div>
+                                            <div class="form-group ">
+                                                <input type="text" class="form-control" ng-model="event.event_start_time">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="event_end" class="control-label">{{event_schema.event_end.label}}:</label>
+
+                                                <div id="event_end">
+                                                    <p class="input-group">
+                                                        <input type="text" class="form-control"
+                                                               datepicker-popup="{{format}}"
+                                                               ng-model="event.event_end"
+                                                               is-open="event_end_opened"
+                                                               min-date="minDate"
+                                                               datepicker-options="dateOptions"
+                                                               date-disabled="disabled(date, mode)" ng-required="true"
+                                                               close-text="Close"/>
+                                                        <span class="input-group-btn">
+                                                            <button type="button" class="btn btn-default"
+                                                                    ng-click="openDatePicker($event, 'event_end_opened')">
+                                                                <i class="glyphicon glyphicon-calendar"></i>
+                                                            </button>
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                                <hr class="visible-xs">
+                            </div>
+                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <form class="form" role="form">
+                                            <div class="form-group">
+                                                <label for="publish_start" class="control-label">{{event_schema.publish_start.label}}:</label>
+
+                                                <div id="publish_start">
+                                                    <p class="input-group">
+                                                        <input type="text" class="form-control"
+                                                               datepicker-popup="{{format}}"
+                                                               ng-model="event.publish_start"
+                                                               is-open="publish_start_opened"
+                                                               min-date="minDate"
+                                                               datepicker-options="dateOptions"
+                                                               date-disabled="disabled(date, mode)" ng-required="true"
+                                                               close-text="Close"/>
+                                                        <span class="input-group-btn">
+                                                            <button type="button" class="btn btn-default"
+                                                                    ng-click="openDatePicker($event, 'publish_start_opened')">
+                                                                <i class="glyphicon glyphicon-calendar"></i>
+                                                            </button>
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="publish_end" class="control-label">{{event_schema.publish_end.label}}:</label>
+
+                                                <div id="publish_end">
+                                                    <p class="input-group">
+                                                        <input type="text" class="form-control"
+                                                               datepicker-popup="{{format}}"
+                                                               ng-model="event.publish_end"
+                                                               is-open="publish_end_opened"
+                                                               min-date="minDate"
+                                                               datepicker-options="dateOptions"
+                                                               date-disabled="disabled(date, mode)" ng-required="true"
+                                                               close-text="Close"/>
+                                                        <span class="input-group-btn">
+                                                            <button type="button" class="btn btn-default"
+                                                                    ng-click="openDatePicker($event, 'publish_end_opened')">
+                                                                <i class="glyphicon glyphicon-calendar"></i>
+                                                            </button>
+                                                        </span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <form class="form" role="form">
+                                    <div class="form-group">
+                                        <label for="title" class="control-label">{{event_schema.title.label}}:</label>
+
+                                        <div id="title">
+                                            <input type="text" class="form-control" ng-model="event.title" placeholder="{{event_schema.title.label}}">
                                         </div>
                                     </div>
-
                                     <div class="form-group">
-                                        <label for="description" class="col-md-3 control-label hidden-xs">Beschreibung:</label>
+                                        <label for="description" class="control-label">{{event_schema.description.label}}:</label>
 
-                                        <div class="col-md-9" id="description">
-                                            <textarea class="form-control" rows="10" name="description" placeholder="Beschreibung"></textarea>
+                                        <div id="description">
+                                            <input type="text" class="form-control" ng-model="event.description" placeholder="{{event_schema.description.label}}">
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
-    </script>
+    </div>
 </div>
+
+
+
+
+

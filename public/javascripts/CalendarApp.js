@@ -12,115 +12,252 @@ $.extend($.expr[":"], {
         }
 });
 
-// Save a copy of the old Backbone.sync function so it can be called later.
-var oldBackboneSync = Backbone.sync;
+// create the application module - dependencies to other modules are bootstrap modules for angularjs
+var calendarEditApp = angular.module('calendarEditApp', ['ngCookies', 'ui.bootstrap']);
 
-// Globally override Backbone.Sync
-Backbone.sync = function (method, model, options) {
-    var self = this;
+calendarEditApp.config(['$httpProvider',
+        function (provider) {
+            provider.defaults.xsrfHeaderName = 'X-CSRF-Token';
+            provider.defaults.xsrfCookieName = 'X-CSRF-Token';
+        }]
+);
 
-    // call this function and then the one that was specified in the options
-    // This function resets _isDirty and stores the CSRF token from the header in this.csrfToken.
-    var success = options.success;
-    options.success = function (model, resp, jqXHR) {
-        success && success(model, resp, jqXHR);   // call the original success function
-        self._isDirty = false;      // clear isDirty after each successful sync
-        self.csrfToken = jqXHR.getResponseHeader('X-CSRF-Token');
-    };
+// add the calendar edit controller
+calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'calendarService',
+    function ($sce, $log, $scope, $cookies, calendarService) {
 
-    // on every ajax request add the csrf token to the header unless its a fetch
-    options.beforeSend = function (xhr) {
-        if (method != 'fetch') {
-            if (self.csrfToken) {
-                xhr.setRequestHeader("X-CSRF-Token", self.csrfToken);
+        $scope.isNotEmpty = function (item) {
+            if (!item) {
+                return false;
+            }
+            return !_.isEmpty(item);
+        };
+        $scope.loadEvent = function (id) {
+            var promise = calendarService.getEvent(id);
+            promise.then(function (payload) {
+                    $scope.event = payload.event;
+                    $scope.event_schema = payload.event_schema;
+                },
+                function (error) {
+                    $log.error("Error while loading the event", error);
+                });
+            return promise;
+        };
+        $scope.saveEvent = function ($event) {
+
+            function makeMidnightUtc(dateIn) {
+                var d;
+                if (dateIn instanceof moment) {
+                    d = dateIn.toDate();
+                } else {
+                    d = new Date(dateIn);
+                }
+                var y = d.getFullYear();
+                var m = d.getMonth();
+                var day = d.getDate();
+                var dd = new Date(Date.UTC(y, m, day));
+                if (dateIn instanceof moment) {
+                    return moment(dd);
+                } else {
+                    return dd;
+                }
+            }
+
+            var event = _.clone($scope.event);
+
+            event.date = makeMidnightUtc($scope.event.date);
+            event.publish_start = makeMidnightUtc($scope.event.publish_start);
+            event.publish_end = makeMidnightUtc($scope.event.publish_end);
+
+            calendarService.saveEvent(event).then(function () {
+                ui.editCalendarEntry.modal('hide');
+                location.reload();
+            }, function (error) {
+                if (error) {
+                    $scope.errorMessage = error.toString();
+                    $log.error("Error while saving the event", error);
+                } else {
+                    $scope.errorMessage = "Fehler beim Speichern des Kalendereintrags. Verbindungsaufbau mit dem Server nicht möglich.";
+                    $log.error("Error while saving the event. Connection problem.");
+                }
+            });
+        };
+        $scope.deleteEvent = function ($event) {
+            calendarService.deleteEvent($scope.event).then(function () {
+                ui.editCalendarEntry.modal('hide');
+                location.reload();
+            }, function (error) {
+                if (error) {
+                    $scope.errorMessage = error.toString();
+                }
+                else {
+                    $scope.errorMessage = "Unbekannter Fehler";
+                }
+                $log.error("Error while deleting the event", error);
+            });
+        };
+        $scope.newEvent = function (pageid) {
+            return calendarService.getEventSchema().then(function (data) {
+                console.log("getEventSchema returned schema");
+                $scope.event_schema = data.event_schema;
+                $scope.event = {};
+                $scope.event.pageid = pageid;
+
+                $scope.event.title = "";
+                $scope.event.location = "";
+                $scope.event.description = "";
+                
+                var today = new moment();
+                today.set('minute', 0);
+                today.set('second', 0);
+                today.set('millisecond',0);
+                var start = today.add(2, 'days');
+                var end = start.add(1, 'hours');
+                $scope.event.event_start = start.toISOString();
+                $scope.event.event_end = end.toISOString();
+                $scope.event.event_start_time = start;
+                $scope.event.event_start_end = end;
+                $scope.event.publish_start = today.add(1, 'days').toISOString();
+                $scope.event.publish_end = $scope.event.event_end;
+            });
+
+        };
+
+        $scope.timeChanged = function($event)
+        {
+
+        };
+
+        // date picker event
+        $scope.openDatePicker = function ($event, isOpenAttrName) {
+            $event.preventDefault();
+            $event.stopPropagation();
+
+            // close other opened date pickers before opening a new one
+            if (!$scope.openedDatePicker) {
+                $scope.openedDatePicker = {};
+            } else {
+                _.each($scope.openedDatePicker, function (val, key) {
+                    $scope.openedDatePicker[key] = false;
+                    $scope[key] = false;
+                });
+            }
+            $scope.openedDatePicker[isOpenAttrName] = true;
+            $scope[isOpenAttrName] = true;
+        };
+        $scope.format = 'dd.MM.yyyy';
+
+
+        // attach to click event (jquery)
+
+        $(".calendarListItem .glyphicon.glyphicon-edit").click(function () {
+            var clickedElement = $(this);
+            var id = clickedElement.attr('data-id');
+            if (id) {
+                $scope.loadEvent(id)
+                    .then(function () {
+                        ui.editCalendarEntry.on('shown.bs.modal', function (e) {
+                            console.log("Modal dialog showed");
+                        });
+
+                        // show modal dialog
+                        ui.editCalendarEntry.modal({backdrop: true});
+
+                        console.log("showing modal dialog...");
+                    })
+                    .catch(function (error) {
+                        if (error) {
+                            location.href = "/login";
+                        }
+                    });
+            }
+            else {
+                console.log("Can't open event because data-id on clicked element is missing");
+            }
+        });
+        ui.newItem.click(function () {
+            var clickedElement = $(this);
+            var pageid = clickedElement.attr('data-pageid');
+
+            ui.editCalendarEntry.on('shown.bs.modal', function (e) {
+                console.log("Modal dialog showed");
+            });
+
+            $scope.newEvent(pageid).then(function () {
+                // show modal dialog
+                ui.editCalendarEntry.modal({backdrop: true});
+
+                console.log("showing modal dialog...");
+            });
+            console.log("newEvent called");
+
+        });
+
+    }
+])
+    .factory('calendarService', function ($http, $log, $q) {
+        return {
+            getEventSchema: function () {
+                var deferred = $q.defer();
+                $http.get('/api/v1/events?type=schema').success(function (data, resp, jqXHR) {
+                    deferred.resolve(data);
+                }).error(function (msg, code) {
+                    deferred.reject(msg);
+                    $log.error(msg, code);
+                });
+                return deferred.promise;
+            },
+            getEvent: function (id) {
+                var deferred = $q.defer();
+                $http.get('/api/v1/events/' + id).success(function (data, resp, jqXHR) {
+                    deferred.resolve(data);
+                }).error(function (msg, code) {
+                    deferred.reject(msg);
+                    $log.error(msg, code);
+                });
+                return deferred.promise;
+            },
+            saveEvent: function (event) {
+                var deferred = $q.defer();
+                var promise;
+                if (event.event_id) {
+                    promise = $http.put('/api/v1/events/' + event.event_id, event);
+                } else {
+                    promise = $http.post('/api/v1/events/', event);
+                }
+                promise.success(function (data) {
+                    deferred.resolve();
+                }).error(function (msg, code) {
+                    if (code == 304) {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject(msg);
+                        $log.error(msg, code);
+                    }
+                });
+                return deferred.promise;
+            },
+            deleteEvent: function (event) {
+                var deferred = $q.defer();
+                var promise = $http.delete('/api/v1/events/' + event.event_id, event);
+                promise.success(function (data) {
+                    deferred.resolve();
+                }).error(function (msg, code) {
+                    if (code == 204 || code == 200) {
+                        deferred.resolve();
+                    } else {
+                        deferred.reject(msg);
+                        $log.error(msg, code);
+                    }
+                });
+                return deferred.promise;
             }
         }
-    };
-    return oldBackboneSync.apply(this, [method, model, options]);
+    }
+);
+
+var ui = {
+    editCalendarEntry: $("#editCalendarEntry"),
+    errorMessage: $("#errorMessage"),
+    newItem: $(".calendarNew")
 };
-
-var CalendarItem = Backbone.Model.extend({
-    urlRoot: 'api/v1/events',    // note: backbone adds id automatically
-    _isDirty: false,
-    initialize: function () {
-
-        // If you extend this model, make sure to call this initialize method
-        // or add the following line to the extended model as well
-        this.listenTo(this, 'change', this.modelChanged);
-    },
-    modelChanged: function () {
-        console.log("model changed");
-        this._isDirty = true;
-    },
-    isDirty: function () {
-        return this._isDirty;
-    }
-});
-
-var CalendarItemView = Backbone.Marionette.ItemView.extend({
-    template: Handlebars.compile($('*[data-template-name="calendarItem"]').html()),
-    el: '#calendarItemView',
-    events: {
-        "click #btSave": "saveClicked"
-    },
-    ui: {
-        editCalendarEntry: "#editCalendarEntry",
-        errorMessage: "#errorMessage"
-    },
-    initialize: function () {
-        this.modelbinder = new Backbone.ModelBinder();
-    },
-    onRender: function () {
-        this.lang = navigator.language || navigator.userLanguage;
-
-        var changeTriggers = {
-            'select': 'change', '[contenteditable]': 'keyup', ':text': 'keyup'   /* select input[type=text], textarea */
-        };  // use keyup instead blur
-
-
-        // Bind with default bindings but specify custom changeTriggers.
-        //   Note that the Modelbinder was enhanced to also bind element with data-bind="enabled:<computeFunction>",
-        //   where computeFunction is a model function that is called to get the value for enabled.
-        this.modelbinder.bind(this.model, this.el, undefined, { changeTriggers: changeTriggers, lang: this.lang });
-
-        // show modal dialog
-        this.ui.editCalendarEntry.modal({ backdrop: true });
-
-        console.log("View has been rendered");
-    },
-    saveClicked: function (e) {
-        var self = this;
-        self.ui.errorMessage.addClass("hidden");
-
-        this.model.save().done(function () {
-            self.ui.editCalendarEntry.modal('hide');
-            location.reload();
-        }).fail(function (req) {
-            if (req.responseText && req.responseText.substr(0, 14) != "<!DOCTYPE html") {
-                console.log("Saving event failed: " + req.responseText);
-            }
-            self.ui.errorMessage.text(req.status + " " + req.statusText).removeClass("hidden");
-        });
-    }
-
-});
-
-$(function () {
-    $(".calendarListItem").click(function () {
-        var clickedElement = $(this);
-        var id = clickedElement.attr('data-id');
-        var model = new CalendarItem({ id: id });
-
-        // When waiting for the completion of fetch and then
-        // giving this model to the view we don't get the initial
-        // modelChanged event.
-        // This is by intention to have the save button enabled only
-        // if the user changed values in the UI.
-        model.fetch({
-            success: function () {
-                console.log("Event fetched");
-                new CalendarItemView({ model: model }).render();
-            }
-        });
-    });
-});

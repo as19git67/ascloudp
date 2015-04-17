@@ -62,11 +62,17 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
         qb.select(['EventItems.*']);
-        qb.where({ Page_id: page.Name })
-            .andWhere('EventItems.valid_end', null)
-            .andWhere('EventItems.event_end', '>=', now)
-            .andWhere('EventItems.publish_start', '<=', now)
-            .andWhere('EventItems.publish_end', '>=', now);
+        if (canEdit) {
+            // in case user can edit, include currently not published articles
+            qb.where({'Page_id': page.Name})
+                .andWhere('EventItems.valid_end', null)
+        } else {
+            qb.where({'Page_id': page.Name})
+                .andWhere('EventItems.valid_end', null)
+                .andWhere('EventItems.event_end', '>=', now)
+                .andWhere('EventItems.publish_start', '<=', now)
+                .andWhere('EventItems.publish_end', '>=', now);
+        }
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         if (dataCollection && dataCollection.length > 0) {

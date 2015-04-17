@@ -86,6 +86,12 @@ app.use('/images', images);
 
 var rp = new rolePermissions(model.models);
 
+app.get('/api/v1/events', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
+app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
+app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.put);
+app.delete('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.delete);
+app.post('/api/v1/events', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.post);
+
 app.get('/api/v1/articles', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.get);
 app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.get);
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.put);
@@ -96,8 +102,6 @@ app.post('/api/v1/articles', passportStrategies.ensureAuthenticatedForApi, rp.mi
 app.get('/api/v1/articles/:id/imagechunks', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImageChunk);
 app.get('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImages);
 app.post('/api/v1/articles/:id/imagechunks', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.postImageChunk);
-app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
-app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.put);
 app.get('/api/v1/members', passportStrategies.ensureAuthenticatedForApi, rp.middleware(), apiMembers.list);
 app.get('/api/v1/members/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiMembers.get);
 app.put('/api/v1/members/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiMembers.put);
