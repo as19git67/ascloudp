@@ -155,6 +155,28 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             return promise;
         };
         $scope.saveArticle = function ($event) {
+
+            function makeMidnightUtc(dateIn) {
+                var d;
+                if (dateIn instanceof moment) {
+                    d = dateIn.toDate();
+                } else {
+                    d = new Date(dateIn);
+                }
+                var y = d.getFullYear();
+                var m = d.getMonth();
+                var day = d.getDate();
+                var dd = new Date(Date.UTC(y, m, day));
+                if (dateIn instanceof moment) {
+                    return moment(dd);
+                } else {
+                    return dd;
+                }
+            }
+            $scope.article.date = makeMidnightUtc($scope.article.date);
+            $scope.article.publish_start = makeMidnightUtc($scope.article.publish_start);
+            $scope.article.publish_end = makeMidnightUtc($scope.article.publish_end);
+
             articleService.saveArticle($scope.article).then(function () {
                 ui.editArticleEntry.modal('hide');
                 location.reload();
@@ -191,6 +213,10 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 $scope.article.pageid = pageid;
 
                 var today = new moment();
+                today.set('hour', 0);
+                today.set('minute', 0);
+                today.set('second', 0);
+                today.set('millisecond',0);
                 $scope.article.date = today.toISOString();
                 $scope.article.publish_start = today.add(2, 'days').toISOString();
                 $scope.article.publish_end = today.add(9, 'days').toISOString();
