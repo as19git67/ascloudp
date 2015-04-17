@@ -173,11 +173,14 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     return dd;
                 }
             }
-            $scope.article.date = makeMidnightUtc($scope.article.date);
-            $scope.article.publish_start = makeMidnightUtc($scope.article.publish_start);
-            $scope.article.publish_end = makeMidnightUtc($scope.article.publish_end);
 
-            articleService.saveArticle($scope.article).then(function () {
+            var article = _.clone($scope);
+
+            article.date = makeMidnightUtc($scope.article.date);
+            article.publish_start = makeMidnightUtc($scope.article.publish_start);
+            article.publish_end = makeMidnightUtc($scope.article.publish_end);
+
+            articleService.saveArticle(article).then(function () {
                 ui.editArticleEntry.modal('hide');
                 location.reload();
             }, function (error) {
