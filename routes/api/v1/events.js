@@ -141,10 +141,10 @@ module.exports.put = function (req, res) {
                         Title: req.body.title,
                         Location: req.body.location,
                         Description: req.body.description,
-                        event_start: eventItem.get('event_start'),
-                        event_end: eventItem.get('event_end'),
-                        publish_start: eventItem.get('publish_start'),
-                        publish_end: eventItem.get('publish_end'),
+                        event_start: req.body.event_start,
+                        event_end: req.body.event_end,
+                        publish_start: req.body.publish_start,
+                        publish_end: req.body.publish_end,
                         valid_start: now
                     }).save(null, {transacting: t}).then(function (savedEventItem) {
                             var userName = req.user.UserName ? req.user.UserName : req.user.id;

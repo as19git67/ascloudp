@@ -220,8 +220,8 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
             saveEvent: function (event) {
                 var deferred = $q.defer();
                 var promise;
-                if (event.event_id) {
-                    promise = $http.put('/api/v1/events/' + event.event_id, event);
+                if (event.id) {
+                    promise = $http.put('/api/v1/events/' + event.id, event);
                 } else {
                     promise = $http.post('/api/v1/events/', event);
                 }
