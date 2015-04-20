@@ -52,26 +52,35 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="form-group">
-                                                <label for="event_end" class="control-label">{{event_schema.event_end.label}}:</label>
+                                            <div class="form-inline">
+                                                <div class="form-group">
+                                                    <label for="event_end" class="control-label">{{event_schema.event_end.label}}:</label>
 
-                                                <div id="event_end">
-                                                    <p class="input-group">
-                                                        <input type="text" class="form-control"
-                                                               datepicker-popup="{{format}}"
-                                                               ng-model="event.event_end"
-                                                               is-open="event_end_opened"
-                                                               min-date="minDate"
-                                                               datepicker-options="dateOptions"
-                                                               date-disabled="disabled(date, mode)" ng-required="true"
-                                                               close-text="Close"/>
+                                                    <div id="event_end">
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control"
+                                                                   datepicker-popup="{{format}}"
+                                                                   ng-model="event.event_end"
+                                                                   is-open="event_end_opened"
+                                                                   min-date="minDate"
+                                                                   datepicker-options="dateOptions"
+                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   close-text="Close"/>
                                                         <span class="input-group-btn">
                                                             <button type="button" class="btn btn-default"
                                                                     ng-click="openDatePicker($event, 'event_end_opened')">
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
-                                                    </p>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <div class="form-group ">
+                                                    <label for="event_end_time" class="control-label">{{event_schema.event_end.label}} Zeit:</label>
+
+                                                    <div id="event_end_time">
+                                                        <input type="text" class="form-control" ng-model="event.event_end_time">
+                                                    </div>
                                                 </div>
                                             </div>
                                         </form>

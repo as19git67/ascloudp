@@ -36,6 +36,10 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
             var promise = calendarService.getEvent(id);
             promise.then(function (payload) {
                     $scope.event = payload.event;
+                    $scope.event.event_start_time = payload.event.event_start;
+                    $scope.event.event_end_time = payload.event.event_end;
+                    $scope.event.publish_start_time = payload.event.publish_start;
+                    $scope.event.publish_end_time = payload.event.publish_end;
                     $scope.event_schema = payload.event_schema;
                 },
                 function (error) {
@@ -63,11 +67,39 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
                 }
             }
 
+            function combineDateAndTime(dateIn, timeIn) {
+                var d;
+                if (dateIn instanceof moment) {
+                    d = dateIn.toDate();
+                } else {
+                    d = new Date(dateIn);
+                }
+                var t;
+                if (timeIn instanceof moment) {
+                    t = timeIn.toDate();
+                } else {
+                    t = new Date(timeIn);
+                }
+                var y = d.getFullYear();
+                var m = d.getMonth();
+                var day = d.getDate();
+                var h = t.getHours();
+                var min = t.getMinutes();
+                var sec = t.getSeconds();
+                var dd = new Date(y, m, day, h, min, sec);
+                if (dateIn instanceof moment) {
+                    return moment(dd);
+                } else {
+                    return dd;
+                }
+            }
+
             var event = _.clone($scope.event);
 
-            event.date = makeMidnightUtc($scope.event.date);
-            event.publish_start = makeMidnightUtc($scope.event.publish_start);
-            event.publish_end = makeMidnightUtc($scope.event.publish_end);
+            event.event_start = combineDateAndTime($scope.event.event_start, $scope.event.event_start_time);
+            event.event_end = combineDateAndTime($scope.event.event_end, $scope.event.event_end_time);
+            event.publish_start = combineDateAndTime($scope.event.publish_start, $scope.event.publish_start_time);
+            event.publish_end = combineDateAndTime($scope.event.publish_end, $scope.event.publish_end_time);
 
             calendarService.saveEvent(event).then(function () {
                 ui.editCalendarEntry.modal('hide');
@@ -106,25 +138,24 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
                 $scope.event.title = "";
                 $scope.event.location = "";
                 $scope.event.description = "";
-                
+
                 var today = new moment();
                 today.set('minute', 0);
                 today.set('second', 0);
-                today.set('millisecond',0);
+                today.set('millisecond', 0);
                 var start = today.add(2, 'days');
                 var end = start.add(1, 'hours');
                 $scope.event.event_start = start.toISOString();
                 $scope.event.event_end = end.toISOString();
                 $scope.event.event_start_time = start;
-                $scope.event.event_start_end = end;
+                $scope.event.event_start_time = end;
                 $scope.event.publish_start = today.add(1, 'days').toISOString();
                 $scope.event.publish_end = $scope.event.event_end;
             });
 
         };
 
-        $scope.timeChanged = function($event)
-        {
+        $scope.timeChanged = function ($event) {
 
         };
 
