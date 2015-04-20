@@ -13,7 +13,7 @@ $.extend($.expr[":"], {
 });
 
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
-var calendarEditApp = angular.module('calendarEditApp', ['ngCookies', 'ui.bootstrap']);
+var calendarEditApp = angular.module('calendarEditApp', ['ngCookies', 'pascalprecht.translate', 'ui.bootstrap']);
 
 calendarEditApp.config(['$httpProvider',
         function (provider) {
@@ -22,9 +22,16 @@ calendarEditApp.config(['$httpProvider',
         }]
 );
 
+calendarEditApp.config(['$translateProvider', function ($translateProvider) {
+    $translateProvider.determinePreferredLanguage();
+}]);
+
 // add the calendar edit controller
-calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'calendarService',
-    function ($sce, $log, $scope, $cookies, calendarService) {
+calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cookies', '$translate', 'calendarService',
+    function ($sce, $log, $scope, $cookies, $translate, calendarService) {
+
+        var l = $translate.preferredLanguage();
+        moment.locale(l);
 
         $scope.isNotEmpty = function (item) {
             if (!item) {
@@ -36,10 +43,10 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
             var promise = calendarService.getEvent(id);
             promise.then(function (payload) {
                     $scope.event = payload.event;
-                    $scope.event.event_start_time = payload.event.event_start;
-                    $scope.event.event_end_time = payload.event.event_end;
-                    $scope.event.publish_start_time = payload.event.publish_start;
-                    $scope.event.publish_end_time = payload.event.publish_end;
+                    $scope.event.event_start_time = moment(payload.event.event_start).format("HH:mm");
+                    $scope.event.event_end_time = moment(payload.event.event_end).format("HH:mm");
+                    $scope.event.publish_start_time = moment(payload.event.publish_start).format("HH:mm");
+                    $scope.event.publish_end_time = moment(payload.event.publish_end).format("HH:mm");
                     $scope.event_schema = payload.event_schema;
                 },
                 function (error) {
@@ -78,14 +85,15 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
                 if (timeIn instanceof moment) {
                     t = timeIn.toDate();
                 } else {
-                    t = new Date(timeIn);
+                    t = moment(timeIn, "LT");
+                    td = t.toDate();
                 }
                 var y = d.getFullYear();
                 var m = d.getMonth();
                 var day = d.getDate();
-                var h = t.getHours();
-                var min = t.getMinutes();
-                var sec = t.getSeconds();
+                var h = td.getHours();
+                var min = td.getMinutes();
+                var sec = td.getSeconds();
                 var dd = new Date(y, m, day, h, min, sec);
                 if (dateIn instanceof moment) {
                     return moment(dd);
