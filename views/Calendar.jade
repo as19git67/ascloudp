@@ -24,9 +24,9 @@ block content
                 br
                 span(style="color: gray") #{record.event_end_time_formatted}
             div(class="col-md-11 col-xs-10")
-                | #{record.Title}:&nbsp
+                | #{record.Title}
                 if record.Description
-                        | #{record.Description}
+                        | :&nbsp #{record.Description}
                 if record.Location
                     br
                     span(style="color: gray") #{record.Location}
