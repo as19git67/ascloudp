@@ -172,8 +172,18 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
 
         };
 
-        $scope.timeChanged = function ($event) {
-            console.log("time changed");
+        $scope.timeChanged = function (modelName) {
+            var val = $scope.event[modelName];
+            console.log("time changed to " + val);
+            if (val == "") {
+                val = "00:00";
+                $scope.event[modelName] = val;
+            } else {
+                t = moment(timeIn, "LT");
+                if (!t.isValid()) {
+                    $scope.validationError
+                }
+            }
         };
 
         // date picker event

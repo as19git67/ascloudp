@@ -13,6 +13,9 @@ function getEventItemSchema() {
         var tableName = new EventItem().tableName;
         knex(tableName).columnInfo()
             .then(function (eventItemSchema) {
+                _.each(eventItemSchema, function(schemaItem) {
+                    schemaItem.required = !schemaItem.nullable;
+                });
                 var event_schema = {
                     title: _.extend(eventItemSchema['Title'], {
                         name: "title",

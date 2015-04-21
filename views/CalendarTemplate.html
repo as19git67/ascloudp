@@ -20,9 +20,9 @@
                             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <form class="form" role="form">
+                                        <form class="form" novalidate role="form">
                                             <div class="form-inline">
-                                                <div class="form-group col-md-6">
+                                                <div class="form-group">
                                                     <label for="event_start" class="control-label">{{event_schema.event_start.label}}:</label>
 
                                                     <div id="event_start">
@@ -31,9 +31,10 @@
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.event_start"
                                                                    is-open="event_start_opened"
-                                                                   starting-day="1"
+                                                                   starting-day="2"
                                                                    datepicker-options="dateOptions"
-                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   date-disabled="disabled(date, mode)"
+                                                                   ng-required="{{event_schema.event_start.required}}"
                                                                    close-text="Close"/>
                                                         <span class="input-group-btn">
                                                             <button type="button" class="btn btn-default"
@@ -41,45 +42,34 @@
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
+                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('event_start_time')" ng-model="event.event_start_time" ng-required="{{event_schema.event_start.required}}">
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-md-6">
-                                                    <label for="event_start_time" class="control-label">{{event_schema.event_start.label}} Zeit:</label>
-
-                                                    <div id="event_start_time">
-                                                        <input type="text" class="form-control" ng-model="event.event_start_time">
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="form-inline">
-                                                <div class="form-group col-md-6">
+                                                <div class="form-group">
                                                     <label for="event_end" class="control-label">{{event_schema.event_end.label}}:</label>
 
                                                     <div id="event_end">
-                                                        <p class="input-group">
+                                                        <div class="input-group">
                                                             <input type="text" class="form-control"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.event_end"
                                                                    is-open="event_end_opened"
                                                                    starting-day="1"
                                                                    datepicker-options="dateOptions"
-                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   date-disabled="disabled(date, mode)"
+                                                                   ng-required="{{event_schema.event_end.required}}"
                                                                    close-text="Close"/>
-                                                        <span class="input-group-btn">
-                                                            <button type="button" class="btn btn-default"
-                                                                    ng-click="openDatePicker($event, 'event_end_opened')">
-                                                                <i class="glyphicon glyphicon-calendar"></i>
-                                                            </button>
-                                                        </span>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-md-6">
-                                                    <label for="event_end_time" class="control-label">{{event_schema.event_end.label}} Zeit:</label>
-
-                                                    <div id="event_end_time">
-                                                        <input type="text" class="form-control" ng-model="event.event_end_time">
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default"
+                                                                        ng-click="openDatePicker($event, 'event_end_opened')">
+                                                                    <i class="glyphicon glyphicon-calendar"></i>
+                                                                </button>
+                                                            </span>
+                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('event_end_time')" ng-model="event.event_end_time" ng-required="{{event_schema.event_end.required}}">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -91,66 +81,56 @@
                             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <form class="form" role="form">
-                                            <div class="form-inline col-md-12">
-                                                <div class="form-group col-md-6">
+                                        <form class="form" novalidate role="form">
+                                            <div class="form-inline">
+                                                <div class="form-group">
                                                     <label for="publish_start" class="control-label">{{event_schema.publish_start.label}}:</label>
 
                                                     <div id="publish_start">
-                                                        <p class="input-group">
+                                                        <div class="input-group">
                                                             <input type="text" class="form-control"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.publish_start"
                                                                    is-open="publish_start_opened"
                                                                    starting-day="1"
                                                                    datepicker-options="dateOptions"
-                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   date-disabled="disabled(date, mode)"
+                                                                   ng-required="{{event_schema.publish_start.required}}"
                                                                    close-text="Close"/>
-                                                        <span class="input-group-btn">
-                                                            <button type="button" class="btn btn-default"
-                                                                    ng-click="openDatePicker($event, 'publish_start_opened')">
-                                                                <i class="glyphicon glyphicon-calendar"></i>
-                                                            </button>
-                                                        </span>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-md-6">
-                                                    <label for="publish_start_time" class="control-label">{{event_schema.publish_start.label}} Zeit:</label>
-
-                                                    <div id="publish_start_time">
-                                                        <input type="text" class="form-control" ng-model="event.publish_start_time">
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default"
+                                                                        ng-click="openDatePicker($event, 'publish_start_opened')">
+                                                                    <i class="glyphicon glyphicon-calendar"></i>
+                                                                </button>
+                                                            </span>
+                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('publish_start_time')" ng-model="event.publish_start_time" ng-required="{{event_schema.publish_start.required}}">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="form-inline col-md-12">
-                                                <div class="form-group col-md-6">
+                                            <div class="form-inline">
+                                                <div class="form-group">
                                                     <label for="publish_end" class="control-label">{{event_schema.publish_end.label}}:</label>
 
                                                     <div id="publish_end">
-                                                        <p class="input-group">
+                                                        <div class="input-group">
                                                             <input type="text" class="form-control"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.publish_end"
                                                                    is-open="publish_end_opened"
                                                                    starting-day="1"
                                                                    datepicker-options="dateOptions"
-                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   date-disabled="disabled(date, mode)"
+                                                                   ng-required="{{event_schema.publish_end.required}}"
                                                                    close-text="Close"/>
-                                                        <span class="input-group-btn">
-                                                            <button type="button" class="btn btn-default"
-                                                                    ng-click="openDatePicker($event, 'publish_end_opened')">
-                                                                <i class="glyphicon glyphicon-calendar"></i>
-                                                            </button>
-                                                        </span>
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                                <div class="form-group col-md-6">
-                                                    <label for="publish_end_time" class="control-label">{{event_schema.publish_end.label}} Zeit:</label>
-
-                                                    <div id="publish_end_time">
-                                                        <input type="text" class="form-control" ng-model="event.publish_end_time">
+                                                            <span class="input-group-btn">
+                                                                <button type="button" class="btn btn-default"
+                                                                        ng-click="openDatePicker($event, 'publish_end_opened')">
+                                                                    <i class="glyphicon glyphicon-calendar"></i>
+                                                                </button>
+                                                            </span>
+                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('publish_end_time')" ng-model="event.publish_end_time" ng-required="{{event_schema.publish_end.required}}">
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -161,26 +141,27 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <form class="form" role="form">
+                                <form class="form" novalidate role="form">
                                     <div class="form-group">
                                         <label for="title" class="control-label">{{event_schema.title.label}}:</label>
 
                                         <div id="title">
-                                            <input type="text" class="form-control" ng-model="event.title" placeholder="{{event_schema.title.label}}">
+                                            <input type="text" class="form-control" ng-model="event.title" placeholder="{{event_schema.title.description}}" ng-required="{{event_schema.title.required}}" >
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="description" class="control-label">{{event_schema.description.label}}:</label>
 
                                         <div id="description">
-                                            <input type="text" class="form-control" ng-model="event.description" placeholder="{{event_schema.description.label}}">
+                                            <textarea class="form-control textareaMonospace" rows="3" placeholder="{{event_schema.description.description}}"
+                                                      ng-maxlength="event_schema.description.maxLength" ng-model="event.description" ng-required="{{event_schema.description.required}}" ></textarea>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="location" class="control-label">{{event_schema.location.label}}:</label>
 
                                         <div id="location">
-                                            <input type="text" class="form-control" ng-model="event.location" placeholder="{{event_schema.location.label}}">
+                                            <input type="text" class="form-control" ng-model="event.location" placeholder="{{event_schema.location.description}}" ng-required="{{event_schema.location.required}}">
                                         </div>
                                     </div>
                                 </form>

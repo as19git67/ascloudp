@@ -69,3 +69,8 @@ h4.media-heading span.glyphicon:hover {
 .calendarListItem span.glyphicon:hover {
     cursor: pointer;
 }
+
+.time-picker {
+    margin-left: 2em;
+    max-width: 5em;
+}
