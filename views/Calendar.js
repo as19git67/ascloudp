@@ -82,6 +82,9 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 if (nowMoment.isBefore(dataModel.get('publish_start')) || nowMoment.isAfter(dataModel.get('publish_end'))) {
                     notPublished = true;
                 }
+                var event_end = dataModel.get('event_end');
+
+                var timezone = new moment().format("ZZ");
 
                 var dataObj = {
                     id: dataModel.get('Event_id'),
@@ -93,7 +96,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                     publish_start: dataModel.get('publish_start'),
                     publish_end: dataModel.get('publish_end'),
                     event_start_time_formatted: moment(dataModel.get('event_start')).format('HH:mm'),
-                    event_end_time_formatted: moment(dataModel.get('event_end')).format('HH:mm'),
+                    event_end_time_formatted: moment(event_end).format('HH:mm'),
                     //                    event_start_date_formatted: moment(dataModel.get('event_start')).format('dd., D. MMM'),
                     event_start_date_formatted: moment(dataModel.get('event_start')).format('dddd, D. MMMM YYYY'),
                     event_end_date_formatted: moment(dataModel.get('event_end')).format('dd., D. MMM'),
@@ -101,6 +104,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                     event_end_formatted: moment(dataModel.get('event_end')).format('L HH:mm'),
                     publish_start_formatted: moment(dataModel.get('publish_start')).format('L HH:mm'),
                     publish_end_formatted: moment(dataModel.get('publish_end')).format('L HH:mm'),
+                    timezone: timezone,
                     notPublished: notPublished
                 };
                 return dataObj;
