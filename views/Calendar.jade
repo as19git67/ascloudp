@@ -19,6 +19,10 @@ block content
                     strong(style="padding-bottom:2px;padding-top:1px;font-size: 1.1em") #{record.event_start_date_formatted}
                     if canEdit
                         span.glyphicon.glyphicon-edit(data-id='#{record.id}')
+                    if record.notPublished
+                        p.small
+                            span.text-warning
+                                strong Dieser Eintrag wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
             div(class="col-md-1 col-xs-2", style="text-align: right;border-right-width:1px;border-right-color:lightgray;border-right-style:solid")
                 | #{record.event_start_time_formatted}
                 br

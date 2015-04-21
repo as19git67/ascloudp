@@ -11,14 +11,14 @@ module.exports.getical = function (req, res, next, page, pages, canEdit, collect
     var cal = ical();
 
     cal.setDomain('ascloud.de').setName(page.EntityNamePlural);
-    cal.setProdID({ company: "Anton Schegg", product: "ascloud.de", language: "DE" });
+    cal.setProdID({company: "Anton Schegg", product: "ascloud.de", language: "DE"});
 
     var now = new Date();
     new Event().query(function (qb) {
         qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
         qb.select(['EventItems.*']);
-        qb.where({ Page_id: page.Name })
+        qb.where({Page_id: page.Name})
             .andWhere('EventItems.valid_end', null)
             .andWhere('EventItems.event_end', '>=', now)
             .andWhere('EventItems.publish_start', '<=', now)
@@ -58,6 +58,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
     }
 
     var now = new Date();
+    var nowMoment = new moment(now);
     new Event().query(function (qb) {
         qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
         qb.orderBy('event_start', 'ASC');
@@ -77,6 +78,11 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         var records = [];
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
+                var notPublished = false;
+                if (nowMoment.isBefore(dataModel.get('publish_start')) || nowMoment.isAfter(dataModel.get('publish_end'))) {
+                    notPublished = true;
+                }
+
                 var dataObj = {
                     id: dataModel.get('Event_id'),
                     Title: dataModel.get('Title'),
@@ -94,7 +100,8 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                     event_start_formatted: moment(dataModel.get('event_start')).format('L HH:mm'),
                     event_end_formatted: moment(dataModel.get('event_end')).format('L HH:mm'),
                     publish_start_formatted: moment(dataModel.get('publish_start')).format('L HH:mm'),
-                    publish_end_formatted: moment(dataModel.get('publish_end')).format('L HH:mm')
+                    publish_end_formatted: moment(dataModel.get('publish_end')).format('L HH:mm'),
+                    notPublished: notPublished
                 };
                 return dataObj;
             });

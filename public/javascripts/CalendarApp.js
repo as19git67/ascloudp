@@ -153,12 +153,16 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
                 today.set('millisecond', 0);
                 var start = today.add(2, 'days');
                 var end = start.add(1, 'hours');
+                var pub_start = today.add(1, 'days');
                 $scope.event.event_start = start.toISOString();
                 $scope.event.event_end = end.toISOString();
-                $scope.event.event_start_time = start;
-                $scope.event.event_start_time = end;
-                $scope.event.publish_start = today.add(1, 'days').toISOString();
+                $scope.event.publish_start = pub_start.toISOString();
                 $scope.event.publish_end = $scope.event.event_end;
+
+                $scope.event.event_start_time = start.format("HH:mm");
+                $scope.event.event_end_time = end.format("HH:mm");
+                $scope.event.publish_start_time = pub_start.format("HH:mm");
+                $scope.event.publish_end_time = end.format("HH:mm");
             });
 
         };

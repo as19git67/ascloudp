@@ -30,12 +30,11 @@ block content
                         span(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
                         if canEdit
                             span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
-                if record.date_formatted
-                    p.small #{record.date_formatted}
                 if record.notPublished
                     p.text-warning
-                    strong Dieser Artikel wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
-
+                        strong Dieser Artikel wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
+                if record.date_formatted
+                    p.small #{record.date_formatted}
                 if record.leadText
                     p(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.leadText}
         div(class="modal fade", id='modal_for_article_#{record.article_id}', tabindex="-1", role="dialog", aria-labelledby="myLargeModalLabel", aria-hidden="true")
