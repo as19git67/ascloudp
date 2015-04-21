@@ -21,6 +21,7 @@
     "jimp": "^0.1.4",
     "knex": "*",
     "moment": "*",
+    "moment-timezone": "*",
     "morgan": "~1.0.1",
     "nconf": "*",
     "passport": "*",

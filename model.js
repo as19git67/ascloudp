@@ -140,20 +140,33 @@ exports.upgradeSchema = function (upgradeVersion) {
                     }).then(function () {
                         console.log("Transaction (upgrading ArticleItems in upgrade " + upgradeVersion + ") committed");
                         resolve();
-/*
-                        knex.schema.table('ArticleItems', function (table) {
-                            table.string('Title').notNullable();
-                            table.string('LeadText', 1000).notNullable();
-                        }).then(function () {
-                            resolve();
-                        }).catch(function (error) {
-                            console.log("ERROR while adding not null constrains");
-                            reject(error);
-                        });
-*/
+                        /*
+                         knex.schema.table('ArticleItems', function (table) {
+                         table.string('Title').notNullable();
+                         table.string('LeadText', 1000).notNullable();
+                         }).then(function () {
+                         resolve();
+                         }).catch(function (error) {
+                         console.log("ERROR while adding not null constrains");
+                         reject(error);
+                         });
+                         */
                     }).catch(function (error) {
                         console.log(error);
                         console.log("Transaction (upgrading ArticleItems in upgrade " + upgradeVersion + ") rolled back");
+                        reject(error);
+                    });
+
+                    break;
+                case 2:
+                    knex.schema.table('EventItems', function (table) {
+                        table.string('Timezone');
+                    }).then(function () {
+                        console.log("Transaction (upgrading EventItems in upgrade " + upgradeVersion + ") finished");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log("Transaction (upgrading EventItems in upgrade " + upgradeVersion + ") failed");
                         reject(error);
                     });
 
@@ -183,8 +196,8 @@ exports.upgradeSchemaV0 = function (upgradeVersion) {
                         t.integer('Article_id').references('id').inTable('Articles');
                         t.datetime('Date').notNullable().index();
                         t.string('Author');
-                        t.string('Title').notNullable();
-                        t.string('LeadText').notNullable();
+                        t.string('Title');
+                        t.string('LeadText', 1000);
                         t.string('Text', 100000);
                         t.timestamp('publish_start').notNullable().index();
                         t.timestamp('publish_end').index();
@@ -264,6 +277,23 @@ exports.upgradeSchemaV0 = function (upgradeVersion) {
     });
 };
 
+function performUpgradeSchema2(resolve, reject) {
+    knex.schema.hasColumn('EventItems', 'Timezone').then(function (exists) {
+        if (exists) {
+            console.log('DB schema up to date.');
+            resolve();
+        } else {
+            console.log('Must upgrade DB schema (V2).');
+            exports.upgradeSchema(2).then(
+                function () {
+                    console.log('DB schema upgraded.');
+                    resolve();
+                },
+                reject);
+        }
+    });
+}
+
 exports.createSchemaIfNotExists = function () {
     return new Promise(function (resolve, reject) {
         knex.schema.hasTable('RoleMenus').then(function (exists) {
@@ -272,16 +302,13 @@ exports.createSchemaIfNotExists = function () {
                     if (exists) {
                         knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
                             if (exists) {
-                                console.log('DB schema up to date.');
-                                resolve();
+                                performUpgradeSchema2(resolve, reject);
                             } else {
                                 console.log('Must upgrade DB schema.');
                                 exports.upgradeSchema(1).then(
                                     function () {
-                                        console.log('DB schema upgraded.');
-                                        resolve();
-                                    },
-                                    reject);
+                                        performUpgradeSchema2(resolve, reject);
+                                    }, reject);
                             }
                         });
                     } else {
@@ -752,6 +779,7 @@ exports.createSchema = function () {
                     t.integer('Event_id').references('id').inTable('Events').notNullable();
                     t.string('Title', 75).notNullable();
                     t.string('Location', 200);
+                    t.string('Timezone');
                     t.string('Description', 5000);
                     t.timestamp('event_start').notNullable().index();
                     t.timestamp('event_end').notNullable().index();
@@ -870,12 +898,12 @@ exports.createSchema = function () {
                                                     resolve();
                                                 }).catch(function (error) {
                                                     console.log("Error while saving role menus for role " + newRoleModel.get('Name') + ": " +
-                                                    error);
+                                                        error);
                                                     reject(error);
                                                 });
                                             }).catch(function (error) {
                                                 console.log("Error while saving role permissions for role " + newRoleModel.get('Name') + ": " +
-                                                error);
+                                                    error);
                                                 reject(error);
                                             });
 
@@ -886,8 +914,8 @@ exports.createSchema = function () {
 
                                     }).catch(function (error) {
                                         console.log("Error while assigning role " + newRoleModel.get('Name') + " to user " +
-                                        newUserModel.get('UserName') +
-                                        ": " + error);
+                                            newUserModel.get('UserName') +
+                                            ": " + error);
                                         reject(error);
                                     });
 

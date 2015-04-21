@@ -109,6 +109,9 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
             event.publish_start = combineDateAndTime($scope.event.publish_start, $scope.event.publish_start_time);
             event.publish_end = combineDateAndTime($scope.event.publish_end, $scope.event.publish_end_time);
 
+            var tz = jstz.determine();
+            event.timezone = tz.name();
+
             calendarService.saveEvent(event).then(function () {
                 ui.editCalendarEntry.modal('hide');
                 location.reload();
@@ -163,12 +166,14 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
                 $scope.event.event_end_time = end.format("HH:mm");
                 $scope.event.publish_start_time = pub_start.format("HH:mm");
                 $scope.event.publish_end_time = end.format("HH:mm");
+                var tz = jstz.determine();
+                $scope.event.timezone = tz.name();
             });
 
         };
 
         $scope.timeChanged = function ($event) {
-
+            console.log("time changed");
         };
 
         // date picker event
