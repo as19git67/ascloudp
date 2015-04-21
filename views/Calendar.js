@@ -86,7 +86,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
 
                 //var timezone = new moment().format("ZZ");
                 //var timezone = moment(event_end).toISOString();
-                var timezone = event_end.getTimezoneOffset();
+                var timezone = event_end.toString();
 
                 var dataObj = {
                     id: dataModel.get('Event_id'),
