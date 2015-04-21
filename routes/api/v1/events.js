@@ -42,6 +42,10 @@ function getEventItemSchema() {
                     publish_end: _.extend(eventItemSchema['publish_end'], {
                         label: "Ende Veröffentlichung",
                         description: "Ende der Veröffentlichung der Veranstaltung"
+                    }),
+                    timezone: _.extend(eventItemSchema['Timezone'], {
+                        label: "Zeitzone",
+                        description: "Zeitzone"
                     })
                 };
                 resolve(event_schema);
@@ -145,6 +149,7 @@ module.exports.put = function (req, res) {
                         event_end: req.body.event_end,
                         publish_start: req.body.publish_start,
                         publish_end: req.body.publish_end,
+                        Timezone: req.body.timezone,
                         valid_start: now
                     }).save(null, {transacting: t}).then(function (savedEventItem) {
                             var userName = req.user.UserName ? req.user.UserName : req.user.id;
@@ -218,6 +223,7 @@ module.exports.post = function (req, res) {
                     event_end: req.body.event_end,
                     publish_start: req.body.publish_start,
                     publish_end: req.body.publish_end,
+                    Timezone: req.body.timezone,
                     valid_start: now
                 })
                     .save(null, {transacting: t})
