@@ -59,7 +59,7 @@ $(function () {
     clearTimeout(resizeTimer);
     resizeTimer = setTimeout(function() {
         adjustMaxWidthOfLeftNavbar();
-    }, 100);
+    }, 50);
 });
 
 $(window).resize(function () {

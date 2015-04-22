@@ -57,6 +57,10 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         icalUrl = icalUrl + "?type=ical";
     }
 
+    var includeNotPublished = req.query.includeNotPublished == undefined ? true : req.query.includeNotPublished;
+    var includeOld = req.query.includeOld == undefined ? false : req.query.includeOld;
+    var includeDeleted = req.query.includeDeleted == undefined ? false : req.query.includeDeleted;
+
     var now = new Date();
     var nowMoment = new moment(now);
     new Event().query(function (qb) {
@@ -66,13 +70,19 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         if (canEdit) {
             // in case user can edit, include currently not published articles
             qb.where({'Page_id': page.Name})
-                .andWhere('EventItems.valid_end', null)
+                .andWhere('EventItems.valid_end', null);
+            if (!includeOld) {
+                qb.andWhere('EventItems.publish_end', '>=', now);
+            }
+            if (!includeNotPublished) {
+                qb.andWhere('EventItems.publish_start', '>=', now);
+            }
         } else {
             qb.where({'Page_id': page.Name})
                 .andWhere('EventItems.valid_end', null)
-                .andWhere('EventItems.event_end', '>=', now)
                 .andWhere('EventItems.publish_start', '<=', now)
-                .andWhere('EventItems.publish_end', '>=', now);
+                .andWhere('EventItems.publish_end', '>=', now)
+                .andWhere('EventItems.event_end', '>=', now);
         }
     }).fetchAll().then(function (dataCollection) {
         var records = [];
@@ -120,6 +130,9 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 pages: pages,
                 page: page,
                 Records: records,
+                includeNotPublished: includeNotPublished,
+                includeDeleted: includeDeleted,
+                includeOld: includeOld,
                 icalUrl: icalUrl
             });
         } else {
@@ -132,6 +145,9 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 user: req.user,
                 pages: pages,
                 page: page,
+                includeNotPublished: includeNotPublished,
+                includeDeleted: includeDeleted,
+                includeOld: includeOld,
                 Records: []
             });
         }
