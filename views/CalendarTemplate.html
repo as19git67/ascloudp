@@ -43,8 +43,10 @@
                                 <div class="row">
                                     <div class="col-xs-12">
                                         <form class="form" name="event_date_form" novalidate role="form">
-                                            <ul ng-show="event_date_form.event_start_time.$error.timeformat || event_date_form.event_end_time.$error.timeformat">
+                                            <ul ng-show="event_date_form.$invalid">
+                                                <li ng-show="event_date_form.event_start_field.$error.required" class="text-danger">Veranstaltungsbeginn muss angegeben werden.</li>
                                                 <li ng-show="event_date_form.event_start_time.$error.timeformat" class="text-danger">Zeit des Veranstaltungsbeginns ist falsch.</li>
+                                                <li ng-show="event_date_form.event_end_field.$error.required" class="text-danger">Veranstaltungsende muss angegeben werden.</li>
                                                 <li ng-show="event_date_form.event_end_time.$error.timeformat" class="text-danger">Zeit des Veranstaltungsendes ist falsch.</li>
                                             </ul>
                                             <div class="form-inline">
@@ -54,13 +56,14 @@
                                                     <div id="event_start">
                                                         <div class="input-group">
                                                             <input type="text" class="form-control"
+                                                                   name="event_start_field"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.event_start"
                                                                    is-open="event_start_opened"
                                                                    starting-day="2"
                                                                    datepicker-options="dateOptions"
                                                                    date-disabled="disabled(date, mode)"
-                                                                   ng-required="{{event_schema.event_start.required}}"
+                                                                   ng-required="event_schema.event_start.required"
                                                                    close-text="Close"/>
                                                         <span class="input-group-btn">
                                                             <button type="button" class="btn btn-default"
@@ -73,7 +76,7 @@
                                                                    ng-model-options="{updateOn: 'blur', debounce: 2000}"
                                                                    ng-change="timeChanged('event_start_time')"
                                                                    ng-model="event.event_start_time"
-                                                                   ng-required="{{event_schema.event_start.required}}">
+                                                                   ng-required="event_schema.event_start.required">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -85,13 +88,14 @@
                                                     <div id="event_end">
                                                         <div class="input-group">
                                                             <input type="text" class="form-control"
+                                                                   name="event_end_field"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.event_end"
                                                                    is-open="event_end_opened"
                                                                    starting-day="1"
                                                                    datepicker-options="dateOptions"
                                                                    date-disabled="disabled(date, mode)"
-                                                                   ng-required="{{event_schema.event_end.required}}"
+                                                                   ng-required="event_schema.event_end.required"
                                                                    close-text="Close"/>
                                                             <span class="input-group-btn">
                                                                 <button type="button" class="btn btn-default"
@@ -103,7 +107,7 @@
                                                                    timeformat ng-model-options="{updateOn: 'blur', debounce: 2000}"
                                                                    ng-change="timeChanged('event_end_time')"
                                                                    ng-model="event.event_end_time"
-                                                                   ng-required="{{event_schema.event_end.required}}">
+                                                                   ng-required="event_schema.event_end.required">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -117,8 +121,10 @@
                                 <div class="row">
                                     <div class="col-xs-12">
                                         <form class="form" name="publish_date_form" novalidate role="form">
-                                            <ul ng-show="publish_date_form.publish_start_time.$error.timeformat || publish_date_form.publish_end_time.$error.timeformat">
+                                            <ul ng-show="publish_date_form.$invalid">
+                                                <li ng-show="publish_date_form.publish_start_field.$error.required" class="text-danger">Beginn der Veröffentlichung muss angegeben werden.</li>
                                                 <li ng-show="publish_date_form.publish_start_time.$error.timeformat" class="text-danger">Zeit des Veröffentlichungsbeginns ist falsch.</li>
+                                                <li ng-show="publish_date_form.publish_end_field.$error.required" class="text-danger">Ende der Veröffentlichung muss angegeben werden.</li>
                                                 <li ng-show="publish_date_form.publish_end_time.$error.timeformat" class="text-danger">Zeit des Veröffentlichungsendes ist falsch.</li>
                                             </ul>
                                             <div class="form-inline">
@@ -128,13 +134,14 @@
                                                     <div id="publish_start">
                                                         <div class="input-group">
                                                             <input type="text" class="form-control"
+                                                                   name="publish_start_field"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.publish_start"
                                                                    is-open="publish_start_opened"
                                                                    starting-day="1"
                                                                    datepicker-options="dateOptions"
                                                                    date-disabled="disabled(date, mode)"
-                                                                   ng-required="{{event_schema.publish_start.required}}"
+                                                                   ng-required="event_schema.publish_start.required"
                                                                    close-text="Close"/>
                                                             <span class="input-group-btn">
                                                                 <button type="button" class="btn btn-default"
@@ -147,7 +154,7 @@
                                                                    ng-model-options="{updateOn: 'blur', debounce: 2000}"
                                                                    ng-change="timeChanged('publish_start_time')"
                                                                    ng-model="event.publish_start_time"
-                                                                   ng-required="{{event_schema.publish_start.required}}">
+                                                                   ng-required="event_schema.publish_start.required">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -159,13 +166,14 @@
                                                     <div id="publish_end">
                                                         <div class="input-group">
                                                             <input type="text" class="form-control"
+                                                                   name="publish_end_field"
                                                                    datepicker-popup="{{format}}"
                                                                    ng-model="event.publish_end"
                                                                    is-open="publish_end_opened"
                                                                    starting-day="1"
                                                                    datepicker-options="dateOptions"
                                                                    date-disabled="disabled(date, mode)"
-                                                                   ng-required="{{event_schema.publish_end.required}}"
+                                                                   ng-required="event_schema.publish_end.required"
                                                                    close-text="Close"/>
                                                             <span class="input-group-btn">
                                                                 <button type="button" class="btn btn-default"
@@ -178,7 +186,7 @@
                                                                    ng-model-options="{updateOn: 'blur', debounce: 2000}"
                                                                    ng-change="timeChanged('publish_end_time')"
                                                                    ng-model="event.publish_end_time"
-                                                                   ng-required="{{event_schema.publish_end.required}}">
+                                                                   ng-required="event_schema.publish_end.required">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -190,20 +198,18 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <form class="form" name="event_form" novalidate role="form">
-                                    <ul ng-show="event_form.title.$error.required">
-                                        <li ng-show="event_form.title.$error.required" class="text-danger">Titel darf nicht leer sein.</li>
-                                    </ul>
+                                <form class="form" name="event_form" role="form">
 
                                     <div class="form-group">
                                         <label for="title" class="control-label">{{event_schema.title.label}}:</label>
 
                                         <div id="title">
-                                            <input name="title" type="text" class="form-control"
-                                                   ng-model="event.title"
+                                            <input name="titleField" type="text" class="form-control"
                                                    placeholder="{{event_schema.title.description}}"
-                                                   ng-required="{{event_schema.title.required}}">
+                                                   ng-model="event.title"
+                                                   ng-required="event_schema.title.required">
                                         </div>
+                                        <p class="text-danger" ng-show="event_form.titleField.$error.required">Titel darf nicht leer sein</p>
                                     </div>
                                     <div class="form-group">
                                         <label for="description" class="control-label">{{event_schema.description.label}}:</label>
@@ -212,7 +218,7 @@
                                             <textarea class="form-control" rows="3" placeholder="{{event_schema.description.description}}"
                                                       ng-maxlength="event_schema.description.maxLength"
                                                       ng-model="event.description"
-                                                      ng-required="{{event_schema.description.required}}">
+                                                      ng-required="event_schema.description.required">
                                             </textarea>
                                         </div>
                                     </div>
@@ -223,7 +229,7 @@
                                             <input type="text" class="form-control"
                                                    ng-model="event.location"
                                                    placeholder="{{event_schema.location.description}}"
-                                                   ng-required="{{event_schema.location.required}}">
+                                                   ng-required="event_schema.location.required">
                                         </div>
                                     </div>
                                 </form>
