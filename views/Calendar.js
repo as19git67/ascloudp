@@ -69,13 +69,13 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         qb.select(['EventItems.*']);
         if (canEdit) {
             // in case user can edit, include currently not published articles
-            qb.where({'Page_id': page.Name})
+            var q = qb.where({'Page_id': page.Name})
                 .andWhere('EventItems.valid_end', null);
             if (!includeOld) {
-                qb.andWhere('EventItems.publish_end', '>=', now);
+                q = q.andWhere('EventItems.publish_end', '>=', now);
             }
             if (!includeNotPublished) {
-                qb.andWhere('EventItems.publish_start', '>=', now);
+                q = q.andWhere('EventItems.publish_start', '>=', now);
             }
         } else {
             qb.where({'Page_id': page.Name})
