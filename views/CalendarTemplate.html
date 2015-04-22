@@ -1,9 +1,31 @@
 <div id="eventItemView">
     <!-- Modal -->
-    <div class="modal fade" id="editCalendarEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true" ng-app="calendarEditApp">
+    <div class="modal fade" id="editCalendarEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" ng-app="calendarEditApp" ng-controller="calendarEditCtrl">
+
+        <div id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" data-dismiss="modal" class="close"><span
+                                aria-hidden="true">×</span><span
+                                class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Veranstaltung löschen</h4></div>
+                    <div class="modal-body"><p>Soll die Veranstaltung wirklich gelöscht
+                        werden?</p></div>
+                    <div class="modal-footer">
+                        <button data-dismiss="modal" class="btn btn-default">Abbrechen
+                        </button>
+                        <button data-dismiss="modal" ng-click="deleteEvent($event)"
+                                class="btn btn-danger">Löschen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal-dialog modal-dialog-full">
-            <div class="modal-content modal-content-full" ng-controller="calendarEditCtrl">
+            <div class="modal-content modal-content-full">
                 <div class="modal-header modal-header-full">
                     <button type="button" class="btn btn-primary" id="btSave" name="btSave"
                             ng-click="saveEvent($event)">Speichern und Zurück
@@ -20,7 +42,11 @@
                             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <form class="form" novalidate role="form">
+                                        <form class="form" name="event_date_form" novalidate role="form">
+                                            <ul ng-show="event_date_form.event_start_time.$error.timeformat || event_date_form.event_end_time.$error.timeformat">
+                                                <li ng-show="event_date_form.event_start_time.$error.timeformat" class="text-danger">Zeit des Veranstaltungsbeginns ist falsch.</li>
+                                                <li ng-show="event_date_form.event_end_time.$error.timeformat" class="text-danger">Zeit des Veranstaltungsendes ist falsch.</li>
+                                            </ul>
                                             <div class="form-inline">
                                                 <div class="form-group">
                                                     <label for="event_start" class="control-label">{{event_schema.event_start.label}}:</label>
@@ -42,7 +68,12 @@
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
-                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('event_start_time')" ng-model="event.event_start_time" ng-required="{{event_schema.event_start.required}}">
+                                                            <input type="text" name="event_start_time" class="form-control time-picker"
+                                                                   timeformat
+                                                                   ng-model-options="{updateOn: 'blur', debounce: 2000}"
+                                                                   ng-change="timeChanged('event_start_time')"
+                                                                   ng-model="event.event_start_time"
+                                                                   ng-required="{{event_schema.event_start.required}}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -68,7 +99,11 @@
                                                                     <i class="glyphicon glyphicon-calendar"></i>
                                                                 </button>
                                                             </span>
-                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('event_end_time')" ng-model="event.event_end_time" ng-required="{{event_schema.event_end.required}}">
+                                                            <input type="text" name="event_end_time" class="form-control time-picker"
+                                                                   timeformat ng-model-options="{updateOn: 'blur', debounce: 2000}"
+                                                                   ng-change="timeChanged('event_end_time')"
+                                                                   ng-model="event.event_end_time"
+                                                                   ng-required="{{event_schema.event_end.required}}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -81,7 +116,11 @@
                             <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
                                 <div class="row">
                                     <div class="col-xs-12">
-                                        <form class="form" novalidate role="form">
+                                        <form class="form" name="publish_date_form" novalidate role="form">
+                                            <ul ng-show="publish_date_form.publish_start_time.$error.timeformat || publish_date_form.publish_end_time.$error.timeformat">
+                                                <li ng-show="publish_date_form.publish_start_time.$error.timeformat" class="text-danger">Zeit des Veröffentlichungsbeginns ist falsch.</li>
+                                                <li ng-show="publish_date_form.publish_end_time.$error.timeformat" class="text-danger">Zeit des Veröffentlichungsendes ist falsch.</li>
+                                            </ul>
                                             <div class="form-inline">
                                                 <div class="form-group">
                                                     <label for="publish_start" class="control-label">{{event_schema.publish_start.label}}:</label>
@@ -103,7 +142,12 @@
                                                                     <i class="glyphicon glyphicon-calendar"></i>
                                                                 </button>
                                                             </span>
-                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('publish_start_time')" ng-model="event.publish_start_time" ng-required="{{event_schema.publish_start.required}}">
+                                                            <input type="text" name="publish_start_time" class="form-control time-picker"
+                                                                   timeformat
+                                                                   ng-model-options="{updateOn: 'blur', debounce: 2000}"
+                                                                   ng-change="timeChanged('publish_start_time')"
+                                                                   ng-model="event.publish_start_time"
+                                                                   ng-required="{{event_schema.publish_start.required}}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -129,7 +173,12 @@
                                                                     <i class="glyphicon glyphicon-calendar"></i>
                                                                 </button>
                                                             </span>
-                                                            <input type="text" class="form-control time-picker" ng-change="timeChanged('publish_end_time')" ng-model="event.publish_end_time" ng-required="{{event_schema.publish_end.required}}">
+                                                            <input type="text" name="publish_end_time" class="form-control time-picker"
+                                                                   timeformat
+                                                                   ng-model-options="{updateOn: 'blur', debounce: 2000}"
+                                                                   ng-change="timeChanged('publish_end_time')"
+                                                                   ng-model="event.publish_end_time"
+                                                                   ng-required="{{event_schema.publish_end.required}}">
                                                         </div>
                                                     </div>
                                                 </div>
@@ -141,32 +190,60 @@
                         </div>
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <form class="form" novalidate role="form">
+                                <form class="form" name="event_form" novalidate role="form">
+                                    <ul ng-show="event_form.title.$error.required">
+                                        <li ng-show="event_form.title.$error.required" class="text-danger">Titel darf nicht leer sein.</li>
+                                    </ul>
+
                                     <div class="form-group">
                                         <label for="title" class="control-label">{{event_schema.title.label}}:</label>
 
                                         <div id="title">
-                                            <input type="text" class="form-control" ng-model="event.title" placeholder="{{event_schema.title.description}}" ng-required="{{event_schema.title.required}}" >
+                                            <input name="title" type="text" class="form-control"
+                                                   ng-model="event.title"
+                                                   placeholder="{{event_schema.title.description}}"
+                                                   ng-required="{{event_schema.title.required}}">
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="description" class="control-label">{{event_schema.description.label}}:</label>
 
                                         <div id="description">
-                                            <textarea class="form-control textareaMonospace" rows="3" placeholder="{{event_schema.description.description}}"
-                                                      ng-maxlength="event_schema.description.maxLength" ng-model="event.description" ng-required="{{event_schema.description.required}}" ></textarea>
+                                            <textarea class="form-control" rows="3" placeholder="{{event_schema.description.description}}"
+                                                      ng-maxlength="event_schema.description.maxLength"
+                                                      ng-model="event.description"
+                                                      ng-required="{{event_schema.description.required}}">
+                                            </textarea>
                                         </div>
                                     </div>
                                     <div class="form-group">
                                         <label for="location" class="control-label">{{event_schema.location.label}}:</label>
 
                                         <div id="location">
-                                            <input type="text" class="form-control" ng-model="event.location" placeholder="{{event_schema.location.description}}" ng-required="{{event_schema.location.required}}">
+                                            <input type="text" class="form-control"
+                                                   ng-model="event.location"
+                                                   placeholder="{{event_schema.location.description}}"
+                                                   ng-required="{{event_schema.location.required}}">
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
+                        <hr>
+
+                        <div class="row" ng-show="event.id">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                <div class="form-group">
+                                    <button class="btn btn-default btn-danger" data-toggle="modal" ,
+                                            data-target="#confirmModal">
+                                        <span class="glyphicon glyphicon-trash"></span>
+                                        <span>Veranstaltung löschen</span>
+                                    </button>
+
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </div>

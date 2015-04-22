@@ -85,6 +85,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             return !_.isEmpty(item);
         };
         $scope.loadArticle = function (id) {
+            $scope.errorMessage = undefined;
             var promise = articleService.getArticle(id);
             promise.then(function (payload) {
                     $scope.waitingImages = {};

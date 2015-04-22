@@ -26,6 +26,31 @@ calendarEditApp.config(['$translateProvider', function ($translateProvider) {
     $translateProvider.determinePreferredLanguage();
 }]);
 
+calendarEditApp.directive('timeformat', function () {
+    var TIME_REGEXP = /^[0-2]+[0-9]:[0-5]+[0-9]$/i;
+
+    return {
+        require: 'ngModel',
+        restrict: '',
+        link: function (scope, elem, attr, ngModel) {
+            //For DOM -> model validation
+            ngModel.$parsers.unshift(function (value) {
+                //var valid = TIME_REGEXP.test(value);
+                t = moment(value, "LT");
+                ngModel.$setValidity('timeformat', t.isValid());
+                return t.isValid() ? value : undefined;
+            });
+
+            //For model -> DOM validation
+            ngModel.$formatters.unshift(function (value) {
+                ngModel.$setValidity('timeformat', TIME_REGEXP.test(value));
+                var t = moment(value, "LT");
+                return t.isValid() ? value : "";
+            });
+        }
+    };
+});
+
 // add the calendar edit controller
 calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cookies', '$translate', 'calendarService',
     function ($sce, $log, $scope, $cookies, $translate, calendarService) {
@@ -40,6 +65,7 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
             return !_.isEmpty(item);
         };
         $scope.loadEvent = function (id) {
+            $scope.errorMessage = undefined;
             var promise = calendarService.getEvent(id);
             promise.then(function (payload) {
                     $scope.event = payload.event;
@@ -173,15 +199,19 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
         };
 
         $scope.timeChanged = function (modelName) {
-            var val = $scope.event[modelName];
+            var ngModel = $scope.event[modelName];
+            var val = ngModel;
             console.log("time changed to " + val);
             if (val == "") {
                 val = "00:00";
                 $scope.event[modelName] = val;
             } else {
-                t = moment(timeIn, "LT");
-                if (!t.isValid()) {
-                    $scope.validationError
+                var t = moment(val, "LT");
+                if (t.isValid()) {
+                    var t_formatted = t.format("HH:mm");
+                    if (val != t_formatted) {
+                        $scope.event[modelName] = t_formatted;
+                    }
                 }
             }
         };
@@ -297,7 +327,7 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
             },
             deleteEvent: function (event) {
                 var deferred = $q.defer();
-                var promise = $http.delete('/api/v1/events/' + event.event_id, event);
+                var promise = $http.delete('/api/v1/events/' + event.id, event);
                 promise.success(function (data) {
                     deferred.resolve();
                 }).error(function (msg, code) {
