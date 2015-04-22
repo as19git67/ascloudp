@@ -1,9 +1,32 @@
 <div id="articleItemView">
     <!-- Modal -->
-    <div class="modal fade" id="editArticleEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-         aria-hidden="true" ng-app="articleEditApp">
+    <div class="modal fade" id="editArticleEntry" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true"
+         ng-app="articleEditApp"
+         ng-controller="articleEditCtrl">
+        <div id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+             aria-hidden="true" class="modal fade">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" data-dismiss="modal" class="close"><span
+                                aria-hidden="true">×</span><span
+                                class="sr-only">Close</span></button>
+                        <h4 class="modal-title">Artikel löschen</h4></div>
+                    <div class="modal-body"><p>Soll der Artikel wirklich gelöscht
+                        werden?</p></div>
+                    <div class="modal-footer">
+                        <button data-dismiss="modal" class="btn btn-default">Abbrechen
+                        </button>
+                        <button data-dismiss="modal" ng-click="deleteArticle($event)"
+                                class="btn btn-danger">Löschen
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="modal-dialog modal-dialog-full">
-            <div class="modal-content modal-content-full" ng-controller="articleEditCtrl">
+            <div class="modal-content modal-content-full">
                 <div class="modal-header modal-header-full">
                     <button type="button" class="btn btn-primary" id="btSave" name="btSave"
                             ng-click="saveArticle($event)">Speichern und Zurück
@@ -312,28 +335,6 @@
                                         <span class="glyphicon glyphicon-trash"></span>
                                         <span>Artikel löschen</span>
                                     </button>
-
-                                    <div id="confirmModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
-                                         aria-hidden="true" class="modal fade">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <button type="button" data-dismiss="modal" class="close"><span
-                                                            aria-hidden="true">×</span><span
-                                                            class="sr-only">Close</span></button>
-                                                    <h4 class="modal-title">Artikel löschen</h4></div>
-                                                <div class="modal-body"><p>Soll der Artikel wirklich gelöscht
-                                                    werden?</p></div>
-                                                <div class="modal-footer">
-                                                    <button data-dismiss="modal" class="btn btn-default">Abbrechen
-                                                    </button>
-                                                    <button data-dismiss="modal" ng-click="deleteArticle($event)"
-                                                            class="btn btn-danger">Löschen
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
                                 </div>
                             </div>
                         </div>
