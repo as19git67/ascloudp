@@ -1,7 +1,5 @@
 extends layout
 block content
-    if canEdit
-        style .calendarNew:hover {cursor: pointer;}
     if error
         p.text-danger #{error}
     h1
@@ -12,55 +10,57 @@ block content
     if !Records || Records.length == 0
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
     if canEdit
-        div(class="btn-group", data-toggle="buttons")
-            if includeNotPublished
-                label.btn.btn-primary.active
-                    input(type="checkbox", id="includeNotPublished", autocomplete="off", checked)
-                    | Zukünftige
-             else
-                label.btn.btn-primary
-                    input(type="checkbox", id="includeNotPublished", autocomplete="off")
-                    | Zukünftige
-            if includeOld
-                label.btn.btn-primary.active
-                    input(type="checkbox", id="includeOld", autocomplete="off", checked)
-                    | Abgelaufene
-            else
-                label.btn.btn-primary
-                    input(type="checkbox", id="includeOld", autocomplete="off")
-                    | Abgelaufene
-            if includeDeleted
-                label.btn.btn-primary.active
-                    input(type="checkbox", id="includeDeleted", autocomplete="off", checked)
-                    | Gelöschte
-            else
-                label.btn.btn-primary
-                    input(type="checkbox", id="includeDeleted", autocomplete="off")
-                    | Gelöschte
-        script
+        div.row
+            div.col-xs-12
+                div.h4 Filter:
+                    span(class="btn-group filter", data-toggle="buttons")
+                        if includeNotPublished
+                            label.btn.btn-primary.active
+                                input(type="checkbox", id="includeNotPublished", autocomplete="off", checked)
+                                | Zukünftige
+                         else
+                            label.btn.btn-default
+                                input(type="checkbox", id="includeNotPublished", autocomplete="off")
+                                | Zukünftige
+                        if includeOld
+                            label.btn.btn-primary.active
+                                input(type="checkbox", id="includeOld", autocomplete="off", checked)
+                                | Abgelaufene
+                        else
+                            label.btn.btn-default
+                                input(type="checkbox", id="includeOld", autocomplete="off")
+                                | Abgelaufene
+                        if includeDeleted
+                            label.btn.btn-primary.active
+                                input(type="checkbox", id="includeDeleted", autocomplete="off", checked)
+                                | Gelöschte
+                        else
+                            label.btn.btn-default
+                                input(type="checkbox", id="includeDeleted", autocomplete="off")
+                                | Gelöschte
 
     each record in Records
         div(class="row calendarListItem", data-id='#{record.id}')
             div(class="col-md-12 col-xs-12")
-                div(style="padding-left: 3px;margin-top:2px;margin-bottom:2px;background-color:#fafafa;")
-                    strong(style="padding-bottom:2px;padding-top:1px;font-size: 1.1em") #{record.event_start_date_formatted}
+                div.calendarListItemTitle
+                    strong.calendarListItemStartDate #{record.event_start_date_formatted}
                     if canEdit
                         span.glyphicon.glyphicon-edit(data-id='#{record.id}')
                     if record.notPublished
                         p.small
                             span.text-warning
                                 strong Dieser Eintrag wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
-            div(class="col-md-1 col-xs-2", style="text-align: right;border-right-width:1px;border-right-color:lightgray;border-right-style:solid")
+            div(class="col-md-1 col-xs-2 calendarListItemTime")
                 | #{record.event_start_time_formatted}
                 br
-                span(style="color: gray") #{record.event_end_time_formatted}
+                span.calendarListItemTimeEnd #{record.event_end_time_formatted}
             div(class="col-md-11 col-xs-10")
                 | #{record.Title}
                 if record.Description
                         | :&nbsp #{record.Description}
                 if record.Location
                     br
-                    span(style="color: gray") #{record.Location}
+                    span.calendarListItemLocation #{record.Location}
     if icalUrl
         div(class="col-md-12 col-xs-12")
             hr

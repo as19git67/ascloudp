@@ -62,6 +62,10 @@ h4.media-heading span.glyphicon:hover {
     overflow: hidden;
 }
 
+.calendarNew:hover {
+    cursor: pointer;
+}
+
 .calendarListItem span.glyphicon {
     padding-left: 0.5em;
 }
@@ -70,7 +74,39 @@ h4.media-heading span.glyphicon:hover {
     cursor: pointer;
 }
 
+.calendarListItemTitle {
+    padding-left: 3px;
+    margin-top: 2px;
+    margin-bottom: 2px;
+    background-color: #fafafa;
+}
+
+.calendarListItemStartDate {
+    padding-bottom: 2px;
+    padding-top: 1px;
+    font-size: 1.1em;
+}
+
+.calendarListItemTime {
+    text-align: right;
+    border-right-width: 1px;
+    border-right-color: lightgray;
+    border-right-style: solid;
+}
+
+.calendarListItemTimeEnd {
+    color: gray;
+}
+
+.calendarListItemLocation {
+    color: gray;
+}
+
 .time-picker {
     margin-left: 2em;
     max-width: 5em;
+}
+
+.filter.btn-group {
+    margin-left: 1em;
 }

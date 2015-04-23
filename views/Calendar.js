@@ -57,9 +57,13 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         icalUrl = icalUrl + "?type=ical";
     }
 
-    var includeNotPublished = req.query.includeNotPublished == undefined ? true : req.query.includeNotPublished;
-    var includeOld = req.query.includeOld == undefined ? false : req.query.includeOld;
-    var includeDeleted = req.query.includeDeleted == undefined ? false : req.query.includeDeleted;
+    var includeNotPublished = req.query.includeNotPublished === "true";
+    if (req.query.includeNotPublished === undefined) {
+        includeNotPublished = true;
+    }
+    var includeOld = req.query.includeOld === "true";
+    var includeDeleted = req.query.includeDeleted === "true";
+    console.log("inlcude notPublished: " + includeNotPublished + ", old: " + includeOld + ", deleted: " + includeDeleted);
 
     var now = new Date();
     var nowMoment = new moment(now);
@@ -69,17 +73,18 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         qb.select(['EventItems.*']);
         if (canEdit) {
             // in case user can edit, include currently not published articles
-            var q = qb.where({'Page_id': page.Name})
-                .andWhere('EventItems.valid_end', null);
+            var q = qb.where({'Page_id': page.Name}).andWhere('EventItems.valid_end', null);
             if (!includeOld) {
-                q = q.andWhere('EventItems.publish_end', '>=', now);
+                console.log("Include only not ended events");
+                q = q.andWhere('EventItems.event_end', '>=', now);
             }
             if (!includeNotPublished) {
-                q = q.andWhere('EventItems.publish_start', '>=', now);
+                console.log("Include only published");
+                q = q.andWhere('EventItems.publish_start', '<=', now);
+                q = q.andWhere('EventItems.publish_end', '>=', now);
             }
         } else {
-            qb.where({'Page_id': page.Name})
-                .andWhere('EventItems.valid_end', null)
+            qb.where({'Page_id': page.Name}).andWhere('EventItems.valid_end', null)
                 .andWhere('EventItems.publish_start', '<=', now)
                 .andWhere('EventItems.publish_end', '>=', now)
                 .andWhere('EventItems.event_end', '>=', now);
