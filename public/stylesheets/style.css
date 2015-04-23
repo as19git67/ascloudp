@@ -94,12 +94,31 @@ h4.media-heading span.glyphicon:hover {
     border-right-style: solid;
 }
 
-.calendarListItemTimeEnd {
-    color: gray;
+.calendarListItem .panel {
+    border: 0;
+    box-shadow: none;
+    border
 }
 
-.calendarListItemLocation {
-    color: gray;
+.calendarListItem .panel .panel-heading {
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 1px 5px;
+    border-bottom: none;
+}
+
+.calendarListItem .panel .panel-body {
+    padding: 3px;
+}
+
+.calendarListItem .panel blockquote {
+    padding: 1px 20px;
+    font-size: inherit;
+}
+
+.calendarListItem .panel blockquote.blockquote-reverse {
+    border-right-width: 1px;
+    margin-right: -15px;
 }
 
 .time-picker {
