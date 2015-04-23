@@ -74,30 +74,10 @@ h4.media-heading span.glyphicon:hover {
     cursor: pointer;
 }
 
-.calendarListItemTitle {
-    padding-left: 3px;
-    margin-top: 2px;
-    margin-bottom: 2px;
-    background-color: #fafafa;
-}
-
-.calendarListItemStartDate {
-    padding-bottom: 2px;
-    padding-top: 1px;
-    font-size: 1.1em;
-}
-
-.calendarListItemTime {
-    text-align: right;
-    border-right-width: 1px;
-    border-right-color: lightgray;
-    border-right-style: solid;
-}
-
 .calendarListItem .panel {
     border: 0;
     box-shadow: none;
-    border
+    margin-bottom: 0;
 }
 
 .calendarListItem .panel .panel-heading {
@@ -108,11 +88,11 @@ h4.media-heading span.glyphicon:hover {
 }
 
 .calendarListItem .panel .panel-body {
-    padding: 3px;
+    padding: 2px;
 }
 
 .calendarListItem .panel blockquote {
-    padding: 1px 20px;
+    padding: 1px 10px;
     font-size: inherit;
 }
 
