@@ -113,6 +113,7 @@ module.exports.get = function (req, res) {
             whereClause.valid_end = null;
         }
 
+        // todo: select always with deleted and order by valid_start desc. Use first row.
         new EventItem(whereClause).fetch().then(function (eventItem) {
             if (eventItem) {
                 respondWithEventItemData(req, res, eventItem);

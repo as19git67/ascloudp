@@ -4,7 +4,9 @@ var config = require('../config');
 var model = require('../model');
 var ical = require('ical-generator');
 var Event = model.models.Event;
+var EventItem = model.models.EventItem;
 
+var knex = model.bookshelf.knex;
 var appName = config.get('appName');
 
 module.exports.getical = function (req, res, next, page, pages, canEdit, collectionModelClass) {
@@ -67,99 +69,117 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
 
     var now = new Date();
     var nowMoment = new moment(now);
-    new Event().query(function (qb) {
-        qb.innerJoin('EventItems', 'Events.id', 'EventItems.Event_id');
-        qb.orderBy('event_start', 'ASC');
-        qb.select(['EventItems.*']);
-        if (canEdit) {
-            // in case user can edit, include currently not published articles
-            var q = qb.where({'Page_id': page.Name}).andWhere('EventItems.valid_end', null);
-            if (!includeOld) {
-                console.log("Include only not ended events");
-                q = q.andWhere('EventItems.event_end', '>=', now);
-            }
-            if (!includeNotPublished) {
-                console.log("Include only published");
-                q = q.andWhere('EventItems.publish_start', '<=', now);
-                q = q.andWhere('EventItems.publish_end', '>=', now);
-            }
-        } else {
-            qb.where({'Page_id': page.Name}).andWhere('EventItems.valid_end', null)
-                .andWhere('EventItems.publish_start', '<=', now)
-                .andWhere('EventItems.publish_end', '>=', now)
-                .andWhere('EventItems.event_end', '>=', now);
-        }
-    }).fetchAll().then(function (dataCollection) {
-        var records = [];
-        if (dataCollection && dataCollection.length > 0) {
-            records = dataCollection.map(function (dataModel) {
-                var notPublished = false;
-                if (nowMoment.isBefore(dataModel.get('publish_start')) || nowMoment.isAfter(dataModel.get('publish_end'))) {
-                    notPublished = true;
-                }
 
-                var timezone = dataModel.get('Timezone');
-                if (!timezone) {
-                    timezone = "Europe/Berlin";
-                }
+    var query =
+        'SELECT ee."Page_id", sub.* from public."Events" as ee ' +
+        ' INNER JOIN ' +
+        ' (' +
+        '   SELECT tt.* FROM public."EventItems" tt' +
+        '   INNER JOIN' +
+        '   ( ' +
+        '       SELECT ei."Event_id", MAX(ei.valid_start) AS max_valid_start FROM public."EventItems" ei GROUP BY ei."Event_id"' +
+        '   ) groupedtt ' +
+        '   ON (tt."Event_id" = groupedtt."Event_id" AND tt.valid_start = groupedtt.max_valid_start';
+    if (!(includeDeleted && canEdit)) {
+        console.log("Include only not deleted");
+        query += ' and tt.valid_end is null';
+    }
+    if (!(includeNotPublished && canEdit)) {
+        console.log("Include only published");
+        query += ' and tt.event_start <= \'' + now.toISOString() + '\' and tt.publish_start <= \'' + now.toISOString() + '\'';
+    }
+    if (!(includeOld && canEdit)) {
+        console.log("Include only not ended events");
+        query += ' and tt.publish_end >= \'' + now.toISOString() + '\'';
+    }
+    query += ' )';
+    query += ' ) as sub ' +
+        ' ON ("sub"."Event_id" = "ee"."id") where "ee"."Page_id" = \'' + page.Name + '\'';
+    knex.raw(query)
+        .then(function (dataCollection) {
+            var records = [];
+            if (dataCollection.rows && dataCollection.rowCount > 0) {
+                records = dataCollection.rows.map(function (dataObject) {
+                    var dataModel = new EventItem(dataObject);
+                    var pastEvent = false;
+                    if (nowMoment.isAfter(dataModel.get('publish_end'))) {
+                        pastEvent = true;
+                    }
+                    var futureEvent = false;
+                    if (nowMoment.isBefore(dataModel.get('publish_start'))) {
+                        futureEvent = true;
+                    }
+                    var deletedEvent = false;
+                    var validEnd = dataModel.get('valid_end');
+                    if (validEnd) {
+                        deletedEvent = true;
+                    }
 
-                var dataObj = {
-                    id: dataModel.get('Event_id'),
-                    Title: dataModel.get('Title'),
-                    Location: dataModel.get('Location'),
-                    Description: dataModel.get('Description'),
-                    event_start: dataModel.get('event_start'),
-                    event_end: dataModel.get('event_end'),
-                    publish_start: dataModel.get('publish_start'),
-                    publish_end: dataModel.get('publish_end'),
-                    event_start_time_formatted: moment(dataModel.get('event_start')).tz(timezone).format('HH:mm'),
-                    event_end_time_formatted: moment(dataModel.get('event_end')).tz(timezone).format('HH:mm'),
-                    event_start_date_formatted: moment(dataModel.get('event_start')).tz(timezone).format('dddd, D. MMMM YYYY'),
-                    event_end_date_formatted: moment(dataModel.get('event_end')).tz(timezone).format('dd., D. MMM'),
-                    event_start_formatted: moment(dataModel.get('event_start')).tz(timezone).format('L HH:mm'),
-                    event_end_formatted: moment(dataModel.get('event_end')).tz(timezone).format('L HH:mm'),
-                    publish_start_formatted: moment(dataModel.get('publish_start')).tz(timezone).format('L HH:mm'),
-                    publish_end_formatted: moment(dataModel.get('publish_end')).tz(timezone).format('L HH:mm'),
-                    timezone: timezone,
-                    notPublished: notPublished
-                };
-                return dataObj;
-            });
-            res.render(page.View, {
-                csrfToken: req.csrfToken(),
-                bootstrapTheme: config.get('bootstrapStyle'),
-                canEdit: canEdit,
-                appName: appName,
-                title: page.EntityNamePlural,
-                user: req.user,
-                pages: pages,
-                page: page,
-                Records: records,
-                includeNotPublished: includeNotPublished,
-                includeDeleted: includeDeleted,
-                includeOld: includeOld,
-                icalUrl: icalUrl
-            });
-        } else {
-            res.render(page.View, {
-                csrfToken: req.csrfToken(),
-                bootstrapTheme: config.get('bootstrapStyle'),
-                canEdit: canEdit,
-                appName: appName,
-                title: page.EntityNamePlural,
-                user: req.user,
-                pages: pages,
-                page: page,
-                includeNotPublished: includeNotPublished,
-                includeDeleted: includeDeleted,
-                includeOld: includeOld,
-                Records: []
-            });
-        }
-    }).catch(function (error) {
-        console.log("Error while retrieving Events from the database: " + error);
-        var err = new Error(error);
-        err.status = 500;
-        next(err);
-    });
+                    var timezone = dataModel.get('Timezone');
+                    if (!timezone) {
+                        timezone = "Europe/Berlin";
+                    }
+
+                    var dataObj = {
+                        id: dataModel.get('Event_id'),
+                        Title: dataModel.get('Title'),
+                        Location: dataModel.get('Location'),
+                        Description: dataModel.get('Description'),
+                        event_start: dataModel.get('event_start'),
+                        event_end: dataModel.get('event_end'),
+                        publish_start: dataModel.get('publish_start'),
+                        publish_end: dataModel.get('publish_end'),
+                        event_start_time_formatted: moment(dataModel.get('event_start')).tz(timezone).format('HH:mm'),
+                        event_end_time_formatted: moment(dataModel.get('event_end')).tz(timezone).format('HH:mm'),
+                        event_start_date_formatted: moment(dataModel.get('event_start')).tz(timezone).format('dddd, D. MMMM YYYY'),
+                        event_end_date_formatted: moment(dataModel.get('event_end')).tz(timezone).format('dd., D. MMM'),
+                        event_start_formatted: moment(dataModel.get('event_start')).tz(timezone).format('L HH:mm'),
+                        event_end_formatted: moment(dataModel.get('event_end')).tz(timezone).format('L HH:mm'),
+                        publish_start_formatted: moment(dataModel.get('publish_start')).tz(timezone).format('L HH:mm'),
+                        publish_end_formatted: moment(dataModel.get('publish_end')).tz(timezone).format('L HH:mm'),
+                        timezone: timezone,
+                        pastEvent: pastEvent,
+                        futureEvent: futureEvent,
+                        deletedEvent: deletedEvent
+
+                    };
+                    return dataObj;
+                });
+                res.render(page.View, {
+                    csrfToken: req.csrfToken(),
+                    bootstrapTheme: config.get('bootstrapStyle'),
+                    canEdit: canEdit,
+                    appName: appName,
+                    title: page.EntityNamePlural,
+                    user: req.user,
+                    pages: pages,
+                    page: page,
+                    Records: records,
+                    includeNotPublished: includeNotPublished,
+                    includeDeleted: includeDeleted,
+                    includeOld: includeOld,
+                    icalUrl: icalUrl
+                });
+            } else {
+                res.render(page.View, {
+                    csrfToken: req.csrfToken(),
+                    bootstrapTheme: config.get('bootstrapStyle'),
+                    canEdit: canEdit,
+                    appName: appName,
+                    title: page.EntityNamePlural,
+                    user: req.user,
+                    pages: pages,
+                    page: page,
+                    includeNotPublished: includeNotPublished,
+                    includeDeleted: includeDeleted,
+                    includeOld: includeOld,
+                    Records: []
+                });
+            }
+        }).catch(function (error) {
+            console.log("Error while retrieving Events from the database: " + error);
+            var err = new Error(error);
+            err.status = 500;
+            next(err);
+        });
 };
