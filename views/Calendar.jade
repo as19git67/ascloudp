@@ -48,16 +48,16 @@ block content
                             span.glyphicon.glyphicon-edit(data-id='#{record.id}')
                     if record.deletedEvent
                         p.small
-                            span.text-danger
+                            span.text-warning
                                 strong Dieser Eintrag ist gelöscht
                     else
                         if record.pastEvent
                             p.small
-                                span.text-warning
+                                span.text-info
                                     strong Dieser Eintrag wurde von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
                         if record.futureEvent
                             p.small
-                                span.text-active
+                                span.text-success
                                     strong Dieser Eintrag wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
                     div.panel-body
                         div(class="col-md-1 col-xs-2")
