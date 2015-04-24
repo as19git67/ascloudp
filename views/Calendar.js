@@ -94,7 +94,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
     }
     query += ' )';
     query += ' ) as sub ' +
-        ' ON ("sub"."Event_id" = "ee"."id") where "ee"."Page_id" = \'' + page.Name + '\'';
+        ' ON ("sub"."Event_id" = "ee"."id") where "ee"."Page_id" = \'' + page.Name + '\' order by "sub"."event_start"';
     knex.raw(query)
         .then(function (dataCollection) {
             var records = [];
