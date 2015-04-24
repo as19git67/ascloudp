@@ -86,7 +86,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
     }
     if (!(includeNotPublished && canEdit)) {
         console.log("Include only published");
-        query += ' and tt.event_start <= \'' + now.toISOString() + '\' and tt.publish_end >= \'' + now.toISOString() + '\'';
+        query += ' and tt.publish_start <= \'' + now.toISOString() + '\' and tt.publish_end >= \'' + now.toISOString() + '\'';
     }
     if (!(includeOld && canEdit)) {
         console.log("Include only not ended events");
