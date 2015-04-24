@@ -13,7 +13,7 @@ function getEventItemSchema() {
         var tableName = new EventItem().tableName;
         knex(tableName).columnInfo()
             .then(function (eventItemSchema) {
-                _.each(eventItemSchema, function(schemaItem) {
+                _.each(eventItemSchema, function (schemaItem) {
                     schemaItem.required = !schemaItem.nullable;
                 });
                 var event_schema = {
@@ -63,6 +63,7 @@ function getEventItemSchema() {
 function respondWithEventItemData(req, res, eventItem) {
     getEventItemSchema().then(function (event_schema) {
 
+        var deleted = eventItem.get('valid_end') != undefined;
         var csrfToken = req.csrfToken();
         res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
         res.json(
@@ -75,7 +76,8 @@ function respondWithEventItemData(req, res, eventItem) {
                     event_start: eventItem.get('event_start'),
                     event_end: eventItem.get('event_end'),
                     publish_start: eventItem.get('publish_start'),
-                    publish_end: eventItem.get('publish_end')
+                    publish_end: eventItem.get('publish_end'),
+                    deleted: deleted
                 },
                 event_schema: event_schema
             }
@@ -104,29 +106,27 @@ module.exports.get = function (req, res) {
         });
     } else {
         var eventId = req.params.id;
-        var whereClause = {Event_id: eventId};
-        var includeDeleted = false;
-        if (req.query && req.query.include && req.query.include.indexOf("deleted") >= -1) {
-            includeDeleted = true;
-        }
-        if (includeDeleted == false) {
-            whereClause.valid_end = null;
-        }
 
-        // todo: select always with deleted and order by valid_start desc. Use first row.
-        new EventItem(whereClause).fetch().then(function (eventItem) {
-            if (eventItem) {
-                respondWithEventItemData(req, res, eventItem);
-            } else {
-                res.statusCode = 404;
-                res.send('Error 404: Event with id ' + eventId + ' not found');
-            }
+        new EventItem()
+            .query(function (qb) {
+                qb.where({Event_id: eventId});
+                qb.orderBy('valid_start', 'DESC');
+            })
+            .fetchAll()
+            .then(function (eventItems) {
+                if (eventItems && eventItems.length > 0) {
+                    var eventItem = eventItems.at(0);
+                    respondWithEventItemData(req, res, eventItem);
+                } else {
+                    res.statusCode = 404;
+                    res.send('Error 404: Event with id ' + eventId + ' not found');
+                }
 
-        }).catch(function (error) {
-            console.log("Error while reading events from database: " + error);
-            res.statusCode = 500;
-            return res.send('Error 500: reading of events from database failed');
-        });
+            }).catch(function (error) {
+                console.log("Error while reading events from database: " + error);
+                res.statusCode = 500;
+                return res.send('Error 500: reading of events from database failed');
+            });
     }
 };
 
@@ -136,60 +136,63 @@ module.exports.put = function (req, res) {
 
     model.bookshelf.transaction(function (t) {
 
-        new EventItem({Event_id: eventId, valid_end: null}).fetch().then(function (eventItem) {
-            if (eventItem) {
-                // invalidate current eventItem record
-                var now = new Date();
-                eventItem.set('valid_end', now);
-                eventItem.save(null, {transacting: t}).then(function () {
+        new EventItem({Event_id: eventId, valid_end: null})
+            .fetch()
+            .then(function (eventItem) {
+                if (eventItems && eventItems.length > 0) {
+                    var eventItem = eventItems.first();
+                    // invalidate current eventItem record
+                    var now = new Date();
+                    eventItem.set('valid_end', now);
+                    eventItem.save(null, {transacting: t}).then(function () {
 
-                    // create new eventItem
-                    new EventItem({
-                        Event_id: eventId,
-                        Title: req.body.title,
-                        Location: req.body.location,
-                        Description: req.body.description,
-                        event_start: req.body.event_start,
-                        event_end: req.body.event_end,
-                        publish_start: req.body.publish_start,
-                        publish_end: req.body.publish_end,
-                        Timezone: req.body.timezone,
-                        valid_start: now
-                    }).save(null, {transacting: t}).then(function (savedEventItem) {
-                            var userName = req.user.UserName ? req.user.UserName : req.user.id;
-                            new Audit({
-                                    ChangedAt: new Date(),
-                                    Table: savedEventItem.tableName,
-                                    ChangedBy: userName,
-                                    Description: "EventItem changed by user " + userName + ". Id of new item in EventItems is " + savedEventItem.id
-                                }
-                            ).save().then(function () {
-                                    t.commit(savedEventItem);
-                                }).catch(function (error) {
-                                    console.log("Error while saving Audit for new EventItem to database:", error);
-                                    console.log("Roll back transaction");
-                                    t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
-                                });
-                        }).catch(function (error) {
-                            console.log("Error while saving new EventItem to database:", error);
-                            console.log("Roll back transaction");
-                            t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
-                        });
-                }).catch(function (error) {
-                    console.log("Error while updating EventItem in database:", error);
-                    console.log("Roll back transaction");
-                    t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
-                });
-            } else {
-                console.log("Event with id " + eventId + " not found. Rolling back transaction");
-                t.rollback({statusCode: 404, message: 'Error 404: Event with id ' + eventId + ' not found'});
-            }
+                        // create new eventItem
+                        new EventItem({
+                            Event_id: eventId,
+                            Title: req.body.title,
+                            Location: req.body.location,
+                            Description: req.body.description,
+                            event_start: req.body.event_start,
+                            event_end: req.body.event_end,
+                            publish_start: req.body.publish_start,
+                            publish_end: req.body.publish_end,
+                            Timezone: req.body.timezone,
+                            valid_start: now
+                        }).save(null, {transacting: t}).then(function (savedEventItem) {
+                                var userName = req.user.UserName ? req.user.UserName : req.user.id;
+                                new Audit({
+                                        ChangedAt: new Date(),
+                                        Table: savedEventItem.tableName,
+                                        ChangedBy: userName,
+                                        Description: "EventItem changed by user " + userName + ". Id of new item in EventItems is " + savedEventItem.id
+                                    }
+                                ).save().then(function () {
+                                        t.commit(savedEventItem);
+                                    }).catch(function (error) {
+                                        console.log("Error while saving Audit for new EventItem to database:", error);
+                                        console.log("Roll back transaction");
+                                        t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
+                                    });
+                            }).catch(function (error) {
+                                console.log("Error while saving new EventItem to database:", error);
+                                console.log("Roll back transaction");
+                                t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
+                            });
+                    }).catch(function (error) {
+                        console.log("Error while updating EventItem in database:", error);
+                        console.log("Roll back transaction");
+                        t.rollback({statusCode: 500, message: 'Error 500: saving of events to database failed'});
+                    });
+                } else {
+                    console.log("Event with id " + eventId + " not found. Rolling back transaction");
+                    t.rollback({statusCode: 404, message: 'Error 404: Event with id ' + eventId + ' not found'});
+                }
 
-        }).catch(function (error) {
-            console.log("Error while reading events from database:", error);
-            console.log("Roll back transaction");
-            t.rollback({statusCode: 500, message: 'Error 500: reading of event from database failed'});
-        });
+            }).catch(function (error) {
+                console.log("Error while reading events from database:", error);
+                console.log("Roll back transaction");
+                t.rollback({statusCode: 500, message: 'Error 500: reading of event from database failed'});
+            });
     }).then(function (savedItem) {
         console.log("Transaction (saving eventItem) committed");
         if (savedItem) {
