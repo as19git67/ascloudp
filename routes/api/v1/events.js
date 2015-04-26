@@ -136,9 +136,13 @@ module.exports.put = function (req, res) {
 
     model.bookshelf.transaction(function (t) {
 
-        new EventItem({Event_id: eventId, valid_end: null})
-            .fetch()
-            .then(function (eventItem) {
+        new EventItem()
+            .query(function (qb) {
+                qb.where({Event_id: eventId});
+                qb.orderBy('valid_start', 'DESC');
+            })
+            .fetchAll()
+            .then(function (eventItems) {
                 if (eventItems && eventItems.length > 0) {
                     var eventItem = eventItems.first();
                     // invalidate current eventItem record
