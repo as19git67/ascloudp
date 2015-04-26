@@ -13,7 +13,7 @@ block content
         input(type="hidden", value="#{csrfToken}" name="_csrf")
         if setPassword
             h4 Passwort setzen
-            span.small (Es wird das Passwort für #{appName} gesetzt, nicht bei Facebook, Twitter, Google, etc)
+            span.small (Es wird das Passwort für die Benutzerkennung #{user.UserName} bei #{appName} gesetzt, nicht bei Facebook, Twitter, Google, etc)
             hr
             div(class="validation-summary-valid text-danger", data-valmsg-summary="true")
                 ul
