@@ -48,6 +48,15 @@ block content
                                 | &nbsp #{role.Name}
                             br
             div.form-group
+                label(for="resetPassword",class="col-xs-12 col-md-2 control-label") Reset Passwort:
+                div(class="col-xs-7 col-md-7 col-lg-8")
+                    input(class="form-control", placeholder='Neues Passwort', id="resetPassword", name="resetPassword", type="text", value="")
+                div(class="col-xs-5 col-md-3 col-lg-2")
+                    div.checkbox
+                        label
+                            input(id="resetPasswordConfirmed", name="resetPasswordConfirmed", type="checkbox", value="resetPasswordConfirmed")
+                            | &nbsp Bestätigen
+            div.form-group
                 button(class="btn btn-default", id="save", value="save", name="save")
                     span(class="glyphicon glyphicon-save")
                     | &nbsp Änderungen speichern

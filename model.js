@@ -1352,6 +1352,43 @@ var checkPassword = function (hashedPassword, password, salt) {
     return encryptPassword(password, salt) === hashedPassword;
 };
 
+var saveNewPassword = function (userModel, newPassword) {
+    return new Promise(function (resolve, reject) {
+        model.bookshelf.transaction(function (t) {
+            var salt = model.createSalt();
+            userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
+            userModel.set('PasswordSalt', salt);
+            userModel.save(null, {transacting: t})
+                .then(function () {
+                    new Audit({
+                        ChangedAt: new Date(),
+                        Table: userModel.tableName,
+                        ChangedBy: userModel.get('UserName'),
+                        Description: "Password changed"
+                    }).save(null, {transacting: t})
+                        .then(function (auditEntry) {
+                            t.commit();
+                        })
+                        .catch(function (err) {
+                            console.log("Error while saving audit for password change:", err);
+                            t.rollback("Speichern der Auditinformationen in der Datenbank für die Passwortänderung gescheitert. Das Passwort wurde nicht geändert.");
+                        });
+                })
+                .catch(function (err) {
+                    console.log("Error while saving UserModel for password change:", err);
+                    t.rollback("Speichern der Benutzerinformationen in der Datenbank für die Passwortänderung gescheitert. Das Passwort wurde nicht geändert.");
+                });
+        })
+            .then(function () {
+                console.log("Password changed for " + userModel.get('UserName'));
+                resolve();
+            })
+            .catch(function (err) {
+                reject(err);
+            });
+    });
+};
+
 // Always resolve with pages array, even if an error occurs. Then pages is [].
 var getPages = function () {
     return new Promise(function (resolve, reject) {
@@ -1519,6 +1556,7 @@ var formatPhoneNumber = function (phoneNumber) {
 module.exports.createSalt = createSalt;
 module.exports.encryptPassword = encryptPassword;
 module.exports.checkPassword = checkPassword;
+module.exports.saveNewPassword = saveNewPassword;
 module.exports.getPages = getPages;
 module.exports.getPagesForUser = getPagesForUser;
 module.exports.formatDateTime = formatDateTime;

@@ -37,41 +37,33 @@ router.get('/', passportStrategies.ensureAuthenticated, function (req, res, next
     }
 });
 
+
 router.post('/', passportStrategies.ensureAuthenticated, function (req, res, next) {
     if (req.user) {
         if (req.body.changePassword || req.body.setPassword) {
-            console.log('Changing/Setting password for user with id ' + req.user.id);
-            new User({'id': req.user.id}).fetch({
+            var userId = req.user.id;
+            console.log('Changing/Setting password for user with id ' + userId);
+            new User({'id': userId}).fetch({
                 withRelated: ['UserLogin']
             }).then(function (userModel) {
                 model.getPagesForUser(req.user).then(function (pages) {
+
                     function setPassword(newPassword, responseData) {
-                        var salt = model.createSalt();
-                        userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
-                        userModel.set('PasswordSalt', salt);
-                        userModel.save().then(function () {
-                            new Audit({
-                                    ChangedAt: new Date(),
-                                    Table: userModel.tableName,
-                                    ChangedBy: userModel.get('UserName'),
-                                    Description: "Password changed"
+                        model.saveNewPassword(userModel, newPassword)
+                            .then(function () {
+                                if (responseData.setPassword) {
+                                    responseData.info = "Das Passwort wurde gesetzt.";
+                                    responseData.setPassword = false;   // next time allow changing the password
+                                } else {
+                                    responseData.info = "Das Passwort wurde geändert.";
                                 }
-                            ).save().then(function () {
-                                    if (responseData.setPassword) {
-                                        responseData.info = "Das Passwort wurde gesetzt.";
-                                        responseData.setPassword = false;   // next time allow changing the password
-                                    } else {
-                                        responseData.info = "Das Passwort wurde geändert.";
-                                    }
-                                    res.render('loginManageAccount', responseData);
-                                }
-                            );
-                        }).catch(function (error) {
-                            console.log("Error while accessing users in the database: " + error);
-                            var err = new Error(error);
-                            err.status = 500;
-                            next(err);
-                        });
+                                res.render('loginManageAccount', responseData);
+                            }).catch(function (error) {
+                                console.log("Error while updating user in the database: " + error);
+                                var err = new Error(error);
+                                err.status = 500;
+                                next(err);
+                            });
                     }
 
                     if (userModel) {
@@ -134,7 +126,8 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                 new UserLogin({
                     LoginProvider: provider,
                     ProviderKey: providerKey,
-                    User_id: user_id}).fetch({
+                    User_id: user_id
+                }).fetch({
                         withRelated: ['User']
                     }).then(function (userLogin) {
                         model.getPagesForUser(req.user).then(function (pages) {
@@ -225,18 +218,18 @@ function prepareResponseDataFromUser(userModel, pages, req) {
 
             // disable buttons for already associated login providers
             switch (provider) {
-            case 'azure':
-                canAssociateWithAzure = false;
-                break;
-            case 'twitter':
-                canAssociateWithTwitter = false;
-                break;
-            case 'google':
-                canAssociateWithGoogle = false;
-                break;
-            case 'facebook':
-                canAssociateWithFacebook = false;
-                break;
+                case 'azure':
+                    canAssociateWithAzure = false;
+                    break;
+                case 'twitter':
+                    canAssociateWithTwitter = false;
+                    break;
+                case 'google':
+                    canAssociateWithGoogle = false;
+                    break;
+                case 'facebook':
+                    canAssociateWithFacebook = false;
+                    break;
             }
 
         });

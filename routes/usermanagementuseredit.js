@@ -19,7 +19,7 @@ var appName = config.get('appName');
 
 /* GET user list page. */
 function prepareResponse(userId) {
-    return  new Promise(function (resolve, reject) {
+    return new Promise(function (resolve, reject) {
         new User({'id': userId}).fetch({
             withRelated: ['UserLogin', 'UserRole.Role']
         }).then(function (user) {
@@ -64,7 +64,7 @@ function prepareResponse(userId) {
                         var roleId = roleModel.get('id');
                         var roleName = roleModel.get('Name');
                         var assignedToUser = roleHash[roleId] != undefined;
-                        userObj.roles.push({ id: roleId, Name: roleName, assignedToUser: assignedToUser});
+                        userObj.roles.push({id: roleId, Name: roleName, assignedToUser: assignedToUser});
                     });
                     resolve({userObj: userObj, userModel: user});
                 }).catch(function (error) {
@@ -176,157 +176,187 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                         userModel.set('UserName', req.body.username);
                                         userNameChanged = true;
                                     }
-
-                                    new Role().fetchAll()
-                                        .then(function (roleList) {
-
-                                            new UserRole().where({User_id: userId}).fetchAll().then(function (userRoleModels) {
-                                                var allRoleNamesById = {};
-                                                var checkUserRoles = {};
-                                                userRoleModels.each(function (userRoleModel) {
-                                                    var rId = userRoleModel.get('Role_id');
-                                                    var uId = userRoleModel.get('User_id');
-                                                    console.log("UserRole for user " + userId + ": role " + rId + ", user: " + uId);
-                                                    checkUserRoles[rId] = rId;
+                                    var passwordChanged = false;
+                                    new Promise(function (resolve, reject) {
+                                        if (req.body.resetPasswordConfirmed == 'resetPasswordConfirmed' && req.body.resetPassword && req.body.resetPassword.trim().length > 0) {
+                                            model.saveNewPassword(userModel, req.body.resetPassword.trimRight())
+                                                .then(function () {
+                                                    console.log("Password reset done for " + userModel.get("UserName"));
+                                                    passwordChanged = true;
+                                                    resolve();
+                                                })
+                                                .catch(function (err) {
+                                                    reject(err);
                                                 });
+                                        } else {
+                                            resolve();
+                                        }
+                                    })
+                                        .then(function () {
+                                            new Role().fetchAll()
+                                                .then(function (roleList) {
 
-                                                var rolesToAdd = [];
-                                                var rolesToRemove = [];
-                                                roleList.each(function (roleModel) {
-                                                    var roleId = roleModel.get('id');
-                                                    var roleName = roleModel.get('Name');
-                                                    var formPostName = "cb_role_" + roleId;
-                                                    var assignToUser = req.body[formPostName] == roleId;
-                                                    allRoleNamesById[roleId] = roleName;
-                                                    if (checkUserRoles[roleId]) {
-                                                        console.log("Role " + roleId + " (" + roleName + ") was assigned before");
-                                                        if (!assignToUser) {
-                                                            rolesToRemove.push(roleId);
-                                                            console.log("REMOVE role (" + roleName + ") from user");
-                                                        }
-                                                    }
-                                                    else {
-                                                        console.log("Role " + roleId + " (" + roleName + ") was not assigned before");
-                                                        if (assignToUser) {
-                                                            rolesToAdd.push({User_id: userId, Role_id: roleId});
-                                                            console.log("ASSIGN role (" + roleName + ") to user");
-                                                        }
-                                                    }
-                                                });
+                                                    new UserRole().where({User_id: userId}).fetchAll().then(function (userRoleModels) {
+                                                        var allRoleNamesById = {};
+                                                        var checkUserRoles = {};
+                                                        userRoleModels.each(function (userRoleModel) {
+                                                            var rId = userRoleModel.get('Role_id');
+                                                            var uId = userRoleModel.get('User_id');
+                                                            console.log("UserRole for user " + userId + ": role " + rId + ", user: " + uId);
+                                                            checkUserRoles[rId] = rId;
+                                                        });
 
-                                                function renderResponse(info) {
-                                                    prepareResponse(userId).then(function (data) {
-                                                        var userObj = data.userObj;
+                                                        var rolesToAdd = [];
+                                                        var rolesToRemove = [];
+                                                        roleList.each(function (roleModel) {
+                                                            var roleId = roleModel.get('id');
+                                                            var roleName = roleModel.get('Name');
+                                                            var formPostName = "cb_role_" + roleId;
+                                                            var assignToUser = req.body[formPostName] == roleId;
+                                                            allRoleNamesById[roleId] = roleName;
+                                                            if (checkUserRoles[roleId]) {
+                                                                console.log("Role " + roleId + " (" + roleName + ") was assigned before");
+                                                                if (!assignToUser) {
+                                                                    rolesToRemove.push(roleId);
+                                                                    console.log("REMOVE role (" + roleName + ") from user");
+                                                                }
+                                                            }
+                                                            else {
+                                                                console.log("Role " + roleId + " (" + roleName + ") was not assigned before");
+                                                                if (assignToUser) {
+                                                                    rolesToAdd.push({User_id: userId, Role_id: roleId});
+                                                                    console.log("ASSIGN role (" + roleName + ") to user");
+                                                                }
+                                                            }
+                                                        });
 
-                                                        if (typeof userObj === "string") {
-                                                            res.redirect(userObj);
-                                                        } else {
-                                                            res.render('usermanagementuseredit', {
-                                                                csrfToken: req.csrfToken(),
-                                                                bootstrapTheme: config.get('bootstrapStyle'),
-                                                                appName: appName,
-                                                                title: title,
-                                                                user: req.user,
-                                                                pages: pages,
-                                                                info: info,
-                                                                userData: userObj
+                                                        function renderResponse(info) {
+                                                            prepareResponse(userId).then(function (data) {
+                                                                var userObj = data.userObj;
+
+                                                                if (typeof userObj === "string") {
+                                                                    res.redirect(userObj);
+                                                                } else {
+                                                                    res.render('usermanagementuseredit', {
+                                                                        csrfToken: req.csrfToken(),
+                                                                        bootstrapTheme: config.get('bootstrapStyle'),
+                                                                        appName: appName,
+                                                                        title: title,
+                                                                        user: req.user,
+                                                                        pages: pages,
+                                                                        info: info,
+                                                                        userData: userObj
+                                                                    });
+                                                                }
+                                                            }).catch(function (error) {
+                                                                var err = new Error(error);
+                                                                err.status = 500;
+                                                                next(err);
                                                             });
                                                         }
-                                                    }).catch(function (error) {
-                                                        var err = new Error(error);
-                                                        err.status = 500;
-                                                        next(err);
-                                                    });
-                                                }
 
-                                                function adjustRoleAssignments(haveOtherChanges) {
-                                                    var savedMessage = "Die Änderungen wurden gespeichert.";
+                                                        function adjustRoleAssignments(haveOtherChanges) {
+                                                            var savedMessage = "Die Änderungen wurden gespeichert.";
 
-                                                    function handleRoleUnassignments() {
-                                                        model.bookshelf.knex('UserRoles').where('User_id', userId).whereIn('Role_id',
-                                                            rolesToRemove).del().then(function () {
-                                                                var rolesFormatted = makeRoleNamesFormatted(rolesToRemove, allRoleNamesById);
-                                                                var changeText = "Roles removed from user " + origUserName + " (" + userId + "): " +
-                                                                                 rolesFormatted;
+                                                            function handleRoleUnassignments() {
+                                                                model.bookshelf.knex('UserRoles').where('User_id', userId).whereIn('Role_id',
+                                                                    rolesToRemove).del().then(function () {
+                                                                        var rolesFormatted = makeRoleNamesFormatted(rolesToRemove, allRoleNamesById);
+                                                                        var changeText = "Roles removed from user " + origUserName + " (" + userId + "): " +
+                                                                            rolesFormatted;
+                                                                        new Audit({
+                                                                                ChangedAt: new Date(),
+                                                                                Table: 'UserRoles',
+                                                                                ChangedBy: req.user.UserName,
+                                                                                Description: changeText
+                                                                            }
+                                                                        ).save().then(function () {
+                                                                                renderResponse(savedMessage);
+                                                                            }
+                                                                        );
+                                                                    });
+                                                            }
+
+                                                            if (rolesToAdd.length > 0) {
+                                                                var userRolesToAdd = UserRoles.forge(rolesToAdd);
+                                                                Promise.all(userRolesToAdd.invoke('save')).then(function () {
+                                                                    var rolesFormatted = makeRoleNamesFormatted(rolesToAdd, allRoleNamesById);
+                                                                    var changeText = "Roles added to user " + origUserName + " (" + userId + "): " + rolesFormatted;
+                                                                    var tableName = userRolesToAdd.models[0].tableName;
+                                                                    new Audit({
+                                                                            ChangedAt: new Date(),
+                                                                            Table: tableName,
+                                                                            ChangedBy: req.user.UserName,
+                                                                            Description: changeText
+                                                                        }
+                                                                    ).save().then(function () {
+                                                                            if (rolesToRemove.length > 0) {
+                                                                                handleRoleUnassignments();
+                                                                            } else {
+                                                                                renderResponse(savedMessage);
+                                                                            }
+                                                                        }
+                                                                    );
+                                                                });
+                                                            } else {
+                                                                if (rolesToRemove.length > 0) {
+                                                                    handleRoleUnassignments();
+                                                                } else {
+                                                                    if (haveOtherChanges) {
+                                                                        renderResponse(savedMessage);
+                                                                    } else {
+                                                                        renderResponse("Nichts wurde geändert und deshalb wurde nichts gespeichert.");
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+
+                                                        if (emailChanged || userNameChanged) {
+                                                            userModel.save().then(function () {
                                                                 new Audit({
                                                                         ChangedAt: new Date(),
-                                                                        Table: 'UserRoles',
+                                                                        Table: userModel.tableName,
                                                                         ChangedBy: req.user.UserName,
                                                                         Description: changeText
                                                                     }
                                                                 ).save().then(function () {
-                                                                        renderResponse(savedMessage);
+                                                                        adjustRoleAssignments(true);
                                                                     }
                                                                 );
+                                                            }).catch(function (error) {
+                                                                console.log("ERROR while saving user: " + error);
+                                                                res.render('usermanagementuseredit', {
+                                                                    csrfToken: req.csrfToken(),
+                                                                    bootstrapTheme: config.get('bootstrapStyle'),
+                                                                    appName: appName,
+                                                                    title: title,
+                                                                    user: req.user,
+                                                                    pages: pages,
+                                                                    error: "Fehler beim Speichern der Benutzerinformationen.",
+                                                                    userData: userObj
+                                                                });
                                                             });
-                                                    }
-
-                                                    if (rolesToAdd.length > 0) {
-                                                        var userRolesToAdd = UserRoles.forge(rolesToAdd);
-                                                        Promise.all(userRolesToAdd.invoke('save')).then(function () {
-                                                            var rolesFormatted = makeRoleNamesFormatted(rolesToAdd, allRoleNamesById);
-                                                            var changeText = "Roles added to user " + origUserName + " (" + userId + "): " + rolesFormatted;
-                                                            var tableName = userRolesToAdd.models[0].tableName;
-                                                            new Audit({
-                                                                    ChangedAt: new Date(),
-                                                                    Table: tableName,
-                                                                    ChangedBy: req.user.UserName,
-                                                                    Description: changeText
-                                                                }
-                                                            ).save().then(function () {
-                                                                    if (rolesToRemove.length > 0) {
-                                                                        handleRoleUnassignments();
-                                                                    } else {
-                                                                        renderResponse(savedMessage);
-                                                                    }
-                                                                }
-                                                            );
-                                                        });
-                                                    } else {
-                                                        if (rolesToRemove.length > 0) {
-                                                            handleRoleUnassignments();
-                                                        } else {
-                                                            if (haveOtherChanges) {
-                                                                renderResponse(savedMessage);
-                                                            } else {
-                                                                renderResponse("Nichts wurde geändert und deshalb wurde nichts gespeichert.");
-                                                            }
                                                         }
-                                                    }
-                                                }
-
-                                                if (emailChanged || userNameChanged) {
-                                                    userModel.save().then(function () {
-                                                        new Audit({
-                                                                ChangedAt: new Date(),
-                                                                Table: userModel.tableName,
-                                                                ChangedBy: req.user.UserName,
-                                                                Description: changeText
-                                                            }
-                                                        ).save().then(function () {
-                                                                adjustRoleAssignments(true);
-                                                            }
-                                                        );
-                                                    }).catch(function (error) {
-                                                        console.log("ERROR while saving user: " + error);
-                                                        res.render('usermanagementuseredit', {
-                                                            csrfToken: req.csrfToken(),
-                                                            bootstrapTheme: config.get('bootstrapStyle'),
-                                                            appName: appName,
-                                                            title: title,
-                                                            user: req.user,
-                                                            pages: pages,
-                                                            error: "Fehler beim Speichern der Benutzerinformationen.",
-                                                            userData: userObj
-                                                        });
+                                                        else {
+                                                            adjustRoleAssignments(passwordChanged);
+                                                        }
                                                     });
-                                                }
-                                                else {
-                                                    adjustRoleAssignments(false);
-                                                }
-                                            });
-                                        });
+                                                });
 
+                                        })
+                                        .catch(function (error) {
+                                            res.render('usermanagementuseredit', {
+                                                csrfToken: req.csrfToken(),
+                                                bootstrapTheme: config.get('bootstrapStyle'),
+                                                appName: appName,
+                                                title: title,
+                                                user: req.user,
+                                                pages: pages,
+                                                error: error,
+                                                userData: userObj
+                                            });
+
+                                        });
                                 }
                                 else {
                                     var infoMessage = "Externer Login wurde nicht gelöscht.";
