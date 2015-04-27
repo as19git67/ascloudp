@@ -46,7 +46,10 @@ router.get('/:pageId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                         title: title,
                         user: req.user,
                         pages: pages,
-                        pageData: pageObj
+                        pageData: pageObj,
+                        models: ['PageContent'],
+                        collections: ['Articles', 'Contacts', 'Events', 'Links', 'Persons'],
+                        views: ['genericHTML', 'Articles', 'Calendar', 'Contacts', 'Links', 'Members']
                     });
                 }).catch(function (error) {
                     var err = new Error(error);

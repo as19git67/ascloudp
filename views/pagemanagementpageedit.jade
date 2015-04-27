@@ -1,7 +1,8 @@
 extends layout
 block content
     h2= title
-    h4 Seiteneinstellungen
+    h4 Einstellungen für Seite
+        strong #{pageData.Name}
     if error
         p.text-danger #{error}
     if info
@@ -13,3 +14,72 @@ block content
         form(action="/admin/pagemanagementpageedit",class="form-horizontal", method="post", role="form", novalidate="novalidate")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
             div.form-group
+                label(for="name",class="col-md-1 control-label") Name:
+                div(class="col-md-11")
+                    input(class="form-control", data-val="true",
+                    data-val-required="Der Seitenname muss eingegeben werden.",
+                    placeholder='Seitenname',
+                    id="name", name="name", type="text", value="#{pageData.Name}")
+                    span(class="field-validation-valid text-danger", data-valmsg-for="name", data-valmsg-replace="true")
+            div.form-group
+                label(for="AnonymousAccess",class="col-md-1 control-label") Anonymer Zugriff:
+                div(class="col-md-11")
+                    div.checkbox
+                        label
+                            input(id="AnonymousAccess", name="AnonymousAccess", type="checkbox", value="#{pageData.AnonymousAccess}")
+            div.form-group
+                label(for="EntityNameSingular",class="col-md-1 control-label") Entity Name Einzahl:
+                div(class="col-md-11")
+                    input(class="form-control", data-val="true",
+                    data-val-required="Der Entity Name (Einzahl) muss eingegeben werden.",
+                    placeholder='Entity Name - Einzahl',
+                    id="EntityNameSingular", name="EntityNameSingular", type="text", value="#{pageData.EntityNameSingular}")
+                    span(class="field-validation-valid text-danger", data-valmsg-for="EntityNameSingular", data-valmsg-replace="true")
+            div.form-group
+                label(for="EntityNamePlural",class="col-md-1 control-label") Entity Name Mehrzahl:
+                div(class="col-md-11")
+                    input(class="form-control", data-val="true",
+                    data-val-required="Der Entity Name (Mehrzahl) muss eingegeben werden.",
+                    placeholder='Entity Name - Mehrzahl',
+                    id="EntityNamePlural", name="EntityNamePlural", type="text", value="#{pageData.EntityNamePlural}")
+                    span(class="field-validation-valid text-danger", data-valmsg-for="EntityNamePlural", data-valmsg-replace="true")
+            div.form-group
+                label(for="Model",class="col-md-1 control-label") Model:
+                div(class="col-sm-5")
+                    select(class="form-control", name="Model")
+                        each model, i in models
+                            if model == pageData.Model
+                                option(value=model selected) #{model}
+                            else
+                                option(value=model) #{model}
+            div.form-group
+                label(for="Collection",class="col-md-1 control-label") Collection:
+                div(class="col-sm-5")
+                    select(class="form-control", name="Collection")
+                        each collection, i in collections
+                            if collection == pageData.Collection
+                                option(value=collection selected) #{collection}
+                            else
+                                option(value=collection) #{collection}
+            div.form-group
+                label(for="View",class="col-md-1 control-label") View:
+                div(class="col-sm-5")
+                    select(class="form-control", name="View")
+                        each view, i in views
+                            if view == pageData.View
+                                option(value=view selected) #{view}
+                            else
+                                option(value=view) #{view}
+            div.form-group
+                hr
+                button(class="btn btn-default", id="save", value="save", name="save")
+                    span(class="glyphicon glyphicon-save")
+                    | &nbsp Speichern
+                button(class="btn btn-default cancel", id="cancel", value="cancel", name="cancel")
+                    span(class="glyphicon glyphicon-remove")
+                    | &nbsp Abbrechen
+            div.form-group
+                hr
+                button(class="btn btn-default btn-danger", id="deletePage", value="deletePage", name="deletePage")
+                    span(class="glyphicon glyphicon-trash")
+                    | &nbsp Seite löschen
