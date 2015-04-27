@@ -82,12 +82,12 @@ router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                 }).catch(function (error) {
                     var errMsg = "Die Rolle konnte wegen eines Fehlers nicht von der Datenbank geladen werden.";
                     var errMsgDetailed = "Error while retrieving profiles from database: " + error;
-                    handleError(errMsg, errMsgDetailed, req, res, {id: roleId });
+                    handleError(errMsg, errMsgDetailed, req, res, {id: roleId});
                 });
             }).catch(function (error) {
                 var errMsg = "Die Rolle konnte wegen eines Fehlers nicht von der Datenbank geladen werden.";
                 var errMsgDetailed = "Error while retrieving role from database. RoleId: " + roleId + ". " + error;
-                handleError(errMsg, errMsgDetailed, req, res, {id: roleId });
+                handleError(errMsg, errMsgDetailed, req, res, {id: roleId});
             });
     });
 });
@@ -112,14 +112,19 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                     getProfiles().then(function (allProfiles) {
                         var selectedRolePermissions = [];
                         var checkHash = {};
+                        var cbName;
 
                         _.each(allProfiles, function (profile) {
-                            var cbName = "cb_" + profile.id;
+                            cbName = "cb_" + profile.id;
                             if (req.body[cbName] && req.body[cbName] == profile.id) {
+                                //console.log("CB " + cbName + " is checked");
                                 _.each(profile.resources, function (resource) {
+                                    //console.log("RESOURCE: " + resource);
                                     _.each(profile.permissions, function (permission) {
                                         var checkKey = resource + "_" + permission;
+                                        //console.log("CHECK: " + checkKey);
                                         if (!checkHash[checkKey]) {
+                                            //console.log("ADD: " + resource + " to role " + roleId);
                                             selectedRolePermissions.push(
                                                 {
                                                     Role_id: roleId,
@@ -137,12 +142,16 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                         var allRoleMenus = [];
                         checkHash = {};
                         _.each(allProfiles, function (profile) {
-                            _.each(profile.menus, function (menu) {
-                                if (!checkHash[menu]) {
-                                    allRoleMenus.push({ Role_id: roleId, Menu: menu });
-                                    checkHash[menu] = true;
-                                }
-                            });
+                            cbName = "cb_" + profile.id;
+                            if (req.body[cbName] && req.body[cbName] == profile.id) {
+                                //console.log("CB " + cbName + " is checked");
+                                _.each(profile.menus, function (menu) {
+                                    if (!checkHash[menu]) {
+                                        allRoleMenus.push({Role_id: roleId, Menu: menu});
+                                        checkHash[menu] = true;
+                                    }
+                                });
+                            }
                         });
 
                         errMsgDetailed = "Error while retrieving role from database. RoleId: " + roleId;
@@ -181,7 +190,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                             });
                         });
                     }).catch(function (error) {
-                        handleError(errMsg, errMsgDetailed + ". " + error, req, res, {id: roleId, Name: roleName });
+                        handleError(errMsg, errMsgDetailed + ". " + error, req, res, {id: roleId, Name: roleName});
                     });
                 }
                 else {
@@ -220,12 +229,12 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                     }).catch(function (error) {
                                         var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gelöscht werden.";
                                         var errMsgDetailed = "Error deleting role menus. RoleId: " + roleId + ". " + error;
-                                        handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
+                                        handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName});
                                     });
                                 }).catch(function (error) {
                                     var errMsg = "Die Rolle konnte wegen eines Fehlers nicht gelöscht werden.";
                                     var errMsgDetailed = "Error deleting role permissions. RoleId: " + roleId + ". " + error;
-                                    handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName });
+                                    handleError(errMsg, errMsgDetailed, req, res, {id: roleId, Name: roleName});
                                 });
                             }
                             else {
