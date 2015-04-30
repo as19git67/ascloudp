@@ -1,7 +1,7 @@
 extends layout
 block content
     h2= title
-    h4 Einstellungen für Seite
+    h4 Einstellungen für die Seite&nbsp;
         strong #{pageData.Name}
     if error
         p.text-danger #{error}
@@ -11,22 +11,17 @@ block content
         br
     hr
     div.col-md-12
-        form(action="/admin/pagemanagementpageedit",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        form(action="/admin/pagemanagementpageedit/#{pageData.id}",class="form-horizontal", method="post", role="form", novalidate="novalidate")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
-            div.form-group
-                label(for="name",class="col-md-1 control-label") Name:
-                div(class="col-md-11")
-                    input(class="form-control", data-val="true",
-                    data-val-required="Der Seitenname muss eingegeben werden.",
-                    placeholder='Seitenname',
-                    id="name", name="name", type="text", value="#{pageData.Name}")
-                    span(class="field-validation-valid text-danger", data-valmsg-for="name", data-valmsg-replace="true")
             div.form-group
                 label(for="AnonymousAccess",class="col-md-1 control-label") Anonymer Zugriff:
                 div(class="col-md-11")
                     div.checkbox
                         label
-                            input(id="AnonymousAccess", name="AnonymousAccess", type="checkbox", value="#{pageData.AnonymousAccess}")
+                            if pageData.AnonymousAccess
+                                input(id="AnonymousAccess", name="AnonymousAccess", type="checkbox", checked)
+                            else
+                                input(id="AnonymousAccess", name="AnonymousAccess", type="checkbox")
             div.form-group
                 label(for="EntityNameSingular",class="col-md-1 control-label") Entity Name Einzahl:
                 div(class="col-md-11")
@@ -47,20 +42,11 @@ block content
                 label(for="Model",class="col-md-1 control-label") Model:
                 div(class="col-sm-5")
                     select(class="form-control", name="Model")
-                        each model, i in models
-                            if model == pageData.Model
-                                option(value=model selected) #{model}
+                        each dataType, dataTypeName in dataTypes
+                            if dataTypeName == pageData.Model
+                                option(value=dataTypeName selected) #{dataTypeName} (#{dataType})
                             else
-                                option(value=model) #{model}
-            div.form-group
-                label(for="Collection",class="col-md-1 control-label") Collection:
-                div(class="col-sm-5")
-                    select(class="form-control", name="Collection")
-                        each collection, i in collections
-                            if collection == pageData.Collection
-                                option(value=collection selected) #{collection}
-                            else
-                                option(value=collection) #{collection}
+                                option(value=dataTypeName) #{dataTypeName}(#{dataType})
             div.form-group
                 label(for="View",class="col-md-1 control-label") View:
                 div(class="col-sm-5")
