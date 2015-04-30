@@ -488,8 +488,9 @@ exports.importTestData = function () {
                         "Article_id": newArticle.get('id'),
                         "Date": new Date(2014, 11, 13),
                         "Author": "KENNETH CHANG",
-                        "Text": "# Comet Landing Bumpier Than Initially Thought\r\n\r" +
-                        "![Philae on comet](http://static01.nyt.com/images/2014/11/13/science/13philae-on-comet/13philae-on-comet-master675.jpg)\r\n\r" +
+                        "Title":"Comet Landing Bumpier Than Initially Thought",
+                        "LeadText":"This historic landing of a spacecraft on a comet on Wednesday turned out to be not one but three landings",
+                        "Text": "![Philae on comet](http://static01.nyt.com/images/2014/11/13/science/13philae-on-comet/13philae-on-comet-master675.jpg)\r\n\r" +
                         "A two-image panorama taken by the Philae lander from the surface of Comet 67P/Churyumov-Gerasimenko.\r\n\r" +
                         "Ref.: European Space Agency\r\n\r" +
                         "This historic landing of a spacecraft on a comet on Wednesday turned out to be not one but three landings as the craft hopped across the surface. " +
