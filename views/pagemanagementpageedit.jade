@@ -13,6 +13,8 @@ block content
     div.col-md-12
         form(action="/admin/pagemanagementpageedit/#{pageData.id}",class="form-horizontal", method="post", role="form", novalidate="novalidate")
             input(type="hidden", value="#{csrfToken}" name="_csrf")
+            input(type="hidden", value="#{pageData.Name}" name="Name")
+            input(type="hidden", value="#{pageData.Order}" name="Order")
             div.form-group
                 label(for="AnonymousAccess",class="col-md-1 control-label") Anonymer Zugriff:
                 div(class="col-md-11")
