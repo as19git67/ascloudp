@@ -59,101 +59,105 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
     if (req.body.cancel) {
         res.redirect('/admin/pageManagementPageList');
     } else {
-        model.getPagesForUser(req.user).then(function (pages) {
-            model.bookshelf.knex('Pages').max('Order')
-                .then(function (maxOrder) {
-                    var order = 10;
-                    if (maxOrder && maxOrder.length == 1) {
-                        order = maxOrder[0].max + 10;
-                    }
-                    if (req.body.addNewPage) {
-                        // render initial form for new page
-                        var newPage = new Page({
-                            id: '',
-                            Order: order,
-                            Name: req.body.newPageName.toLowerCase(), // comes from pageManagementPageList
-                            AnonymousAccess: false,
-                            EntityNameSingular: '',
-                            EntityNamePlural: ''
-                        });
-                        res.render('pagemanagementpageedit', makeResponseObject(req, pages, newPage));
-                    } else {
-                        var page = new Page({
-                            Name: req.body.Name.toLowerCase(),
-                            Order: req.body.Order,
-                            AnonymousAccess: req.body.AnonymousAccess == 'on',
-                            EntityNameSingular: req.body.EntityNameSingular,
-                            EntityNamePlural: req.body.EntityNamePlural,
-                            View: req.body.View
-                        });
-                        model.bookshelf.transaction(function (t) {
-                            if (req.body.save) {
-                                if (req.body.Model) {
+        if (req.body.newPageName && req.body.newPageName.trim().length > 0) {
+            model.getPagesForUser(req.user).then(function (pages) {
+                model.bookshelf.knex('Pages').max('Order')
+                    .then(function (maxOrder) {
+                        var order = 10;
+                        if (maxOrder && maxOrder.length == 1) {
+                            order = maxOrder[0].max + 10;
+                        }
+                        if (req.body.addNewPage) {
+                            // render initial form for new page
+                            var newPage = new Page({
+                                id: '',
+                                Order: order,
+                                Name: req.body.newPageName.toLowerCase(), // comes from pageManagementPageList
+                                AnonymousAccess: false,
+                                EntityNameSingular: '',
+                                EntityNamePlural: ''
+                            });
+                            res.render('pagemanagementpageedit', makeResponseObject(req, pages, newPage));
+                        } else {
+                            var page = new Page({
+                                Name: req.body.Name.toLowerCase(),
+                                Order: req.body.Order,
+                                AnonymousAccess: req.body.AnonymousAccess == 'on',
+                                EntityNameSingular: req.body.EntityNameSingular,
+                                EntityNamePlural: req.body.EntityNamePlural,
+                                View: req.body.View
+                            });
+                            model.bookshelf.transaction(function (t) {
+                                if (req.body.save) {
+                                    if (req.body.Model) {
 
-                                    var dataType = dataTypes[req.body.Model];
-                                    if (dataType == 'model') {
-                                        page.set('Model', req.body.Model);
-                                        page.set('Collection', null);
+                                        var dataType = dataTypes[req.body.Model];
+                                        if (dataType == 'model') {
+                                            page.set('Model', req.body.Model);
+                                            page.set('Collection', null);
+                                        } else {
+                                            page.set('Model', null);
+                                            page.set('Collection', req.body.Model);
+                                        }
+                                        page.save(null, {transacting: t})
+                                            .then(function (savedPage) {
+                                                var changeText = "Page with id= " + page.get('id') + " (" + page.get('Name') + ") added.";
+                                                console.log(changeText);
+                                                new Audit({
+                                                    ChangedAt: new Date(),
+                                                    Table: 'Pages',
+                                                    ChangedBy: req.user.UserName,
+                                                    Description: changeText
+                                                }).save()
+                                                    .then(function () {
+                                                        // todo search roles with right to pagemanagementedit - post and add permission for the new page to this roles
+                                                        t.commit(savedPage);
+                                                    })
+                                                    .catch(function (error) {
+                                                        console.log("ERROR while saving audit when adding page with id= " + page.get('id') + " (" + page.get('Name'), error);
+                                                        t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
+                                                    });
+                                            }).catch(function (error) {
+                                                console.log("ERROR while saving new page with Name=" + page.get('Name'), error);
+                                                t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
+                                            });
                                     } else {
-                                        page.set('Model', null);
-                                        page.set('Collection', req.body.Model);
+                                        console.log("ERROR while saving new page with Name=" + page.get('Name') + ". Missing Model in post data");
+                                        t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
                                     }
-                                    page.save(null, {transacting: t})
-                                        .then(function (savedPage) {
-                                            var changeText = "Page with id= " + page.get('id') + " (" + page.get('Name') + ") added.";
-                                            console.log(changeText);
-                                            new Audit({
-                                                ChangedAt: new Date(),
-                                                Table: 'Pages',
-                                                ChangedBy: req.user.UserName,
-                                                Description: changeText
-                                            }).save()
-                                                .then(function () {
-                                                    // todo search roles with right to pagemanagementedit - post and add permission for the new page to this roles
-                                                    t.commit(savedPage);
-                                                })
-                                                .catch(function (error) {
-                                                    console.log("ERROR while saving audit when adding page with id= " + page.get('id') + " (" + page.get('Name'), error);
-                                                    t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
-                                                });
-                                        }).catch(function (error) {
-                                            console.log("ERROR while saving new page with Name=" + page.get('Name'), error);
-                                            t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
-                                        });
                                 } else {
-                                    console.log("ERROR while saving new page with Name=" + page.get('Name') + ". Missing Model in post data");
+                                    console.log("ERROR while saving new page with Name=" + page.get('Name') + ". Missing action (save, cancel, ...) in post data");
                                     t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
                                 }
-                            } else {
-                                console.log("ERROR while saving new page with Name=" + page.get('Name') + ". Missing action (save, cancel, ...) in post data");
-                                t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
-                            }
-                        }).then(function (committedPage) {
-                            // transaction committed
-                            res.redirect('/admin/pageManagementPageList');
-                        }).catch(function (err) {
-                            if (err) {
-                                // transaction was rolled back
-                                page.set('id', '');
-                                var respObj = makeResponseObject(req, pages, page);
-                                respObj.error = err;
-                                res.render('pagemanagementpageedit', respObj);
-                            } else {
+                            }).then(function (committedPage) {
+                                // transaction committed
                                 res.redirect('/admin/pageManagementPageList');
-                            }
-                        });
-                    }
-                })
-                .catch(function (err) {
-                    var err = new Error(error);
-                    err.status = 500;
-                    next(err);
-                });
-        }).catch(function (error) {
-            var err = new Error(error);
-            err.status = 500;
-            next(err);
-        });
+                            }).catch(function (err) {
+                                if (err) {
+                                    // transaction was rolled back
+                                    page.set('id', '');
+                                    var respObj = makeResponseObject(req, pages, page);
+                                    respObj.error = err;
+                                    res.render('pagemanagementpageedit', respObj);
+                                } else {
+                                    res.redirect('/admin/pageManagementPageList');
+                                }
+                            });
+                        }
+                    })
+                    .catch(function (err) {
+                        var err = new Error(error);
+                        err.status = 500;
+                        next(err);
+                    });
+            }).catch(function (error) {
+                var err = new Error(error);
+                err.status = 500;
+                next(err);
+            });
+        } else {
+            res.redirect('/admin/pageManagementPageList');
+        }
     }
 });
 
