@@ -59,7 +59,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
     if (req.body.cancel) {
         res.redirect('/admin/pageManagementPageList');
     } else {
-        if (req.body.newPageName && req.body.newPageName.trim().length > 0) {
+        if (req.body.Name || (req.body.newPageName && req.body.newPageName.trim().length > 0)) {
             model.getPagesForUser(req.user).then(function (pages) {
                 model.bookshelf.knex('Pages').max('Order')
                     .then(function (maxOrder) {
