@@ -31,6 +31,12 @@ module.exports = function () {
                 permissions: ["get"],
                 menus: ["admin.pages"]
             },
+            pagemanagement_list_edit: {
+                description: "Seitenverwaltung: Seitenreihenfolge bearbeiten",
+                resources: ["/admin/pageManagementPageList"],
+                permissions: ["post"],
+                menus: ["admin.pages"]
+            },
             pagemanagement_page_display: {
                 description: "Seitenverwaltung: Seiteneigenschaften anzeigen",
                 resources: ["/admin/pageManagementPageEdit"],

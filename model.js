@@ -1400,6 +1400,7 @@ var getPages = function () {
                 pageList.each(function (page) {
                     var pageObj = {
                         Page_id: page.get('id'),
+                        Order: page.get('Order'),
                         AnonymousAccess: page.get('AnonymousAccess'),
                         Name: page.get('Name'),
                         EntityNameSingular: page.get('EntityNameSingular'),

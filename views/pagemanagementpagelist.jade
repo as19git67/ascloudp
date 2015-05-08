@@ -18,6 +18,10 @@ block content
                                 button(class="btn btn-default", id="addNewPage", value="Hinzufügen", name="addNewPage")
                                     span(class="glyphicon glyphicon-plus")
                                     | &nbsp Hinzufügen
+    form(action="/admin/pageManagementPageList",class="form-horizontal", method="post", role="form", novalidate="novalidate")
+        input(type="hidden", value="#{csrfToken}" name="_csrf")
+        div.form-group
+            div(class="col-xs-12 col-sm-12 table-responsive")
                 hr
                 table.table
                     thead
@@ -41,3 +45,17 @@ block content
                                 td #{page.View}
                                 td
                                     a(href='/admin/pageManagementPageEdit/#{page.Page_id}') Details
+                                    | &nbsp;&nbsp;
+                                    if page.isLast
+                                        button(class="btn btn-link", role="link", disabled, type="submit", id="move_down_#{page.Page_id}", value="move_down_#{page.Page_id}", name="move_down_#{page.Page_id}")
+                                            span.glyphicon.glyphicon-arrow-down
+                                    else
+                                        button(class="btn btn-link", role="link", type="submit", id="move_down_#{page.Page_id}", value="move_down_#{page.Page_id}", name="move_down_#{page.Page_id}")
+                                            span.glyphicon.glyphicon-arrow-down
+
+                                    if page.isFirst
+                                        button(class="btn btn-link", role="link", disabled, type="submit", id="move_up_#{page.Page_id}", value="move_up_#{page.Page_id}", name="move_up_#{page.Page_id}")
+                                            span.glyphicon.glyphicon-arrow-up
+                                    else
+                                        button(class="btn btn-link", role="link", type="submit", id="move_up_#{page.Page_id}", value="move_up_#{page.Page_id}", name="move_up_#{page.Page_id}")
+                                            span.glyphicon.glyphicon-arrow-up
