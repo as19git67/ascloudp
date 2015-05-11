@@ -2402,7 +2402,7 @@ input[type="date"].input-lg,
 input[type="time"].input-lg,
 input[type="datetime-local"].input-lg,
 input[type="month"].input-lg {
-  line-height: 54px;
+  line-height: 58px;
   line-height: 1.3333333 \0;
 }
 _:-ms-fullscreen,
@@ -2530,16 +2530,16 @@ select[multiple].form-group-sm .form-control {
 }
 .input-lg,
 .form-group-lg .form-control {
-  height: 54px;
+  height: 58px;
   padding: 14px 16px;
-  font-size: 18px;
+  font-size: 21px;
   line-height: 1.3333333;
   border-radius: 6px;
 }
 select.input-lg,
 select.form-group-lg .form-control {
-  height: 54px;
-  line-height: 54px;
+  height: 58px;
+  line-height: 58px;
 }
 textarea.input-lg,
 textarea.form-group-lg .form-control,
@@ -2566,9 +2566,9 @@ select[multiple].form-group-lg .form-control {
   pointer-events: none;
 }
 .input-lg + .form-control-feedback {
-  width: 54px;
-  height: 54px;
-  line-height: 54px;
+  width: 58px;
+  height: 58px;
+  line-height: 58px;
 }
 .input-sm + .form-control-feedback {
   width: 30px;
@@ -3122,7 +3122,7 @@ fieldset[disabled] .btn-link:focus {
 .btn-lg,
 .btn-group-lg > .btn {
   padding: 14px 16px;
-  font-size: 18px;
+  font-size: 21px;
   line-height: 1.3333333;
   border-radius: 6px;
 }
@@ -3517,17 +3517,17 @@ tbody.collapse.in {
 .input-group-lg > .form-control,
 .input-group-lg > .input-group-addon,
 .input-group-lg > .input-group-btn > .btn {
-  height: 54px;
+  height: 58px;
   padding: 14px 16px;
-  font-size: 18px;
+  font-size: 21px;
   line-height: 1.3333333;
   border-radius: 6px;
 }
 select.input-group-lg > .form-control,
 select.input-group-lg > .input-group-addon,
 select.input-group-lg > .input-group-btn > .btn {
-  height: 54px;
-  line-height: 54px;
+  height: 58px;
+  line-height: 58px;
 }
 textarea.input-group-lg > .form-control,
 textarea.input-group-lg > .input-group-addon,
@@ -3594,7 +3594,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 }
 .input-group-addon.input-lg {
   padding: 14px 16px;
-  font-size: 18px;
+  font-size: 21px;
   border-radius: 6px;
 }
 .input-group-addon input[type="radio"],
@@ -3955,7 +3955,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-brand {
   float: left;
   padding: 15px 15px;
-  font-size: 18px;
+  font-size: 21px;
   line-height: 20px;
   height: 50px;
 }
@@ -4451,7 +4451,7 @@ fieldset[disabled] .navbar-inverse .btn-link:focus {
 .pagination-lg > li > a,
 .pagination-lg > li > span {
   padding: 14px 16px;
-  font-size: 18px;
+  font-size: 21px;
 }
 .pagination-lg > li:first-child > a,
 .pagination-lg > li:first-child > span {
