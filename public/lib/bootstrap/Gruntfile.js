@@ -205,6 +205,18 @@ module.exports = function (grunt) {
         src: 'less/bootstrap.less',
         dest: 'dist/yeti/css/<%= pkg.name %>.css'
       },
+      compileCoreCSU: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          sourceMapURL: '<%= pkg.name %>.css.map',
+          sourceMapFilename: 'dist/csu/css/<%= pkg.name %>.css.map',
+          paths: ['custom_themes/csu']
+        },
+        src: 'less/bootstrap.less',
+        dest: 'dist/csu/css/<%= pkg.name %>.css'
+      },
       compileTheme: {
         options: {
           strictMath: true,
@@ -240,6 +252,18 @@ module.exports = function (grunt) {
         },
         src: 'less/theme.less',
         dest: 'dist/yeti/css/<%= pkg.name %>-theme.css'
+      },
+      compileThemeCSU: {
+        options: {
+          strictMath: true,
+          sourceMap: true,
+          outputSourceFiles: true,
+          sourceMapURL: '<%= pkg.name %>-theme.css.map',
+          sourceMapFilename: 'dist/csu/css/<%= pkg.name %>-theme.css.map',
+          paths: ['custom_themes/csu']
+        },
+        src: 'less/theme.less',
+        dest: 'dist/csu/css/<%= pkg.name %>-theme.css'
       }
     },
 
@@ -317,6 +341,10 @@ module.exports = function (grunt) {
         src: 'dist/yeti/css/<%= pkg.name %>.css',
         dest: 'dist/yeti/css/<%= pkg.name %>.min.css'
       },
+      minifyCoreCSU: {
+        src: 'dist/csu/css/<%= pkg.name %>.css',
+        dest: 'dist/csu/css/<%= pkg.name %>.min.css'
+      },
       minifyTheme: {
         src: 'dist/css/<%= pkg.name %>-theme.css',
         dest: 'dist/css/<%= pkg.name %>-theme.min.css'
@@ -328,6 +356,10 @@ module.exports = function (grunt) {
       minifyThemeYeti: {
         src: 'dist/yeti/css/<%= pkg.name %>-theme.css',
         dest: 'dist/yeti/css/<%= pkg.name %>-theme.min.css'
+      },
+      minifyThemeCSU: {
+        src: 'dist/csu/css/<%= pkg.name %>-theme.css',
+        dest: 'dist/csu/css/<%= pkg.name %>-theme.min.css'
       },
       docs: {
         src: [
@@ -382,6 +414,10 @@ module.exports = function (grunt) {
       fontsYeti: {
         src: 'fonts/*',
         dest: 'dist/yeti/'
+      },
+      fontsCSU: {
+        src: 'fonts/*',
+        dest: 'dist/csu/'
       },
       docs: {
         src: 'dist/*/*',
@@ -526,15 +562,15 @@ module.exports = function (grunt) {
   grunt.registerTask('dist-js', ['concat', 'uglify:core', 'commonjs']);
 
   // CSS distribution task.
-  grunt.registerTask('less-compile', ['less:compileCore', 'less:compileCoreFeuerwehr', 'less:compileCoreYeti', 'less:compileTheme', 'less:compileThemeFeuerwehr', 'less:compileThemeYeti']);
+  grunt.registerTask('less-compile', ['less:compileCore', 'less:compileCoreFeuerwehr', 'less:compileCoreYeti', 'less:compileCoreCSU', 'less:compileTheme', 'less:compileThemeFeuerwehr', 'less:compileThemeYeti']);
 
   grunt.registerTask('dist-css', ['less-compile', 'autoprefixer:core', 'autoprefixer:theme', 'usebanner', 'csscomb:dist', 'cssmin:minifyCore', 'cssmin:minifyCoreFeuerwehr', 'cssmin:minifyCoreYeti', 'cssmin:minifyTheme', 'cssmin:minifyThemeFeuerwehr', 'cssmin:minifyThemeYeti']);
 
   // Full distribution task.
-  grunt.registerTask('dist', ['clean:dist', 'dist-css', 'copy:fonts', 'copy:fontsFeuerwehr', 'copy:fontsYeti', 'dist-js']);
+  grunt.registerTask('dist', ['clean:dist', 'dist-css', 'copy:fonts', 'copy:fontsFeuerwehr', 'copy:fontsYeti', 'copy:fontsCSU', 'dist-js']);
 
   // Default task.
-  grunt.registerTask('default', ['clean:dist', 'copy:fonts', 'copy:fontsFeuerwehr', 'copy:fontsYeti', 'test']);
+  grunt.registerTask('default', ['clean:dist', 'copy:fonts', 'copy:fontsFeuerwehr', 'copy:fontsYeti', 'copy:fontsCSU', 'test']);
 
   // Version numbering task.
   // grunt change-version-number --oldver=A.B.C --newver=X.Y.Z
