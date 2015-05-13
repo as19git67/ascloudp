@@ -23,6 +23,9 @@ function showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu) {
 }
 
 function adjustMaxWidthOfLeftNavbar() {
+    var leftNavBarToAdjust = $('.adjusted-nav-left');
+    var itemsLeft = leftNavBarToAdjust.children();
+
     if (isBreakpoint('sm')) {
         var otherMenu = $('#otherMenu ul.dropdown-menu');
 
@@ -40,11 +43,8 @@ function adjustMaxWidthOfLeftNavbar() {
         }
         var maxWidth = (pWidth - rightNavbarWidth - 5);
 
-        var leftNavBarToAdjust = $('.adjusted-nav-left');
-
         // add the widths of the children until max-width is reached
         var itemsOtherMenu = otherMenu.children();
-        var itemsLeft = leftNavBarToAdjust.children();
         var haveOtherMenuItems = showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu);
         if (haveOtherMenuItems) {
             $('#otherMenu').show();
