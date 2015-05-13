@@ -9,39 +9,45 @@ router.get('/:id', function (req, res) {
         new ArticleImage({id: imageId})
             .fetch({columns: ['valid_start']})
             .then(function (iRecord) {
-                if (req.get('Last-Modified') == iRecord.get('valid_start')) {
-                    res.status(304).end();
-                } else {
-                    var columns = ['id', 'Article_id', 'Description', 'Filename', 'Size', 'valid_start'];
-
-                    var thumbnail = req.query && req.query.type && req.query.type == "thumbnail";
-                    if (thumbnail) {
-                        columns.push('Thumbnail');
+                if (iRecord) {
+                    if (req.get('Last-Modified') == iRecord.get('valid_start')) {
+                        res.status(304).end();
                     } else {
-                        columns.push('Image');
-                    }
+                        var columns = ['id', 'Article_id', 'Description', 'Filename', 'Size', 'valid_start'];
 
-                    new ArticleImage({id: imageId})
-                        .fetch({columns: columns})
-                        .then(function (image) {
-                            var mimeType = image.get('MimeType');
-                            //res.setHeader('Content-type', mimeType);
-                            res.attachment(image.get('Filename'));
-                            if (thumbnail) {
-                                var valid_start = image.get('valid_start');
-                                if (valid_start) {
-                                    res.set('Last-Modified', valid_start.toUTCString());
+                        var thumbnail = req.query && req.query.type && req.query.type == "thumbnail";
+                        if (thumbnail) {
+                            columns.push('Thumbnail');
+                        } else {
+                            columns.push('Image');
+                        }
+
+                        new ArticleImage({id: imageId})
+                            .fetch({columns: columns})
+                            .then(function (image) {
+                                var mimeType = image.get('MimeType');
+                                //res.setHeader('Content-type', mimeType);
+                                res.attachment(image.get('Filename'));
+                                if (thumbnail) {
+                                    var valid_start = image.get('valid_start');
+                                    if (valid_start) {
+                                        res.set('Last-Modified', valid_start.toUTCString());
+                                    }
+                                    res.status(200).send(image.get('Thumbnail'));
+                                } else {
+                                    res.status(200).send(image.get('Image'));
                                 }
-                                res.status(200).send(image.get('Thumbnail'));
-                            } else {
-                                res.status(200).send(image.get('Image'));
-                            }
-                        })
-                        .catch(function (error) {
-                            console.log("Error while reading image with id " + imageId + " from ArticleImages: ", error);
-                            res.statusCode = 500;
-                            res.send('500 Error reading image from database');
-                        });
+                            })
+                            .catch(function (error) {
+                                console.log("Error while reading image with id " + imageId + " from ArticleImages: ", error);
+                                res.statusCode = 500;
+                                res.send('500 Error reading image from database');
+                            });
+                    }
+                }
+                else {
+                    res.statusCode = 401;
+                    res.send('401 image not in database');
                 }
             })
             .catch(function (error) {
