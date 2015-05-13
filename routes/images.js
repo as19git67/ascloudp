@@ -10,7 +10,8 @@ router.get('/:id', function (req, res) {
             .fetch({columns: ['valid_start']})
             .then(function (iRecord) {
                 if (iRecord) {
-                    if (req.get('Last-Modified') == iRecord.get('valid_start')) {
+                    var ifModifiedSince = req.get('if-modified-since');
+                    if (ifModifiedSince == iRecord.get('valid_start').toUTCString()) {
                         res.status(304).end();
                     } else {
                         var columns = ['id', 'Article_id', 'Description', 'Filename', 'Size', 'valid_start'];
