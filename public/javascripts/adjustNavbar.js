@@ -23,7 +23,7 @@ function showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu) {
 }
 
 function adjustMaxWidthOfLeftNavbar() {
-    if (isBreakpoint('md')) {
+    if (isBreakpoint('xs')) {
         var otherMenu = $('#otherMenu ul.dropdown-menu');
 
         var rightNavbarWidth = $('.adjusted-nav-right').width();
