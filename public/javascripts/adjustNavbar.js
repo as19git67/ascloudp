@@ -1,3 +1,7 @@
+function isBreakpoint(alias) {
+    return $('.device-' + alias).is(':visible');
+}
+
 function showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu) {
     var sumOfWidths = 0;
     var haveOtherMenuItems = false;
@@ -19,36 +23,45 @@ function showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu) {
 }
 
 function adjustMaxWidthOfLeftNavbar() {
-    var rightNavbarWidth = $('.adjusted-nav-right').width();
-    var p = $('.adjusted-nav-left').parent();
-    var pWidth = p.width();
-    var leftHeader = $('.app-navbar .navbar-header');
-    var leftHeaderWidth = leftHeader.width();
-    if (leftHeaderWidth) {
-        pWidth -= leftHeaderWidth;
-    }
-    var otherMenu = $('#otherMenu ul.dropdown-menu');
-    var otherMenuWidth = 0;
-    if (otherMenu) {
-        otherMenuWidth = otherMenu.width();
-    }
-    var maxWidth = (pWidth - rightNavbarWidth - 5);
+    if (isBreakpoint('md')) {
+        var otherMenu = $('#otherMenu ul.dropdown-menu');
 
-    var leftNavBarToAdjust = $('.adjusted-nav-left');
+        var rightNavbarWidth = $('.adjusted-nav-right').width();
+        var p = $('.adjusted-nav-left').parent();
+        var pWidth = p.width();
+        var leftHeader = $('.app-navbar .navbar-header');
+        var leftHeaderWidth = leftHeader.width();
+        if (leftHeaderWidth) {
+            pWidth -= leftHeaderWidth;
+        }
+        var otherMenuWidth = 0;
+        if (otherMenu) {
+            otherMenuWidth = otherMenu.width();
+        }
+        var maxWidth = (pWidth - rightNavbarWidth - 5);
 
-    // add the widths of the children until max-width is reached
-    var itemsOtherMenu = otherMenu.children();
-    var itemsLeft = leftNavBarToAdjust.children();
-    var haveOtherMenuItems = showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu);
-    if (haveOtherMenuItems) {
-        $('#otherMenu').show();
-        // reduce available width by width of otherMenu and adjust visibility again
-        maxWidth -= otherMenuWidth;
-        showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu);
+        var leftNavBarToAdjust = $('.adjusted-nav-left');
+
+        // add the widths of the children until max-width is reached
+        var itemsOtherMenu = otherMenu.children();
+        var itemsLeft = leftNavBarToAdjust.children();
+        var haveOtherMenuItems = showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu);
+        if (haveOtherMenuItems) {
+            $('#otherMenu').show();
+            // reduce available width by width of otherMenu and adjust visibility again
+            maxWidth -= otherMenuWidth;
+            showInOtherMenuIfMenuTooLarge(itemsLeft, maxWidth, itemsOtherMenu);
+        } else {
+            $('#otherMenu').hide();
+        }
     } else {
+        // boostrap shows collapsed navbar (hamburger) - don't display otherMenu; show all normal
         $('#otherMenu').hide();
+        for (var idx = 0; idx < itemsLeft.length; idx++) {
+            var iLeft = $(itemsLeft[idx]);
+            iLeft.show();
+        }
     }
-
     //leftNavBarToAdjust.css('max-width', maxWidth + 'px');
 }
 
@@ -57,14 +70,14 @@ var resizeTimer;
 
 $(function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function() {
+    resizeTimer = setTimeout(function () {
         adjustMaxWidthOfLeftNavbar();
     }, 50);
 });
 
 $(window).resize(function () {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function() {
+    resizeTimer = setTimeout(function () {
         adjustMaxWidthOfLeftNavbar();
         adjustMaxWidthOfLeftNavbar(); // call second time to resolve some buggy behaviour where it resizes not correctly
     }, 200);
