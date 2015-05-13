@@ -26,7 +26,7 @@ function adjustMaxWidthOfLeftNavbar() {
     var leftNavBarToAdjust = $('.adjusted-nav-left');
     var itemsLeft = leftNavBarToAdjust.children();
 
-    if (isBreakpoint('sm')) {
+    if (isBreakpoint('xs')) {
         var otherMenu = $('#otherMenu ul.dropdown-menu');
 
         var rightNavbarWidth = $('.adjusted-nav-right').width();
