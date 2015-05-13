@@ -5,25 +5,43 @@ var ArticleImage = model.models.ArticleImage;
 
 router.get('/:id', function (req, res) {
     var imageId = req.params.id;
-    var columns = ['id', 'Article_id', 'Description', 'Filename', 'Size'];
-    var thumbnail = req.query && req.query.type && req.query.type == "thumbnail";
-    if (thumbnail) {
-        columns.push('Thumbnail');
-    } else {
-        columns.push('Image');
-    }
-
     if (imageId) {
         new ArticleImage({id: imageId})
-            .fetch({columns: columns})
-            .then(function (image) {
-                var mimeType = image.get('MimeType');
-                //res.setHeader('Content-type', mimeType);
-                res.attachment(image.get('Filename'));
-                if (thumbnail) {
-                    res.status(200).send(image.get('Thumbnail'));
+            .fetch({columns: ['valid_start']})
+            .then(function (iRecord) {
+                if (req.get('Last-Modified') == iRecord.get('valid_start')) {
+                    res.status(304).end();
                 } else {
-                    res.status(200).send(image.get('Image'));
+                    var columns = ['id', 'Article_id', 'Description', 'Filename', 'Size', 'valid_start'];
+
+                    var thumbnail = req.query && req.query.type && req.query.type == "thumbnail";
+                    if (thumbnail) {
+                        columns.push('Thumbnail');
+                    } else {
+                        columns.push('Image');
+                    }
+
+                    new ArticleImage({id: imageId})
+                        .fetch({columns: columns})
+                        .then(function (image) {
+                            var mimeType = image.get('MimeType');
+                            //res.setHeader('Content-type', mimeType);
+                            res.attachment(image.get('Filename'));
+                            if (thumbnail) {
+                                var valid_start = image.get('valid_start');
+                                if (valid_start) {
+                                    res.set('Last-Modified', valid_start.toUTCString());
+                                }
+                                res.status(200).send(image.get('Thumbnail'));
+                            } else {
+                                res.status(200).send(image.get('Image'));
+                            }
+                        })
+                        .catch(function (error) {
+                            console.log("Error while reading image with id " + imageId + " from ArticleImages: ", error);
+                            res.statusCode = 500;
+                            res.send('500 Error reading image from database');
+                        });
                 }
             })
             .catch(function (error) {
@@ -31,6 +49,7 @@ router.get('/:id', function (req, res) {
                 res.statusCode = 500;
                 res.send('500 Error reading image from database');
             });
+
     } else {
         res.statusCode = 400;
         res.send('400 Wrong query parameter');
