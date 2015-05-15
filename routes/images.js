@@ -29,11 +29,11 @@ router.get('/:id', function (req, res) {
                                 var mimeType = image.get('MimeType');
                                 //res.setHeader('Content-type', mimeType);
                                 res.attachment(image.get('Filename'));
+                                var valid_start = image.get('valid_start');
+                                if (valid_start) {
+                                    res.set('Last-Modified', valid_start.toUTCString());
+                                }
                                 if (thumbnail) {
-                                    var valid_start = image.get('valid_start');
-                                    if (valid_start) {
-                                        res.set('Last-Modified', valid_start.toUTCString());
-                                    }
                                     res.status(200).send(image.get('Thumbnail'));
                                 } else {
                                     res.status(200).send(image.get('Image'));
