@@ -33,29 +33,29 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             var article = {};
             var text = articleItem.get('Text');
 
-/*
-            var title;
-            var lineBreakLen = 2;
-            var i1 = text.indexOf('\r\n');
-            if (i1 < 0) {
-                lineBreakLen = 1;
-                i1 = text.indexOf('\n');
-            }
-            if (i1 >= 0) {
-                var line = text.substring(0, i1);
-                var i2 = line.lastIndexOf('#');
-                if (i2 >= 0) {
-                    title = line.substr(i2 + 1);
-                    text = text.substr(i1 + lineBreakLen);
-                }
-            }
-            if (text.length > 0 && text[0] == '\r') {
-                text = text.substr(1);
-            }
-            if (text.length > 0 && text[0] == '\n') {
-                text = text.substr(1);
-            }
-*/
+            /*
+             var title;
+             var lineBreakLen = 2;
+             var i1 = text.indexOf('\r\n');
+             if (i1 < 0) {
+             lineBreakLen = 1;
+             i1 = text.indexOf('\n');
+             }
+             if (i1 >= 0) {
+             var line = text.substring(0, i1);
+             var i2 = line.lastIndexOf('#');
+             if (i2 >= 0) {
+             title = line.substr(i2 + 1);
+             text = text.substr(i1 + lineBreakLen);
+             }
+             }
+             if (text.length > 0 && text[0] == '\r') {
+             text = text.substr(1);
+             }
+             if (text.length > 0 && text[0] == '\n') {
+             text = text.substr(1);
+             }
+             */
 
             var expectedMatches = 2;
             var re = /.*\!\[(.*)\]\((.*)\).*/;
@@ -74,17 +74,17 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 }
             }
 
-/*
-            // Alle Bilder aus dem Text rausnehmen
-            if (expectedMatches == 2) {
-                re = /.*\!\[(.*)\]\((.*)\).*!/;
-                text = text.replace(re, "");
-            }
-            if (expectedMatches == 1) {
-                re = /.*\!\((.*)\).*!/;
-                text = text.replace(re, "");
-            }
-*/
+            /*
+             // Alle Bilder aus dem Text rausnehmen
+             if (expectedMatches == 2) {
+             re = /.*\!\[(.*)\]\((.*)\).*!/;
+             text = text.replace(re, "");
+             }
+             if (expectedMatches == 1) {
+             re = /.*\!\((.*)\).*!/;
+             text = text.replace(re, "");
+             }
+             */
 
             // add image-responsive class to image tags
             var rawHtml = rho.toHtml(text);
@@ -101,6 +101,9 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             article.notPublished = notPublished;
             records.push(article);
         });
+
+        page.socialShareEnabled = true; // todo: get frompage settings
+
 
         res.render(page.View, {
             csrfToken: req.csrfToken(),

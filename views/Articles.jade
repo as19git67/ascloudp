@@ -70,4 +70,7 @@ block content
         script(src="/lib/ng-flow-2.6.0/ng-flow.js", type="text/javascript")
         include ArticleTemplate.html
         script(src="/javascripts/ArticlesApp.js", type="text/javascript")
+    if page.socialShareEnabled
+        script(src="/lib/jquery.socialshareprivacy.min.js", type="text/javascript")
+        link(rel='stylesheet', href='/lib/socialshareprivacy/socialshareprivacy.css')
 
