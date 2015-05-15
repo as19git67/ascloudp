@@ -123,6 +123,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                     .then(function () {
                         console.log("All pages read for update");
 
+                        console.log("Waiting for " + savePromises.length + " promises");
                         Promise.all(savePromises)
                             .then(function (results) {
                                 console.log("All page orders updated");
