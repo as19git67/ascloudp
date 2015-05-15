@@ -18,7 +18,7 @@ block content
         div(class="media articleListItem", data-id='#{record.article_id}')
             if record.image
                 div.media-left
-                    a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}")
+                    a(href="#", id="#{record.article_id}", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}")
                         img(src="#{record.image}?type=thumbnail")
             div.media-body
                 h4.media-heading
