@@ -10,7 +10,7 @@ var getProfiles = require('./Profiles');
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
 
-var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false});
+var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false, pool: {min: 2, max: 3}});
 var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
