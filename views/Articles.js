@@ -102,7 +102,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             records.push(article);
         });
 
-        page.socialShareEnabled = true; // todo: get frompage settings
+        page.socialShareEnabled = false; // todo: get frompage settings
 
 
         res.render(page.View, {
