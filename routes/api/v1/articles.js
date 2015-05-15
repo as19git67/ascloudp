@@ -501,7 +501,7 @@ module.exports.put = function (req, res) {
                                         ChangedBy: userName,
                                         Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
                                     }
-                                ).save().then(function () {
+                                ).save(null, {transacting: t}).then(function () {
                                         t.commit(savedArticleItem);
                                         // goes to then of transaction
 
