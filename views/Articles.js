@@ -93,6 +93,14 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             article.article_id = articleItem.get('Article_id');
             article.title = articleItem.get('Title');
             article.leadText = articleItem.get('LeadText');
+            if (article.leadText) {
+                article.leadText = article.leadText.trim();
+                if (article.leadText.length > 0) {
+                    if (article.leadText.charAt(article.leadText.length - 1) != '.') {
+                        article.leadText += '. ';
+                    }
+                }
+            }
             article.rawHtml = rawHtml;
             article.author = articleItem.get('Author');
             article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');
@@ -102,7 +110,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             records.push(article);
         });
 
-        page.socialShareEnabled = false; // todo: get frompage settings
+        page.socialShareEnabled = true; // todo: get frompage settings
 
 
         res.render(page.View, {

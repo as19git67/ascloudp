@@ -1,28 +1,13 @@
-$(".socialshare").socialSharePrivacy({
-    services: {
-        facebook: {
-            perma_option: 'off',
-            dummy_img: '/lib/socialshareprivacy/images/dummy_facebook.png',
-            img: '/lib/socialshareprivacy/images/facebook_share_de.png'
-        },
-        twitter: {
-            perma_option: 'off',
-            dummy_img: '/lib/socialshareprivacy/images/dummy_twitter.png'
-        },
-        gplus: {
-            perma_option: 'off',
-            dummy_img: '/lib/socialshareprivacy/images/dummy_gplus.png',
-            status: 'off'
-        }
-    },
-    'language': 'de',
-    'lang_path': '/lib/socialshareprivacy/lang/',
-    'info_link': '',
-    uri: function (context) {
-        var u = window.location.pathname;
-        var id = $(context).parents(".articleListItem").find("a").attr("id");
-        var u = u + "/" + id;
-        console.log("URL:" + u)
-        return u;
+$(function () {
+    var elements = $('.social-likes');
+
+    var s, url;
+    for (var i = 0; i < elements.length; i++) {
+        s = $(elements[i]);
+        var d = s.attr('data-url');
+        url = window.location.href + d;
+        s.socialLikes({
+            url: url
+        });
     }
 });

@@ -32,6 +32,8 @@ router.get('/:id', function (req, res) {
                                 var valid_start = image.get('valid_start');
                                 if (valid_start) {
                                     res.set('Last-Modified', valid_start.toUTCString());
+                                    var expireDate = new Date(valid_start.getYear() + 1, valid_start.getMonth(), valid_start.getDate());
+                                    res.set('Expires', expireDate.toUTCString());
                                 }
                                 if (thumbnail) {
                                     res.status(200).send(image.get('Thumbnail'));

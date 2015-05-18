@@ -31,15 +31,21 @@ block content
                         span(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
                         if canEdit
                             span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
+                    if page.socialShareEnabled
+                        div(class="social-likes", data-url="/##{record.article_id}", data-title="#{record.title}")
+                            div(class="facebook", title="Artikel auf Facebook teilen")
+                            div(class="twitter", title="Diesen Artikel auf Twitter posten")
                 if record.notPublished
                     p.text-warning
                         strong Dieser Artikel wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
                 if record.date_formatted
                     p.small #{record.date_formatted}
-                if record.leadText
+                if record.leadText && !record.rawHtml
                     p(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.leadText}
-                if page.socialShareEnabled
-                    div.socialshare
+                if record.leadText && record.rawHtml
+                    p #{record.leadText}
+                        if record.rawHtml
+                            a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Mehr...
         div(class="modal fade", id='modal_for_article_#{record.article_id}', tabindex="-1", role="dialog", aria-labelledby="myLargeModalLabel", aria-hidden="true")
             div(class="modal-dialog modal-lg")
                 div.modal-content
@@ -52,18 +58,27 @@ block content
                         if record.leadText
                             p(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.leadText}
                         if page.socialShareEnabled
-                            div.socialshare
+                            div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
+                                div(class="facebook", title="Artikel auf Facebook teilen")
+                                div(class="twitter", title="Diesen Artikel auf Twitter posten")
                     div.modal-body
                         div.container-fluid
                             div.row
                                 | !{record.rawHtml}
                     div.modal-footer
                         button(data-dismiss="modal", class="btn btn-default") Schließen
+    include common-js.jade
+        //script(src="/lib/jquery-2.1.1.min.js", type="text/javascript")
+        //script(src="/lib/bootstrap/dist/js/bootstrap.min.js", type="text/javascript")
+        //script(src="/javascripts/adjustNavbar.js", type="text/javascript")
+        //script(src="/lib/underscore-1.7.0/underscore.js", type="text/javascript")
+        //script(src="/lib/moment-2.10.2/moment-with-locales.js", type="text/javascript")
+        //script(src="/lib/moment-timezone-0.3.0-2014j/moment-timezone-with-data.js", type="text/javascript")
+        ////script(src="/lib/eonasdan-bootstrap-datetimepicker/js/bootstrap-datetimepicker.min.js")
+        //script(src="/lib/jquery.validate.min.js", type="text/javascript")
+        //script(src="/lib/jquery.validate.unobtrusive.min.js", type="text/javascript")
 
     if canEdit
-        script(src="/lib/underscore-1.7.0/underscore.js", type="text/javascript")
-        script(src="/lib/moment-2.10.2/moment-with-locales.js", type="text/javascript")
-        script(src="/lib/moment-timezone-0.3.0-2014j/moment-timezone-with-data.js", type="text/javascript")
         script(src="/lib/angular-1.3.8/angular.js", type="text/javascript")
         script(src="/lib/angular-1.3.8/angular-cookies.js", type="text/javascript")
         script(src="/lib/angular-translate/angular-translate.min.js", type="text/javascript")
@@ -75,7 +90,7 @@ block content
         include ArticleTemplate.html
         script(src="/javascripts/ArticlesApp.js", type="text/javascript")
     if page.socialShareEnabled
-        link(rel='stylesheet', href='/lib/socialshareprivacy/socialshareprivacy.css')
-        script(src="/lib/jquery.socialshareprivacy.min.js", type="text/javascript")
+        link(rel='stylesheet', href='/lib/social-likes/social-likes_classic.css')
+        script(src="/lib/social-likes/src/social-likes.js", type="text/javascript")
         script(src="/javascripts/applySocialShare.js", type="text/javascript")
 
