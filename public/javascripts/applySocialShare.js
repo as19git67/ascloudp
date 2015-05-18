@@ -7,8 +7,8 @@ $(function () {
         d = s.attr('data-url');
         href = window.location.href.replace(window.location.hash, "");
         url = href + d;
-        s.socialLikes({
-            url: url
-        });
+        //s.socialLikes({
+        //    url: url
+        //});
     }
 });
