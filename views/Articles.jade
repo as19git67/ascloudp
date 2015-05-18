@@ -32,8 +32,8 @@ block content
                         if canEdit
                             span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
                     if page.socialShareEnabled
-                        div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
-                            div(class="facebook", zeroes="yes", title="Artikel auf Facebook teilen")
+                        div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}" data-zeroes="yes")
+                            div(class="facebook", title="Artikel auf Facebook teilen")
                             div(class="twitter", zeroes="yes", title="Diesen Artikel auf Twitter posten")
                 if record.notPublished
                     p.text-warning
