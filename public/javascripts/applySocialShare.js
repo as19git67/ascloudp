@@ -1,6 +1,5 @@
 $(function () {
     var elements = $('.social-likes');
-
     var s, url, href, d, t;
     for (var i = 0; i < elements.length; i++) {
         s = $(elements[i]);
