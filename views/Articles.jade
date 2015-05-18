@@ -33,8 +33,8 @@ block content
                             span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
                     if page.socialShareEnabled
                         div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
-                            div(class="facebook", title="Artikel auf Facebook teilen")
-                            div(class="twitter", title="Diesen Artikel auf Twitter posten")
+                            div(class="facebook twitter", title="Artikel auf Facebook teilen")
+                            //div(class="twitter", title="Diesen Artikel auf Twitter posten")
                 if record.notPublished
                     p.text-warning
                         strong Dieser Artikel wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
