@@ -1,16 +1,13 @@
+// run this before social-like runs!
+// This script replaces the data-url attribute with the full url
 $(function () {
     var elements = $('.social-likes');
-    var s, url, href, d, t;
+    var s, url, href, d;
     for (var i = 0; i < elements.length; i++) {
         s = $(elements[i]);
-        t = s.attr('data-title');
         d = s.attr('data-url');
         href = window.location.href.replace(window.location.hash, "");
         url = href + d;
         s.attr('data-url', url);
-        //s.socialLikes({
-        //    url: url,
-        //    title: t
-        //});
     }
 });

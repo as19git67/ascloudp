@@ -111,8 +111,6 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         });
 
         page.socialShareEnabled = true; // todo: get frompage settings
-        page.url = req.originalUrl;
-
 
         res.render(page.View, {
             csrfToken: req.csrfToken(),
