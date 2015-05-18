@@ -34,6 +34,7 @@ block content
                     if page.socialShareEnabled
                         div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
                             div(class="facebook", title="Artikel auf Facebook teilen")
+                        div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
                             div(class="twitter", title="Diesen Artikel auf Twitter posten")
                 if record.notPublished
                     p.text-warning
