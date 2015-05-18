@@ -105,7 +105,9 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                                         var newOrder = pagesById[page.id].Order;
                                         page.set('Order', newOrder);
                                         console.log("Set Order=" + newOrder + " of page " + page.id);
-                                        savePromises.push(page.save(null, {transacting: t}));  // add promise
+                                        savePromises.push(page.save(null, {transacting: t}).catch(function(err) {
+                                            console.log("ERROR updating page for reordering", err);
+                                        }));  // add promise
                                         resolve();
                                     } else {
                                         reject("Error: page not found");
