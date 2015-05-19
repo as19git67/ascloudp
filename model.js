@@ -10,7 +10,7 @@ var getProfiles = require('./Profiles');
 var databaseClient = config.get('databaseClient');
 var connectionString = config.get('connectionString');
 
-var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false, pool: {min: 2, max: 3}});
+var knex = require('knex')({client: databaseClient, connection: connectionString, debug: false, pool: {min: 2, max: 30}});
 var bookshelf = require('bookshelf')(knex);
 
 var crypto = require('crypto');
@@ -171,6 +171,21 @@ exports.upgradeSchema = function (upgradeVersion) {
                     });
 
                     break;
+                case 3:
+                    knex.schema.createTable('AppSettings', function (t) {
+                        t.string('key').primary();
+                        t.string('type').notNullable();
+                        t.string('value', 10000);
+                    }).then(function () {
+                        console.log("Transaction (creating AppSettings table in upgrade " + upgradeVersion + ") finished");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log("Transaction (creating AppSettings table in upgrade " + upgradeVersion + ") failed");
+                        reject(error);
+                    });
+
+                    break;
                 default:
                     resolve();
             }
@@ -295,44 +310,67 @@ function performUpgradeSchema2(resolve, reject) {
 }
 
 exports.createSchemaIfNotExists = function () {
-    return new Promise(function (resolve, reject) {
-        knex.schema.hasTable('RoleMenus').then(function (exists) {
-            if (exists) {
-                knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
-                    if (exists) {
-                        knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
-                            if (exists) {
-                                performUpgradeSchema2(resolve, reject);
-                            } else {
-                                console.log('Must upgrade DB schema.');
-                                exports.upgradeSchema(1).then(
-                                    function () {
-                                        performUpgradeSchema2(resolve, reject);
-                                    }, reject);
-                            }
-                        });
-                    } else {
-                        console.log('Must create DB schema.');
-                        exports.createSchema().then(
-                            function () {
-                                console.log('DB schema created.');
-                                resolve();
-                            },
-                            reject);
-                    }
-                });
-            } else {
-                console.log('Must create DB schema.');
-                exports.createSchema().then(
-                    function () {
-                        console.log('DB schema created.');
-                        resolve();
-                    },
-                    reject);
-            }
-        }).catch(function (error) {
-            reject(error);
-        });
+    return new Promise(function (resolve3, reject3) {
+
+        new Promise(function (resolve, reject) {
+            knex.schema.hasTable('RoleMenus').then(function (exists) {
+                if (exists) {
+                    knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
+                        if (exists) {
+                            knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
+                                if (exists) {
+                                    performUpgradeSchema2(resolve, reject);
+                                } else {
+                                    console.log('Must upgrade DB schema.');
+                                    exports.upgradeSchema(1).then(
+                                        function () {
+                                            performUpgradeSchema2(resolve, reject);
+                                        }, reject);
+                                }
+                            });
+                        } else {
+                            console.log('Must create DB schema.');
+                            exports.createSchema().then(
+                                function () {
+                                    console.log('DB schema created.');
+                                    resolve();
+                                },
+                                reject);
+                        }
+                    });
+                } else {
+                    console.log('Must create DB schema.');
+                    exports.createSchema().then(
+                        function () {
+                            console.log('DB schema created.');
+                            resolve();
+                        },
+                        reject);
+                }
+            }).catch(function (error) {
+                reject(error);
+            });
+        }).then(function () {
+                knex.schema.hasTable('AppSettings')
+                    .then(function (exists) {
+                        if (exists) {
+                            resolve3();
+                        } else {
+                            console.log('Must upgrade DB schema (V3).');
+                            exports.upgradeSchema(3)
+                                .then(function () {
+                                    console.log('DB schema upgraded to V3.');
+                                    resolve3();
+                                }, reject3);
+                        }
+                    })
+                    .catch(function (error) {
+                        reject3(error);
+                    });
+            })
+            .catch(function (error) {
+                reject3(error);
+            });
     });
 };
 
@@ -378,6 +416,9 @@ exports.deleteInclompleteUploads = function () {
 
 exports.createSchema = function () {
     return Promise.reduce([
+            function () {
+                return knex.schema.dropTableIfExists('AppSettings');
+            },
             function () {
                 return knex.schema.dropTableIfExists('LinkItems');
             },
@@ -819,6 +860,13 @@ exports.createSchema = function () {
                     t.string('Description');
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return knex.schema.createTable('AppSettings', function (t) {
+                    t.string('key').primary();
+                    t.string('type').notNullable();
+                    t.string('value', 10000);
                 });
             },
             function () {
@@ -1335,6 +1383,14 @@ var Links = bookshelf.Collection.extend({
     model: Link
 });
 
+var AppSetting = bookshelf.Model.extend({
+    tableName: 'AppSettings'
+});
+
+var AppSettings = bookshelf.Collection.extend({
+    model: AppSetting
+});
+
 var createSalt = function () {
     var salt = crypto.randomBytes(32).toString('base64');
     return salt;
@@ -1465,6 +1521,28 @@ var getPagesForUser = function (user) {
     });
 };
 
+var putAppSetting = function(key, value, type) {
+    switch(type) {
+        case 'boolean':
+        case 'number':
+        case 'string':
+        case 'symbol':
+            t = type;
+            break;
+        case 'image':
+            t = 'image';
+            break;
+        default:
+            t = typeof value;
+            break;
+    }
+    return new AppSetting({
+        key: key,
+        value: value,
+        type: t
+    }).save();
+};
+
 var formatDateTime = function (date) {
     var mDate = moment(date);
     if (mDate.isValid()) {
@@ -1560,6 +1638,7 @@ module.exports.checkPassword = checkPassword;
 module.exports.saveNewPassword = saveNewPassword;
 module.exports.getPages = getPages;
 module.exports.getPagesForUser = getPagesForUser;
+module.exports.putAppSetting = putAppSetting;
 module.exports.formatDateTime = formatDateTime;
 module.exports.formatDateTimeShort = formatDateTimeShort;
 module.exports.formatDateTimeLong = formatDateTimeLong;
@@ -1620,7 +1699,9 @@ module.exports.models = {
     Contacts: Contacts,
     Link: Link,
     LinkItem: LinkItem,
-    Links: Links
+    Links: Links,
+    AppSetting: AppSetting,
+    AppSettings: AppSettings
 };
 
 module.exports.pageModels = {
