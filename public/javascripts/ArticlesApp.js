@@ -96,7 +96,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     putImagesIntoPages(payload.article_images);
 
                     if ($scope.article.text) {
-                        $scope.renderRhoText();
+                        $scope.renderMarkdown();
                     }
 
                     var flow = $scope.flowObj.flow;
@@ -250,9 +250,9 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             });
         };
 
-        $scope.renderRhoText = function () {
+        $scope.renderMarkdown = function () {
 
-            var rawHtml = rho.toHtml($scope.article.text);
+            var rawHtml = marked($scope.article.text);
             // add class attribute to all image tags to apply bootstrap styles
             $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
             $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);

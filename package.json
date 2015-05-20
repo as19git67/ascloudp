@@ -30,9 +30,9 @@
     "passport-local": "*",
     "passport-twitter": "*",
     "pg": "*",
-    "rho": "*",
     "serve-favicon": "*",
     "tmp": "0.0.24",
-    "underscore": "*"
+    "underscore": "*",
+    "marked": "~0.3.3"
   }
 }

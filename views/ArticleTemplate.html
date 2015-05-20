@@ -290,6 +290,8 @@
                                         <dd>Text, der mit _ umschlossen ist, wird kursiv dargestellt</dd>
                                         <dt>Fettschrift</dt>
                                         <dd>Text, der mit * umschlossen ist, wird fett dargestellt</dd>
+                                        <dt>Durchgestrichen</dt>
+                                        <dd>~~Das war ein mal~~</dd>
                                         <dt>Links</dt>
                                         <dd>Links werden in folgender Form definiert: <code>[Link
                                             text](http://myurl.com)</code></dd>
@@ -309,8 +311,10 @@
                                             Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.
                                         </dd>
                                         <dt>Weitere Informationen</dt>
-                                        <dd><a href="https://github.com/inca/rho/blob/master/SYNTAX.md" target="_blank">RHO
+                                        <dd><a href="https://guides.github.com/features/mastering-markdown" target="_blank">Mastering Markdown</a></dd>
+                                        <dd><a href="https://help.github.com/articles/github-flavored-markdown" target="_blank">Markdown
                                             Syntax (Englisch)</a></dd>
+                                        <dd><a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet" target="_blank">Markdown Cheatsheet</a></dd>
                                     </dl>
                                 </div>
                             </div>
@@ -319,7 +323,7 @@
                                     <textarea class="form-control textareaMonospace" rows="{{textareaRows}}"
                                               ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
                                               required="Ein Text muss eingegeben werden" ng-required="true"
-                                              ng-change="renderRhoText()"></textarea>
+                                              ng-change="renderMarkdown()"></textarea>
                                 </div>
                             </div>
                             <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6" ng-bind-html="trustedTextAsHtml">

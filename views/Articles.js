@@ -3,7 +3,7 @@ var Promise = require('bluebird/js/main/promise')();
 var config = require('../config');
 var model = require('../model');
 var moment = require('moment');
-var rho = require('rho');
+var marked = require('marked');
 var ArticleItem = model.models.ArticleItem;
 
 var appName = config.get('appName');
@@ -87,7 +87,11 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
              */
 
             // add image-responsive class to image tags
-            var rawHtml = rho.toHtml(text);
+
+            var rawHtml = "";
+            if (text && text.length > 0) {
+                rawHtml = marked(text);
+            }
             // add class attribute to all image tags to apply bootstrap styles
             rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
             article.article_id = articleItem.get('Article_id');

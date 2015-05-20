@@ -21,8 +21,8 @@ block content
             input(type="hidden", value="#{csrfToken}" name="_csrf")
             input(type="hidden", value="#{Page_id}" name="_pageId")
             div.form-group
-                label(for="rawRho") Seitentext:
-                textarea(class="form-control", placeholder='Seitentext hier eingeben', id="rawRho", name="rawRho", rows=15) #{RawRHO}
+                label(for="rawMarked") Seitentext:
+                textarea(class="form-control", placeholder='Seitentext hier eingeben', id="rawMarked", name="rawMarked", rows=15) #{RawMarked}
             div.form-group
                 button(class="btn btn-default", id="save", value="save", name="save")
                     span(class="glyphicon glyphicon-save")

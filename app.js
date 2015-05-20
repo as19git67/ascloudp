@@ -12,7 +12,7 @@ var fs = require('fs');
 var config = require('./config');
 var _ = require('underscore');
 var moment = require('moment');
-var rho = require('rho');
+var marked = require('marked');
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
 
@@ -149,11 +149,12 @@ app.use(function (req, res, next) {
                                         if (!pageContent) {
                                             pageContent = new PageContent({Page_id: page.Name});
                                         }
-                                        rawRho = req.body.rawRho;
-                                        rawHtml = rho.toHtml(rawRho);
+
+                                        rawMarked = req.body.rawMarked;
+                                        rawHtml = marked(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
-                                        pageContent.set('Text', rawRho);
+                                        pageContent.set('Text', rawMarked);
                                         pageContent.save().then(function (savedPageContent) {
                                             res.render(viewName, {
                                                 csrfToken: req.csrfToken(),
@@ -165,7 +166,7 @@ app.use(function (req, res, next) {
                                                 pages: pages,
                                                 canEdit: canPost,
                                                 RawHTML: rawHtml,
-                                                RawRHO: rawRho
+                                                RawMarked: rawMarked
                                             });
                                         }).catch(function (error) {
                                             console.log("Error while saving page content: " + error);
@@ -179,20 +180,20 @@ app.use(function (req, res, next) {
                                                 pages: pages,
                                                 canEdit: canPost,
                                                 RawHTML: rawHtml,
-                                                RawRHO: rawRho,
+                                                Marked: rawMarked,
                                                 error: "Der Seiteninhalt konnte nicht gespeichert werden"
                                             });
                                         });
                                     } else {
-                                        var rawRho = "";
+                                        var rawMarked = "";
                                         var rawHtml = undefined;
                                         if (pageContent) {
-                                            rawRho = pageContent.get('Text');
+                                            rawMarked = pageContent.get('Text');
                                         } else {
                                             console.log("Warning: rendering page " + page.Name + " without content");
-                                            rawRho = "";
+                                            rawMarked = "";
                                         }
-                                        rawHtml = rho.toHtml(rawRho);
+                                        rawHtml = rho.toHtml(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         res.render(viewName, {
@@ -205,7 +206,7 @@ app.use(function (req, res, next) {
                                             pages: pages,
                                             canEdit: canPost,
                                             RawHTML: rawHtml,
-                                            RawRHO: rawRho
+                                            RawMarked: rawMarked
                                         });
                                     }
                                 }).catch(function (error) {
