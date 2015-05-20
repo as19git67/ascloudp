@@ -20,7 +20,7 @@ function prepareResponse(req, res, next) {
         {name: "bootstrap", description: "bootstrap default style"},
         {name: "feuerwehr", description: "Feuerwehr"},
         {name: "yeti", description: "Yeti"},
-        {name: "csu", description: "CSU"}
+        {name: "csu", description: "Blue"}
       ]
     };
     var settingsUI = [];
