@@ -193,7 +193,7 @@ app.use(function (req, res, next) {
                                             console.log("Warning: rendering page " + page.Name + " without content");
                                             rawMarked = "";
                                         }
-                                        rawHtml = rho.toHtml(rawMarked);
+                                        rawHtml = marked(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         res.render(viewName, {
