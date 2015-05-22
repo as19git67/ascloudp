@@ -1,0 +1,26 @@
+extends layout
+block content
+    if error
+        p.text-danger #{error}
+
+    div.modal-content
+        div.modal-header
+            button(type="button", class="close", data-dismiss="modal", aria-label="Close")
+                span(aria-hidden="true") &times;
+            h3(class="modal-title") #{article.title}
+            if article.author
+                p.small Von: #{article.author}, #{article.date_formatted}
+            if article.leadText
+                p(data-toggle="modal", data-target="#modal_for_article_#{article.article_id}") #{article.leadText}
+            if page.socialShareEnabled
+                div(class="social-likes", data-url="##{article.article_id}", data-title="#{article.title}")
+                    div(class="facebook", title="Artikel auf Facebook posten")
+                    div(class="twitter", title="Diesen Artikel auf Twitter posten")
+        div.modal-body
+            div.container-fluid
+                div.row
+                    | !{article.rawHtml}
+        div.modal-footer
+            button(data-dismiss="modal", class="btn btn-default") Schließen
+
+    include common-js.jade

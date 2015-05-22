@@ -9,23 +9,23 @@ block content
         div.form-group
             label(for="favicon",class="col-xs-12 col-sm-2 control-label") Favicon
             div(class="col-xs-12 col-sm-10 col-md-7")
-                input(class="form-control", name="favicon", placeholder="Favicon (16px x 16px)")
+                input(class="form-control file", type="file", name="favicon", placeholder="Favicon (16px x 16px PNG)")
         div.form-group
             label(for="bannerXS",class="col-xs-12 col-sm-2 control-label") Banner XS (Breite: 480px)
             div(class="col-xs-12 col-sm-10 col-md-7")
-                input(class="form-control", name="bannerXS", placeholder="")
+                input(class="form-control file", type="file", name="bannerXS", placeholder="")
         div.form-group
             label(for="bannerSM",class="col-xs-12 col-sm-2 control-label") Banner SM (Breite: 768px)
             div(class="col-xs-12 col-sm-10 col-md-7")
-                input(class="form-control", name="bannerSM", placeholder="")
+                input(class="form-control file", type="file", name="bannerSM", placeholder="")
         div.form-group
             label(for="bannerMD",class="col-xs-12 col-sm-2 control-label") Banner MD (Breite: 992px)
             div(class="col-xs-12 col-sm-10 col-md-7")
-                input(class="form-control", name="bannerMD", placeholder="")
+                input(class="form-control file", type="file", name="bannerMD", placeholder="")
         div.form-group
             label(for="bannerLG",class="col-xs-12 col-sm-2 control-label") Banner LG (Breite: 1200px)
             div(class="col-xs-12 col-sm-10 col-md-7")
-                input(class="form-control", name="bannerLG", placeholder="")
+                input(class="form-control file", type="file", name="bannerLG", placeholder="")
 
         each setting in settingsUI
             div.form-group
@@ -47,3 +47,6 @@ block content
                     | &nbsp Abbrechen
 
     include common-js.jade
+    link(rel='stylesheet', href='/lib/bootstrap-fileinput-4.2.0/css/fileinput.min.css')
+    script(src="/lib/bootstrap-fileinput-4.2.0/js/fileinput.min.js", type="text/javascript")
+    script(src="/lib/bootstrap-fileinput-4.2.0/js/fileinput_locale_de.js", type="text/javascript")
