@@ -1,12 +1,11 @@
 var express = require('express');
-var _ = require('underscore');
 var router = express.Router();
 var model = require('../model');
 var ArticleImage = model.models.ArticleImage;
 
 router.get('/:id', function (req, res) {
     var imageId = req.params.id;
-    if (_.isNumber(imageId)) {
+    if (data === parseInt(imageId, 10)) {
         new ArticleImage({id: imageId})
             .fetch({columns: ['valid_start']})
             .then(function (iRecord) {
