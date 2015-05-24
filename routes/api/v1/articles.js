@@ -6,6 +6,7 @@ var formidable = require('formidable');
 var tmp = require('tmp');
 var path = require('path');
 var fs = require('fs');
+var JPEG = require("jpeg-js");
 var Jimp = require('jimp');
 var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
@@ -354,8 +355,8 @@ module.exports.postImage = function (req, res) {
                             catch (e) {
                                 removeChunkFiles();
                                 console.log("Error: Jimp failed. ", e);
-                                res.statusCode = 500;
-                                res.send('500 generating image thumbnail failed');
+                                res.statusCode = 422;
+                                res.send('422 Unprocessable: generating image thumbnail failed');
                             }
                         })
                         .catch(function (error) {
