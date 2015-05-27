@@ -6,7 +6,6 @@ var formidable = require('formidable');
 var tmp = require('tmp');
 var path = require('path');
 var fs = require('fs');
-var JPEG = require("jpeg-js");
 var Jimp = require('jimp');
 var Article = model.models.Article;
 var ArticleItem = model.models.ArticleItem;
@@ -257,6 +256,12 @@ module.exports.postImage = function (req, res) {
     var flowIdentifier = req.body.flowIdentifier;
     var flowTotalChunks = req.body.flowTotalChunks;
     console.log("postImage: flowIdentifier=" + flowIdentifier + ", flowTotalChunks=" + flowTotalChunks + ", Article_id=" + articleId);
+
+    function sendErrorResponse(statusCode, statusText) {
+        res.statusCode = statusCode;
+        res.send(statusCode + ' ' + statusText);
+    }
+
     new Uploads()
         .query(function (qb) {
             qb.where('flowIdentifier', flowIdentifier);
@@ -304,7 +309,7 @@ module.exports.postImage = function (req, res) {
                         .then(function () {
                             try {
                                 console.log("Generating thumbnail (mime type is " + mimeType + ")...");
-                                var jimpImage = new Jimp(imageFileBuffer, function (err, jimage) {
+                                new Jimp(imageFileBuffer, function (err, jimage) {
                                     if (err) {
                                         console.log("ERROR while loading image with jimp", err);
                                         removeChunkFiles();
@@ -313,7 +318,7 @@ module.exports.postImage = function (req, res) {
                                     } else {
                                         console.log("image loaded");
                                         var width = jimage.bitmap.width;
-                                        var factor = 300 / width;   // scale to specific pixel width
+                                        var factor = 100 / width;   // scale to specific pixel width
                                         jimage.scale(factor) // scale
                                             .quality(30); // set JPEG quality
                                         jimage.getBuffer(mimeType, function (err, thumbnailBuffer) {
@@ -326,27 +331,54 @@ module.exports.postImage = function (req, res) {
                                                 console.log("Thumbnail generated. Size: " + thumbnailBuffer.length);
                                                 console.log("Image file: " + flowFilename);
 
-                                                new ArticleImage(
-                                                    {
-                                                        Article_id: articleId,
-                                                        Image: imageFileBuffer,
-                                                        Thumbnail: thumbnailBuffer,
-                                                        MimeType: mimeType,
-                                                        Filename: flowFilename,
-                                                        Size: flowTotalSize,
-                                                        valid_start: new Date()
+                                                // scale big image to have max width
+                                                new Jimp(imageFileBuffer, function (err, jimage800) {
+                                                    if (err) {
+                                                        console.log("ERROR while loading image with jimp", err);
+                                                        removeChunkFiles();
+                                                        sendErrorResponse(500, 'Saving image in database failed');
+                                                    } else {
+                                                        console.log("image loaded");
+                                                        var width = jimage800.bitmap.width;
+                                                        if (width > 800) {
+                                                            var factor = 800 / width;   // scale to specific pixel width
+                                                            jimage800.scale(factor);// scale
+                                                        }
+                                                        jimage800.quality(40); // set JPEG quality
+                                                        jimage800.getBuffer(mimeType, function (err, image800Buffer) {
+                                                            if (err) {
+                                                                console.log("Error while scaling image: ", err);
+                                                                removeChunkFiles();
+                                                                res.statusCode = 500;
+                                                                res.send('500 Saving image in database failed');
+                                                            } else {
+                                                                console.log("Resized image generated. Size: " + image800Buffer.length);
+
+                                                                new ArticleImage(
+                                                                    {
+                                                                        Article_id: articleId,
+                                                                        Image: imageFileBuffer,
+                                                                        Thumbnail: image800Buffer,
+                                                                        MimeType: mimeType,
+                                                                        Filename: flowFilename,
+                                                                        Size: flowTotalSize,
+                                                                        valid_start: new Date()
+                                                                    }
+                                                                ).save().then(function (savedImage) {
+                                                                        console.log("Image with id " + savedImage.get('id') + " saved");
+                                                                        removeChunkFiles();
+                                                                        res.statusCode = 200; // OK
+                                                                        res.send('200 OK');
+                                                                    }).catch(function (error) {
+                                                                        console.log("Error while saving image in table ArticleImages: ", error);
+                                                                        removeChunkFiles();
+                                                                        res.statusCode = 500;
+                                                                        res.send('500 Saving image in database failed');
+                                                                    });
+                                                            }
+                                                        });
                                                     }
-                                                ).save().then(function (savedImage) {
-                                                        console.log("Image with id " + savedImage.get('id') + " saved");
-                                                        removeChunkFiles();
-                                                        res.statusCode = 200; // OK
-                                                        res.send('200 OK');
-                                                    }).catch(function (error) {
-                                                        console.log("Error while saving image in table ArticleImages: ", error);
-                                                        removeChunkFiles();
-                                                        res.statusCode = 500;
-                                                        res.send('500 Saving image in database failed');
-                                                    });
+                                                });
                                             }
                                         });
                                     }
