@@ -39,7 +39,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                     bootstrapTheme: config.get('bootstrapStyle'),
                     canEdit: canEdit,
                     appName: appName,
-                    title: page.EntityNameSingular,
+                    title: article.title,
                     user: req.user,
                     pages: pages,
                     page: page,
