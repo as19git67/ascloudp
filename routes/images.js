@@ -5,7 +5,7 @@ var ArticleImage = model.models.ArticleImage;
 
 router.get('/:id', function (req, res) {
     var imageId = req.params.id;
-    if (parseInt(imageId, 10)) {
+    if (parseInt(imageId, 10).toString() == imageId) {
         new ArticleImage({id: imageId})
             .fetch({columns: ['valid_start']})
             .then(function (iRecord) {
