@@ -124,13 +124,26 @@ app.use(function (req, res, next) {
     if (url.substr(0, 1) == "/") {
         url = url.substr(1);
     }
+    // remove query parameter
     var idx = url.indexOf('?');
     if (idx >= 1) {
         url = url.substring(0, idx);
     }
+    // remove sub-path
+    idx = url.indexOf('/');
+    if (idx >= 1) {
+
+        var idStr = url.substring(idx + 1);
+        var idx2 = idStr.indexOf('/');
+        if (idx2 >= 0) {
+            idStr = idStr.substring(0, idx2);
+        }
+        req.params.id = parseInt(idStr, 10);
+        url = url.substring(0, idx);
+    }
 
     if (url.indexOf('api/') != 0) {
-        rp.canPost(req).then(function (canPost) {
+        rp.canPost(req, 1).then(function (canPost) {
 
             model.getPagesForUser(req.user).then(function (pages) {
                 var page = _.findWhere(pages, {Name: url});
@@ -217,6 +230,9 @@ app.use(function (req, res, next) {
                                     next(err);
                                 });
                             } else {
+                                if (req.params.id) {
+                                    viewName = page.DetailView;
+                                }
                                 var collectionClass = model.models[m];
                                 if (collectionClass) {
                                     var collection = new collectionClass();

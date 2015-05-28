@@ -1,0 +1,31 @@
+extends layout
+block content
+    if error
+        p.text-danger #{error}
+
+    div.container-fluid
+        div.row
+            a(type="button", class="close", href="/#{page.Name}##{article.article_id}", aria-label="Close")
+                span(aria-hidden="true") &times;
+            h3 #{article.title}
+                if page.socialShareEnabled
+                    div(class="social-likes", data-url="#{page.Name}/#{article.article_id}", data-title="#{article.title}")
+                        div(class="facebook", title="Artikel auf Facebook posten")
+                        div(class="twitter", title="Diesen Artikel auf Twitter posten")
+
+            if article.author
+                p.small Von: #{article.author}, #{article.date_formatted}
+            if article.leadText
+                p(data-toggle="modal", data-target="#modal_for_article_#{article.article_id}") #{article.leadText}
+        div.row
+            hr
+            | !{article.rawHtml}
+        div.row
+            hr
+            a(class="btn btn-default", href="/#{page.Name}##{article.article_id}") Zurück
+
+    include common-js.jade
+    if page.socialShareEnabled
+        link(rel='stylesheet', href='/lib/social-likes/social-likes_classic.css')
+        script(src="/javascripts/applySocialShare.js", type="text/javascript")
+        script(src="/lib/social-likes/social-likes.min.js", type="text/javascript")

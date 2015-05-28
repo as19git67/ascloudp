@@ -12,6 +12,8 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
     var now = new Date();
     var nowMoment = new moment(now);
 
+    // select all articles
+
     new ArticleItem().query(function (qb) {
         qb.innerJoin('Articles', 'Articles.id', 'ArticleItems.Article_id');
         if (canEdit) {
@@ -26,95 +28,11 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         _.each(dataCollection.models, function (articleItem) {
-            var notPublished = false;
-            if (nowMoment.isBefore(articleItem.get('publish_start')) || nowMoment.isAfter(articleItem.get('publish_end'))) {
-                notPublished = true;
-            }
-            var article = {};
-            var text = articleItem.get('Text');
-
-            /*
-             var title;
-             var lineBreakLen = 2;
-             var i1 = text.indexOf('\r\n');
-             if (i1 < 0) {
-             lineBreakLen = 1;
-             i1 = text.indexOf('\n');
-             }
-             if (i1 >= 0) {
-             var line = text.substring(0, i1);
-             var i2 = line.lastIndexOf('#');
-             if (i2 >= 0) {
-             title = line.substr(i2 + 1);
-             text = text.substr(i1 + lineBreakLen);
-             }
-             }
-             if (text.length > 0 && text[0] == '\r') {
-             text = text.substr(1);
-             }
-             if (text.length > 0 && text[0] == '\n') {
-             text = text.substr(1);
-             }
-             */
-
-            var expectedMatches = 2;
-            var re = /.*\!\[(.*)\]\((.*)\).*/;
-            var ma = re.exec(text);
-            if (!ma) {
-                expectedMatches = 1;
-                re = /.*\!\((.*)\).*/;
-                ma = re.exec(text);
-            }
-
-            // Erstes gefundene Bild als image setzen
-            if (!article.image) {
-                if (ma && ma.length > expectedMatches) {
-                    article.imageAlt = expectedMatches - 1;
-                    article.image = ma[expectedMatches];
-                }
-            }
-
-            /*
-             // Alle Bilder aus dem Text rausnehmen
-             if (expectedMatches == 2) {
-             re = /.*\!\[(.*)\]\((.*)\).*!/;
-             text = text.replace(re, "");
-             }
-             if (expectedMatches == 1) {
-             re = /.*\!\((.*)\).*!/;
-             text = text.replace(re, "");
-             }
-             */
-
-            // add image-responsive class to image tags
-
-            var rawHtml = "";
-            if (text && text.length > 0) {
-                rawHtml = marked(text);
-            }
-            // add class attribute to all image tags to apply bootstrap styles
-            rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
-            article.article_id = articleItem.get('Article_id');
-            article.title = articleItem.get('Title');
-            article.leadText = articleItem.get('LeadText');
-            if (article.leadText) {
-                article.leadText = article.leadText.trim();
-                if (article.leadText.length > 0) {
-                    if (article.leadText.charAt(article.leadText.length - 1) != '.') {
-                        article.leadText += '. ';
-                    }
-                }
-            }
-            article.rawHtml = rawHtml;
-            article.author = articleItem.get('Author');
-            article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');
-            article.publish_start_formatted = moment(articleItem.get('publish_start')).format('dddd, D. MMMM YYYY');
-            article.publish_end_formatted = moment(articleItem.get('publish_end')).format('dddd, D. MMMM YYYY');
-            article.notPublished = notPublished;
-            records.push(article);
+            records.push(getArticleData(nowMoment, articleItem));
         });
 
-        page.socialShareEnabled = true; // todo: get frompage settings
+        page.socialShareEnabled = true; // todo: get from page settings
+        page.socialShareEnabledInList = false;
 
         res.render(page.View, {
             csrfToken: req.csrfToken(),
@@ -134,3 +52,65 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         next(err);
     });
 };
+
+function getArticleData(nowMoment, articleItem) {
+    var notPublished = false;
+    if (nowMoment.isBefore(articleItem.get('publish_start')) || nowMoment.isAfter(articleItem.get('publish_end'))) {
+        notPublished = true;
+    }
+    var article = {};
+    var text = articleItem.get('Text');
+
+    var expectedMatches = 2;
+    var re = /.*\!\[(.*)\]\((.*)\).*/;
+    var ma = re.
+        exec(text);
+    if (!ma) {
+        expectedMatches = 1;
+        re = /.*\!\((.*)\).*/;
+        ma = re.exec(text);
+    }
+    // Erstes gefundene Bild als image setzen
+    if (!
+            article.image) {
+        if (ma &&
+            ma.length > expectedMatches) {
+            article.imageAlt =
+                expectedMatches - 1;
+            article.image = ma[expectedMatches];
+        }
+    }
+
+    // add image-responsive class to image tags
+
+    var rawHtml = "";
+    if (text && text.length > 0) {
+        rawHtml = marked(text);
+    }
+    // add class attribute to all image tags to apply bootstrap styles
+    rawHtml = rawHtml.replace(/<img\s*src=/g,
+        "<img class=\"img-responsive\" src=");
+    article.article_id = articleItem.get(
+        'Article_id');
+    article.title =
+        articleItem.
+            get('Title');
+    article.leadText = articleItem.get('LeadText');
+    if (article.leadText) {
+        article.leadText = article.leadText.trim();
+        if (article.leadText.length > 0) {
+            if (article.leadText.charAt(article.leadText.length - 1) != '.') {
+                article.leadText += '. ';
+            }
+        }
+    }
+    article.rawHtml = rawHtml;
+    article.author = articleItem.get('Author');
+    article.date_formatted = moment(articleItem.get('Date')).format('dddd, D. MMMM YYYY');
+    article.publish_start_formatted = moment(articleItem.get('publish_start')).format('dddd, D. MMMM YYYY');
+    article.publish_end_formatted = moment(articleItem.get('publish_end')).format('dddd, D. MMMM YYYY');
+    article.notPublished = notPublished;
+    return article;
+}
+
+module.exports.getArticleData = getArticleData;

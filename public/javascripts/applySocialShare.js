@@ -6,8 +6,7 @@ $(function () {
     for (var i = 0; i < elements.length; i++) {
         s = $(elements[i]);
         d = s.attr('data-url');
-        href = window.location.href.replace(window.location.hash, "");
-        url = href + d;
+        url = window.location.origin + '/' + d;
         s.attr('data-url', url);
     }
 });

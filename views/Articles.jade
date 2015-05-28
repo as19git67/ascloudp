@@ -25,14 +25,13 @@ block content
                 h4.media-heading
                     if record.title
                         a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.title}
-                        if canEdit
-                            span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
+                        //a(href="#{page.Name}/#{record.article_id}") #{record.title}
                     else
-                        span(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
-                        if canEdit
-                            span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
-                    if page.socialShareEnabled
-                        div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
+                        a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
+                    if canEdit
+                        span.glyphicon.glyphicon-edit(data-id='#{record.article_id}')
+                    if page.socialShareEnabledInList
+                        div(class="social-likes", data-url="#{page.Name}/#{record.article_id}", data-title="#{record.title}")
                             div(class="facebook", title="Artikel auf Facebook posten")
                             div(class="twitter", title="Diesen Artikel auf Twitter posten")
                 if record.notPublished
@@ -45,7 +44,7 @@ block content
                 if record.leadText && record.rawHtml
                     p #{record.leadText}
                         if record.rawHtml
-                            a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Mehr...
+                            a(href="#{page.Name}/#{record.article_id}") Mehr...
         div(class="modal fade", id='modal_for_article_#{record.article_id}', tabindex="-1", role="dialog", aria-labelledby="myLargeModalLabel", aria-hidden="true")
             div(class="modal-dialog modal-lg")
                 div.modal-content
@@ -53,14 +52,14 @@ block content
                         button(type="button", class="close", data-dismiss="modal", aria-label="Close")
                             span(aria-hidden="true") &times;
                         h3(class="modal-title") #{record.title}
+                            if page.socialShareEnabled
+                                div(class="social-likes", data-url="#{page.Name}/#{record.article_id}", data-title="#{record.title}")
+                                    div(class="facebook", title="Artikel auf Facebook posten")
+                                    div(class="twitter", title="Diesen Artikel auf Twitter posten")
                         if record.author
                             p.small Von: #{record.author}, #{record.date_formatted}
                         if record.leadText
                             p(data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.leadText}
-                        if page.socialShareEnabled
-                            div(class="social-likes", data-url="##{record.article_id}", data-title="#{record.title}")
-                                div(class="facebook", title="Artikel auf Facebook posten")
-                                div(class="twitter", title="Diesen Artikel auf Twitter posten")
                     div.modal-body
                         div.container-fluid
                             div.row

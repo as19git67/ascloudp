@@ -1479,6 +1479,14 @@ var getPages = function () {
     });
 };
 
+// calculate name of detail view
+function setDetailView(page) {
+    // todo: add to page configuration
+    if (!page.isSingleEntity) {
+        page.DetailView = page.View + 'Detail';
+    }
+}
+
 var getPagesForUser = function (user) {
     return new Promise(function (resolve, reject) {
         getPages().then(function (pages) {
@@ -1493,6 +1501,7 @@ var getPagesForUser = function (user) {
                     .select('UserRoles.User_id', 'RolePermissions.*')
                     .then(function (results) {
                         _.each(pages, function (page) {
+                            setDetailView(page);
                             if (page.AnonymousAccess) {
                                 pagesForUser.push(page);
                             } else {
@@ -1512,6 +1521,7 @@ var getPagesForUser = function (user) {
             } else {
                 pages.forEach(function (page) {
                     if (page.AnonymousAccess) {
+                        setDetailView(page);
                         pagesForUser.push(page);
                     }
                 });
@@ -1521,8 +1531,8 @@ var getPagesForUser = function (user) {
     });
 };
 
-var putAppSetting = function(key, value, type) {
-    switch(type) {
+var putAppSetting = function (key, value, type) {
+    switch (type) {
         case 'boolean':
         case 'number':
         case 'string':
