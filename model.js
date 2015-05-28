@@ -789,7 +789,6 @@ exports.createSchema = function () {
                     t.string('Description').index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
-                    t.unique(['Article_id', 'Filename'])
                 });
             },
             function () {
