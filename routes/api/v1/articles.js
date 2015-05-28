@@ -164,42 +164,23 @@ module.exports.getImageChunk = function (req, res) {
         var flowFilename = req.query.flowFilename;
         console.log("Flow asks for chunk id " + flowChunkNumber + " of file id " + flowIdentifier + " for article with id " + articleId);
 
-        new ArticleImage(
-            {
-                Article_id: articleId,
-                Filename: flowFilename
-            })
-            .fetch({columns: ['id']})
-            .then(function (image) {
-                if (image) {
-                    // image already exists
-                    res.status(409).send();// conflict
+        new Upload({flowIdentifier: flowIdentifier, flowChunkNumber: flowChunkNumber})
+            .fetch()
+            .then(function (chunk) {
+                if (chunk) {
+                    console.log("chunk is already uploaded");
+                    res.status(200).send();
                 } else {
-                    new Upload({flowIdentifier: flowIdentifier, flowChunkNumber: flowChunkNumber})
-                        .fetch()
-                        .then(function (chunk) {
-                            if (chunk) {
-                                console.log("chunk is already uploaded");
-                                res.status(200).send();
-                            } else {
-                                console.log("chunk is unkown");
-                                res.status(404).send();
-                            }
-                        })
-                        .catch(function (error) {
-                            console.log("Error while reading chunk from Upload table:", error);
-                            res.statusCode = 500;
-                            res.send('500 Error reading upload chunk from database');
-                        });
-
+                    console.log("chunk is unkown");
+                    res.status(404).send();
                 }
-
             })
             .catch(function (error) {
-                console.log("Error while reading ArticleImage table:", error);
+                console.log("Error while reading chunk from Upload table:", error);
                 res.statusCode = 500;
-                res.send('500 Error looking for existing ArticleImage in database');
+                res.send('500 Error reading upload chunk from database');
             });
+
     } else {
         res.statusCode = 400;
         res.send('400 Wrong query parameter');
