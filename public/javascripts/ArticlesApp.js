@@ -125,10 +125,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                             });
                     });
 
-                    flow.on('fileProgress', function (file, flow) {
-                        $scope.article.text += '\nUpload Progress: ' + flow.offset + '\n';
-                    });
-
                     flow.on('fileError', function (file, message) {
                         console.log('fileError: ', file, message);
                         var placeholder = makeImageUploadingText(file);
