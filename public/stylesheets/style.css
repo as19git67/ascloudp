@@ -6,6 +6,15 @@ body {
     font-family: monospace;
 }
 
+textarea.marked {
+    resize: vertical;
+    border: 0;
+}
+
+.panel-body.marked {
+    padding: 0;
+}
+
 .align-left {
     text-align: left;
 }

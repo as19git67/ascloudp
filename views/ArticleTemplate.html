@@ -151,125 +151,6 @@
                         </div>
 
                         <hr>
-                        <div class="row">
-                            <div ng-if="images_pages && images_pages.length > 0">
-                                <div class="col-xs-3 col-md-3" ng-repeat="image in images_pages[current_images_page].images">
-                                    <div class="thumbnail">
-                                        <a href="#">
-                                            <img ng-src="/images/{{image.id}}?type=thumbnail" alt="{{image.Description}}">
-                                        </a>
-
-                                        <div class="caption">
-                                            <div style="text-overflow: ellipsis;white-space: nowrap;overflow:hidden">{{image.Filename}}</div>
-                                            <div>/images/{{image.id}}</div>
-                                            <div>{{image.Description}}</div>
-                                            <button ng-if="false" class="btn btn-default btn-danger">
-                                                <span class="glyphicon glyphicon-trash"></span>
-                                                <span>Löschen</span>
-                                            </button>
-                                        </div>
-                                        <span class="btn glyphicon glyphicon-remove" ng-click="deleteImage($event, image.id)"></span>
-
-                                    </div>
-                                </div>
-                            </div>
-                            <div ng-if="images_pages && images_pages.length > 1" class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <nav>
-                                    <ul class="pagination">
-                                        <li>
-                                            <a href="#" aria-label="Previous">
-                                                <span aria-hidden="true">&laquo;</span>
-                                            </a>
-                                        </li>
-
-                                        <li ng-repeat="page in images_pages">
-                                            <a href="#" ng-click="imagePageClicked($event, page.pageNumber)">{{page.pageNumber}}</a>
-                                        </li>
-                                        <li>
-                                            <a href="#" aria-label="Next">
-                                                <span aria-hidden="true">&raquo;</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            </div>
-                        </div>
-                        <div ng-show="article.article_id">
-                            <div flow-init
-                                 flow-name="flowObj.flow"
-                                 flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <div class="drop" flow-drop ng-class="dropClass">
-                                            <span class="btn btn-default" flow-btn>Bild hochladen</span>
-                                        <span class="btn btn-default" flow-btn flow-directory
-                                              ng-show="$flow.supportDirectory">Alle Bilder eines Ordners hochladen</span>
-                                            <b>ODER</b>
-                                            Hier Bilder per Drag & Drop hochladen
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <div ng-repeat="file in $flow.files">
-                                            <div ng-if="file.error" class="text-danger">
-                                                <span class="glyphicon glyphicon-exclamation-sign"
-                                                      aria-hidden="true"></span>
-                                                <span class="sr-only">Error:</span>
-                                                {{file.name}}
-                                            </div>
-                                            <div ng-if="!file.error">
-
-                                                <div ng-if="file.isUploading()">
-                                                    <div class="col-md-7">
-                                                    <span class="glyphicon glyphicon-cloud-upload"
-                                                          aria-hidden="true"></span>
-                                                        <span class="sr-only">Hochladen:</span>
-                                                        <span>{{file.name}}</span>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <div class="progress progress-striped"
-                                                             ng-class="{active: file.isUploading()}">
-                                                            <div class="progress-bar" role="progressbar"
-                                                                 aria-valuenow="{{file.progress() * 90}}"
-                                                                 aria-valuemin="0"
-                                                                 aria-valuemax="100"
-                                                                 ng-style="{width: (file.progress() * 90) + '%'}">
-                                                                <span class="sr-only">{{file.progress()}}% Fertig</span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div class="btn-group col-md-1">
-                                                        <a class="btn btn-xs btn-danger" ng-click="file.cancel()">
-                                                            Abbrechen
-                                                        </a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <div class="title" ng-if="isNotEmpty(waitingImages)">Speichern:</div>
-
-                                        <div ng-repeat="(fileId, fileData) in waitingImages">
-                                            <div ng-if="fileData.status=='wait'" class="text-info">
-                                                {{fileData.name}}
-                                            </div>
-                                            <div ng-if="fileData.status=='error'" class="text-danger">
-                                                <span class="glyphicon glyphicon-exclamation-sign" aria-hidden="true"></span>
-                                                <span class="sr-only">ERROR:</span>
-                                                {{fileData.name}}: Fehler beim Speichern
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="clear"></div>
-                        </div>
-                        <hr>
 
                         <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
@@ -320,13 +201,29 @@
                             </div>
                             <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                                 <div class="form-group">
-                                    <textarea class="form-control textareaMonospace" rows="{{textareaRows}}"
-                                              ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
-                                              required="Ein Text muss eingegeben werden" ng-required="true"
-                                              ng-change="renderMarkdown()"></textarea>
+                                    <div flow-init
+                                         flow-name="flowObj.flow"
+                                         flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
+                                        <div class="panel panel-default">
+                                            <div class="panel-body marked" flow-drop ng-class="dropClass">
+                                                <textarea class="marked form-control textareaMonospace" rows="{{textareaRows}}"
+                                                          ng-maxlength="article_schema.text.maxLength" ng-model="article.text"
+                                                          required="Ein Text muss eingegeben werden" ng-required="true"
+                                                          ng-change="renderMarkdown()">
+                                                </textarea>
+                                            </div>
+                                            <div class="panel-footer">
+                                                <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a> hinzu</div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6" ng-bind-html="trustedTextAsHtml">
+                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                                <div class="panel panel-default">
+                                    <div class="panel-body" ng-bind-html="trustedTextAsHtml">
+                                    </div>
+                                </div>
                             </div>
                         </div>
                         <hr>

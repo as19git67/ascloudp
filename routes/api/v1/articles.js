@@ -243,158 +243,193 @@ module.exports.postImage = function (req, res) {
         res.send(statusCode + ' ' + statusText);
     }
 
-    new Uploads()
+    new ArticleImage()
         .query(function (qb) {
             qb.where('flowIdentifier', flowIdentifier);
-            qb.orderBy('flowChunkNumber', 'ASC');
         })
         .fetch()
-        .then(function (chunks) {
-            if (chunks.models.length == flowTotalChunks) {
-                console.log("All chunks retrieved. Number of chunks: " + chunks.models.length);
-                var imageFileBuffer = undefined;
-                var chunkBuffers = new Array(chunks.models.length);
-                var flowFilename;
-                var flowTotalSize;
-                var mimeType = "";
-                var idx = 0;
-                chunks.each(function (chunk) {
-                    console.log("Using chunk " + chunk.attributes.flowChunkNumber + " to make image buffer for file " + chunk.attributes.flowFilename);
-                    var tempFile = chunk.attributes.tempFile;
-                    flowFilename = chunk.attributes.flowFilename;
-                    flowTotalSize = chunk.attributes.flowTotalSize;
-                    mimeType = chunk.attributes.mimeType;
-                    var tf = chunk.attributes.tempFile;
-                    chunkBuffers[idx] = fs.readFileSync(tf);
-                    idx = idx + 1;
-                });
-                console.log("Concatenate all chunks");
-                var imageFileBuffer = Buffer.concat(chunkBuffers);
-
-                // todo: DB cleanup auch bei Fehler
-
-                function removeChunkFiles() {
-                    chunks.each(function (chunk) {
-                        var tf = chunk.attributes.tempFile;
-                        if (fs.existsSync(tf)) {
-                            fs.unlinkSync(tf);
-                        }
+        .then(function (image) {
+            if (image) {
+                res.json(
+                    {
+                        id: image.get('id'),
+                        Article_id: image.get('Article_id'),
+                        MimeType: image.get('MimeType'),
+                        Filename: image.get('Filename'),
+                        Size: image.get('Size'),
+                        flowIdentifier: image.get('flowIdentifier')
                     });
-                }
+            }
+            else {
+                new Uploads()
+                    .query(function (qb) {
+                        qb.where('flowIdentifier', flowIdentifier);
+                        qb.orderBy('flowChunkNumber', 'ASC');
+                    })
+                    .fetch()
+                    .then(function (chunks) {
+                        if (chunks.models.length == flowTotalChunks) {
+                            console.log("All chunks retrieved. Number of chunks: " + chunks.models.length);
+                            var imageFileBuffer = undefined;
+                            var chunkBuffers = new Array(chunks.models.length);
+                            var flowFilename;
+                            var flowTotalSize;
+                            var mimeType = "";
+                            var idx = 0;
+                            chunks.each(function (chunk) {
+                                console.log("Using chunk " + chunk.attributes.flowChunkNumber + " to make image buffer for file " + chunk.attributes.flowFilename);
+                                var tempFile = chunk.attributes.tempFile;
+                                flowFilename = chunk.attributes.flowFilename;
+                                flowTotalSize = chunk.attributes.flowTotalSize;
+                                mimeType = chunk.attributes.mimeType;
+                                var tf = chunk.attributes.tempFile;
+                                chunkBuffers[idx] = fs.readFileSync(tf);
+                                idx = idx + 1;
+                            });
+                            console.log("Concatenate all chunks");
+                            var imageFileBuffer = Buffer.concat(chunkBuffers);
 
-                if (imageFileBuffer) {
-                    console.log("deleting all chunks from Uploads table");
-                    model.bookshelf.knex('Uploads')
-                        .where({flowIdentifier: flowIdentifier})
-                        .del()
-                        .then(function () {
-                            try {
-                                console.log("Generating thumbnail (mime type is " + mimeType + ")...");
-                                new Jimp(imageFileBuffer, function (err, jimage) {
-                                    if (err) {
-                                        console.log("ERROR while loading image with jimp", err);
-                                        removeChunkFiles();
-                                        res.statusCode = 500;
-                                        res.send('500 Saving image in database failed');
-                                    } else {
-                                        console.log("image loaded");
-                                        var width = jimage.bitmap.width;
-                                        var factor = 100 / width;   // scale to specific pixel width
-                                        jimage.scale(factor) // scale
-                                            .quality(30); // set JPEG quality
-                                        jimage.getBuffer(mimeType, function (err, thumbnailBuffer) {
-                                            if (err) {
-                                                console.log("Error while scaling image: ", err);
-                                                removeChunkFiles();
-                                                res.statusCode = 500;
-                                                res.send('500 Saving image in database failed');
-                                            } else {
-                                                console.log("Thumbnail generated. Size: " + thumbnailBuffer.length);
-                                                console.log("Image file: " + flowFilename);
+                            // todo: DB cleanup auch bei Fehler
 
-                                                // scale big image to have max width
-                                                new Jimp(imageFileBuffer, function (err, jimage800) {
-                                                    if (err) {
-                                                        console.log("ERROR while loading image with jimp", err);
-                                                        removeChunkFiles();
-                                                        sendErrorResponse(500, 'Saving image in database failed');
-                                                    } else {
-                                                        console.log("image loaded");
-                                                        var width = jimage800.bitmap.width;
-                                                        if (width > 800) {
-                                                            var factor = 800 / width;   // scale to specific pixel width
-                                                            jimage800.scale(factor);// scale
-                                                        }
-                                                        jimage800.quality(40); // set JPEG quality
-                                                        jimage800.getBuffer(mimeType, function (err, image800Buffer) {
-                                                            if (err) {
-                                                                console.log("Error while scaling image: ", err);
-                                                                removeChunkFiles();
-                                                                res.statusCode = 500;
-                                                                res.send('500 Saving image in database failed');
-                                                            } else {
-                                                                console.log("Resized image generated. Size: " + image800Buffer.length);
-
-                                                                new ArticleImage(
-                                                                    {
-                                                                        Article_id: articleId,
-                                                                        Image: imageFileBuffer,
-                                                                        Thumbnail: image800Buffer,
-                                                                        MimeType: mimeType,
-                                                                        Filename: flowFilename,
-                                                                        Size: flowTotalSize,
-                                                                        valid_start: new Date()
-                                                                    }
-                                                                ).save().then(function (savedImage) {
-                                                                        console.log("Image with id " + savedImage.get('id') + " saved");
-                                                                        removeChunkFiles();
-                                                                        res.statusCode = 200; // OK
-                                                                        res.send('200 OK');
-                                                                    }).catch(function (error) {
-                                                                        console.log("Error while saving image in table ArticleImages: ", error);
-                                                                        removeChunkFiles();
-                                                                        res.statusCode = 500;
-                                                                        res.send('500 Saving image in database failed');
-                                                                    });
-                                                            }
-                                                        });
-                                                    }
-                                                });
-                                            }
-                                        });
+                            function removeChunkFiles() {
+                                chunks.each(function (chunk) {
+                                    var tf = chunk.attributes.tempFile;
+                                    if (fs.existsSync(tf)) {
+                                        fs.unlinkSync(tf);
                                     }
                                 });
                             }
-                            catch (e) {
+
+                            if (imageFileBuffer) {
+                                console.log("deleting all chunks from Uploads table");
+                                model.bookshelf.knex('Uploads')
+                                    .where({flowIdentifier: flowIdentifier})
+                                    .del()
+                                    .then(function () {
+                                        try {
+                                            console.log("Generating thumbnail (mime type is " + mimeType + ")...");
+                                            new Jimp(imageFileBuffer, function (err, jimage) {
+                                                if (err) {
+                                                    console.log("ERROR while loading image with jimp", err);
+                                                    removeChunkFiles();
+                                                    res.statusCode = 500;
+                                                    res.send('500 Saving image in database failed');
+                                                } else {
+                                                    console.log("image loaded");
+                                                    var width = jimage.bitmap.width;
+                                                    var factor = 100 / width;   // scale to specific pixel width
+                                                    jimage.scale(factor) // scale
+                                                        .quality(30); // set JPEG quality
+                                                    jimage.getBuffer(mimeType, function (err, thumbnailBuffer) {
+                                                        if (err) {
+                                                            console.log("Error while scaling image: ", err);
+                                                            removeChunkFiles();
+                                                            res.statusCode = 500;
+                                                            res.send('500 Saving image in database failed');
+                                                        } else {
+                                                            console.log("Thumbnail generated. Size: " + thumbnailBuffer.length);
+                                                            console.log("Image file: " + flowFilename);
+
+                                                            // scale big image to have max width
+                                                            new Jimp(imageFileBuffer, function (err, jimage800) {
+                                                                if (err) {
+                                                                    console.log("ERROR while loading image with jimp", err);
+                                                                    removeChunkFiles();
+                                                                    sendErrorResponse(500, 'Saving image in database failed');
+                                                                } else {
+                                                                    console.log("image loaded");
+                                                                    var width = jimage800.bitmap.width;
+                                                                    if (width > 800) {
+                                                                        var factor = 800 / width;   // scale to specific pixel width
+                                                                        jimage800.scale(factor);// scale
+                                                                    }
+                                                                    jimage800.quality(40); // set JPEG quality
+                                                                    jimage800.getBuffer(mimeType, function (err, image800Buffer) {
+                                                                        if (err) {
+                                                                            console.log("Error while scaling image: ", err);
+                                                                            removeChunkFiles();
+                                                                            res.statusCode = 500;
+                                                                            res.send('500 Saving image in database failed');
+                                                                        } else {
+                                                                            console.log("Resized image generated. Size: " + image800Buffer.length);
+
+                                                                            new ArticleImage(
+                                                                                {
+                                                                                    Article_id: articleId,
+                                                                                    Image: imageFileBuffer,
+                                                                                    Thumbnail: image800Buffer,
+                                                                                    MimeType: mimeType,
+                                                                                    Filename: flowFilename,
+                                                                                    flowIdentifier: flowIdentifier,
+                                                                                    Size: flowTotalSize,
+                                                                                    valid_start: new Date()
+                                                                                }
+                                                                            ).save().then(function (savedImage) {
+                                                                                    console.log("Image with id " + savedImage.get('id') + " saved");
+                                                                                    removeChunkFiles();
+                                                                                    //res.statusCode = 200; // OK
+                                                                                    res.json(
+                                                                                        {
+                                                                                            id: savedImage.get('id'),
+                                                                                            Article_id: savedImage.get('Article_id'),
+                                                                                            MimeType: savedImage.get('MimeType'),
+                                                                                            Filename: savedImage.get('Filename'),
+                                                                                            Size: savedImage.get('Size'),
+                                                                                            flowIdentifier: flowIdentifier
+                                                                                        });
+                                                                                }).catch(function (error) {
+                                                                                    console.log("Error while saving image in table ArticleImages: ", error);
+                                                                                    removeChunkFiles();
+                                                                                    res.statusCode = 500;
+                                                                                    res.send('500 Saving image in database failed');
+                                                                                });
+                                                                        }
+                                                                    });
+                                                                }
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                        catch (e) {
+                                            removeChunkFiles();
+                                            console.log("Error: Jimp failed. ", e);
+                                            res.statusCode = 422;
+                                            res.send('422 Unprocessable: generating image thumbnail failed');
+                                        }
+                                    })
+                                    .catch(function (error) {
+                                        removeChunkFiles();
+                                        console.log("Error while deleting flowChunks from table Upload: ", error);
+                                        res.statusCode = 500;
+                                        res.send('500 Deleting chunks from upload table of database failed');
+                                    });
+
+                            } else {
+                                console.log("Error: imageFileBuffer is undefined");
                                 removeChunkFiles();
-                                console.log("Error: Jimp failed. ", e);
-                                res.statusCode = 422;
-                                res.send('422 Unprocessable: generating image thumbnail failed');
+                                deleteFlowChunksAndSendRespond(flowIdentifier, res, 500, "Failed concatenating image chunks");
                             }
-                        })
-                        .catch(function (error) {
+                        } else {
+                            console.log("Error: " + flowTotalChunks + " are expected, but only " + chunks.models.length + " were stored so far.");
                             removeChunkFiles();
-                            console.log("Error while deleting flowChunks from table Upload: ", error);
-                            res.statusCode = 500;
-                            res.send('500 Deleting chunks from upload table of database failed');
-                        });
+                            deleteFlowChunksAndSendRespond(flowIdentifier, res, 412, "Can't finish image upload because not all data chunks were received on the server");
+                        }
 
-                } else {
-                    console.log("Error: imageFileBuffer is undefined");
-                    removeChunkFiles();
-                    deleteFlowChunksAndSendRespond(flowIdentifier, res, 500, "Failed concatenating image chunks");
-                }
-            } else {
-                console.log("Error: " + flowTotalChunks + " are expected, but only " + chunks.models.length + " were stored so far.");
-                removeChunkFiles();
-                deleteFlowChunksAndSendRespond(flowIdentifier, res, 412, "Can't finish image upload because not all data chunks were received on the server");
+                    })
+                    .catch(function (error) {
+                        console.log("Error while retrieving flowChunks from table Upload: ", error);
+                        res.statusCode = 500;
+                        res.send('500 Reading chunks from upload table of database failed');
+                    });
+
             }
-
         })
         .catch(function (error) {
-            console.log("Error while retrieving flowChunks from table Upload: ", error);
+            console.log("Error while retrieving ArticleImages: ", error);
             res.statusCode = 500;
-            res.send('500 Reading chunks from upload table of database failed');
+            res.send('500 Reading ArticleImage from database failed');
         });
 };
 

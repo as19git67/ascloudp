@@ -186,6 +186,19 @@ exports.upgradeSchema = function (upgradeVersion) {
                     });
 
                     break;
+                case 4:
+                    knex.schema.table('ArticleImages', function (table) {
+                        table.string('flowIdentifier').index();
+                    }).then(function () {
+                        console.log("Transaction (upgrading ArticleImages in upgrade " + upgradeVersion + ") finished");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log("Transaction (upgrading ArticleImages in upgrade " + upgradeVersion + ") failed");
+                        reject(error);
+                    });
+
+                    break;
                 default:
                     resolve();
             }
@@ -310,66 +323,85 @@ function performUpgradeSchema2(resolve, reject) {
 }
 
 exports.createSchemaIfNotExists = function () {
-    return new Promise(function (resolve3, reject3) {
+    return new Promise(function (resolve4, reject4) {
+        new Promise(function (resolve3, reject3) {
 
-        new Promise(function (resolve, reject) {
-            knex.schema.hasTable('RoleMenus').then(function (exists) {
-                if (exists) {
-                    knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
-                        if (exists) {
-                            knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
-                                if (exists) {
-                                    performUpgradeSchema2(resolve, reject);
-                                } else {
-                                    console.log('Must upgrade DB schema.');
-                                    exports.upgradeSchema(1).then(
-                                        function () {
-                                            performUpgradeSchema2(resolve, reject);
-                                        }, reject);
-                                }
-                            });
-                        } else {
-                            console.log('Must create DB schema.');
-                            exports.createSchema().then(
-                                function () {
-                                    console.log('DB schema created.');
-                                    resolve();
-                                },
-                                reject);
-                        }
-                    });
-                } else {
-                    console.log('Must create DB schema.');
-                    exports.createSchema().then(
-                        function () {
-                            console.log('DB schema created.');
-                            resolve();
-                        },
-                        reject);
-                }
-            }).catch(function (error) {
-                reject(error);
-            });
-        }).then(function () {
-                knex.schema.hasTable('AppSettings')
-                    .then(function (exists) {
-                        if (exists) {
-                            resolve3();
-                        } else {
-                            console.log('Must upgrade DB schema (V3).');
-                            exports.upgradeSchema(3)
-                                .then(function () {
-                                    console.log('DB schema upgraded to V3.');
-                                    resolve3();
-                                }, reject3);
-                        }
-                    })
+            new Promise(function (resolve, reject) {
+                knex.schema.hasTable('RoleMenus').then(function (exists) {
+                    if (exists) {
+                        knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
+                            if (exists) {
+                                knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
+                                    if (exists) {
+                                        performUpgradeSchema2(resolve, reject);
+                                    } else {
+                                        console.log('Must upgrade DB schema.');
+                                        exports.upgradeSchema(1).then(
+                                            function () {
+                                                performUpgradeSchema2(resolve, reject);
+                                            }, reject);
+                                    }
+                                });
+                            } else {
+                                console.log('Must create DB schema.');
+                                exports.createSchema().then(
+                                    function () {
+                                        console.log('DB schema created.');
+                                        resolve();
+                                    },
+                                    reject);
+                            }
+                        });
+                    } else {
+                        console.log('Must create DB schema.');
+                        exports.createSchema().then(
+                            function () {
+                                console.log('DB schema created.');
+                                resolve();
+                            },
+                            reject);
+                    }
+                }).catch(function (error) {
+                    reject(error);
+                });
+            }).then(function () {
+                    knex.schema.hasTable('AppSettings')
+                        .then(function (exists) {
+                            if (exists) {
+                                resolve3();
+                            } else {
+                                console.log('Must upgrade DB schema (V3).');
+                                exports.upgradeSchema(3)
+                                    .then(function () {
+                                        console.log('DB schema upgraded to V3.');
+                                        resolve3();
+                                    }, reject3);
+                            }
+                        })
+                        .catch(function (error) {
+                            reject3(error);
+                        });
+                })
+                .catch(function (error) {
+                    reject3(error);
+                });
+        })
+            .then(function () {
+                knex.schema.hasColumn('ArticleImages', 'flowIdentifier').then(function (exists) {
+                    if (exists) {
+                        resolve4();
+                    } else {
+                        console.log('Must upgrade DB schema (V4).');
+                        exports.upgradeSchema(4)
+                            .then(function () {
+                                console.log('DB schema upgraded to V4.');
+                                resolve4();
+                            }, reject4);
+                    }
+                })
                     .catch(function (error) {
-                        reject3(error);
+                        reject4(error);
                     });
-            })
-            .catch(function (error) {
-                reject3(error);
             });
     });
 };
@@ -787,6 +819,7 @@ exports.createSchema = function () {
                     t.string('MimeType').notNullable().index();
                     t.integer('Size').notNullable();
                     t.string('Description').index();
+                    t.string('flowIdentifier').index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });

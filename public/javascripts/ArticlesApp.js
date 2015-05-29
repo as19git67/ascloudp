@@ -47,36 +47,6 @@ articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
 articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'articleService',
     function ($sce, $log, $scope, $cookies, articleService) {
         $scope.flowObj = {};
-        $scope.current_images_page = 0;
-        $scope.images_pages = [];   // all pages
-        $scope.relaoding_images = false;
-
-        function putImagesIntoPages(article_images) {
-            $scope.images_pages = [];
-            $scope.current_images_page = 0;
-            var pageSize = 4;
-            var cnt = 0;
-            var pageCnt = 0;
-            var currPageOfImages;
-            _.each(article_images, function (image) {
-                if (cnt == 0) {
-                    currPageOfImages = [];
-                    pageCnt++;
-                    $scope.images_pages.push({pageNumber: pageCnt, images: currPageOfImages});
-                }
-                currPageOfImages.push(image);
-                cnt++;
-                if (cnt == pageSize) {
-                    cnt = 0;
-                }
-            });
-        }
-
-        $scope.imagePageClicked = function ($event, pageNumber) {
-            var pageIdx = pageNumber - 1;
-
-            $scope.current_images_page = pageIdx;
-        };
 
         $scope.isNotEmpty = function (item) {
             if (!item) {
@@ -84,6 +54,11 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             }
             return !_.isEmpty(item);
         };
+
+        function makeImageUploadingText(file) {
+            return '\n![Hochladen: ' + file.uniqueIdentifier + '...]()';
+        }
+
         $scope.loadArticle = function (id) {
             $scope.errorMessage = undefined;
             var promise = articleService.getArticle(id);
@@ -92,8 +67,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     $scope.article = payload.article;
                     $scope.article_schema = payload.article_schema;
                     $scope.article_images = payload.article_images;
-
-                    putImagesIntoPages(payload.article_images);
 
                     if ($scope.article.text) {
                         $scope.renderMarkdown();
@@ -119,34 +92,49 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                             console.log("Too many files. Rejecting more for upload");
                             return false; // reject file
                         }
+                        $scope.article.text += makeImageUploadingText(file);
                     });
                     flow.on('fileSuccess', function (file, message) {
-                        console.log("fileSuccess");
+                        console.log("flow event: fileSuccess");
                         $scope.waitingImages[file.uniqueIdentifier] = {name: file.name, status: 'wait'};
                         articleService.commitImageUpload($scope.article, file.uniqueIdentifier, file.chunks.length)
-                            .then(function () {
-                                delete $scope.waitingImages[file.uniqueIdentifier];
+                            .then(function (imageMetadata) {
+                                delete $scope.waitingImages[imageMetadata.flowIdentifier];
                                 flow.removeFile(file);
-                                console.log("Reloading images");
-                                articleService.getArticleImages($scope.article.article_id)
-                                    .success(function (data, resp, jqXHR) {
-                                        $scope.article_images = data.article_images;
-                                        putImagesIntoPages($scope.article_images);
-                                    })
-                                    .error(function (data, status, headers, config) {
-                                        $scope.article_images = [];
-                                        console.log("ERROR while reloading images:", data);
-                                        putImagesIntoPages($scope.article_images);
-                                    });
-
+                                // add reference to image in textarea
+                                var placeholder = makeImageUploadingText(file);
+                                var imageTag = '\n![' + imageMetadata.Filename + '](/images/' + imageMetadata.id + ')\n';
+                                if ($scope.article.text.indexOf(placeholder) != -1) {
+                                    $scope.article.text = $scope.article.text.replace(placeholder, imageTag);
+                                } else {
+                                    $scope.article.text += imageTag;
+                                }
+                                $scope.renderMarkdown();
                             })
                             .catch(function (error) {
                                 console.log('Failed commitImageUpload: ', error);
                                 $scope.waitingImages[file.uniqueIdentifier] = {name: file.name, status: 'error'};
+                                var placeholder = makeImageUploadingText(file);
+                                var message = "der Server konnte das Bild nicht korrekt verarbeiten";
+                                if (typeof error == 'string') {
+                                    message = error;
+                                }
+                                if ($scope.article.text.indexOf(placeholder) != -1) {
+                                    $scope.article.text = $scope.article.text.replace(placeholder, '\n![Fehler beim Hochladen von ' + file.Filename + ': ' + message + ']()');
+                                }
                             });
                     });
+
+                    flow.on('fileProgress', function (file, flow) {
+                        $scope.article.text += '\nUpload Progress: ' + flow.offset + '\n';
+                    });
+
                     flow.on('fileError', function (file, message) {
                         console.log('fileError: ', file, message);
+                        var placeholder = makeImageUploadingText(file);
+                        if ($scope.article.text.search(placeholder) != -1) {
+                            $scope.article.text = $scope.article.text.replace(placeholder, '\n![Fehler beim Hochladen von ' + file.Filename + ': ' + message + ']()');
+                        }
                     });
 
                 },
@@ -220,7 +208,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 today.set('hour', 0);
                 today.set('minute', 0);
                 today.set('second', 0);
-                today.set('millisecond',0);
+                today.set('millisecond', 0);
                 $scope.article.date = today.toISOString();
                 $scope.article.publish_start = today.add(2, 'days').toISOString();
                 $scope.article.publish_end = today.add(9, 'days').toISOString();
@@ -236,12 +224,9 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 articleService.getArticleImages($scope.article.article_id)
                     .success(function (data, resp, jqXHR) {
                         $scope.article_images = data.article_images;
-                        putImagesIntoPages($scope.article_images);
                     })
                     .error(function (data, status, headers, config) {
                         $scope.article_images = [];
-                        console.log("ERROR while reloading images:", data);
-                        putImagesIntoPages($scope.article_images);
                     });
 
             }, function (error) {
@@ -362,12 +347,21 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
             commitImageUpload: function (article, flowIdentifier, flowTotalChunks) {
                 var deferred = $q.defer();
+                var timeout = $q.defer();
+                var timedOut = false;
+
+                setTimeout(function () {
+                    timedOut = true;
+                    timeout.resolve();
+                }, 5 * 60000);
+
                 var promise = $http.post('/api/v1/articles/' + article.article_id + '/images', {
                     'flowIdentifier': flowIdentifier,
                     'flowTotalChunks': flowTotalChunks
-                });
+                }, {timeout: timeout.promise});
                 promise.success(function (data) {
-                    deferred.resolve();
+                    console.log("Image successfully saved at server");
+                    deferred.resolve(data);
                 }).error(function (msg, code) {
                     deferred.reject(msg);
                     $log.error(msg, code);
