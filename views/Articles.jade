@@ -44,6 +44,7 @@ block content
                 if record.leadText && record.rawHtml
                     p #{record.leadText}
                         if record.rawHtml
+                            |&nbsp;
                             a(href="#{page.Name}/#{record.article_id}") Mehr...
         div(class="modal fade", id='modal_for_article_#{record.article_id}', tabindex="-1", role="dialog", aria-labelledby="myLargeModalLabel", aria-hidden="true")
             div(class="modal-dialog modal-lg")
