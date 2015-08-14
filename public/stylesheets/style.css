@@ -2,6 +2,31 @@ body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+.navbar > .container-fluid {
+    display: flex;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    flex-direction: row;
+    -ms-flex-direction: row;
+    -webkit-flex-direction: row;
+    width: 100%;
+}
+
+.navbar > .container-fluid > .navbar-header {
+    flex-grow: 0;
+    flex-shrink: 0;
+    -ms-flex: 0 0 auto;
+    -webkit-flex: 0 0 auto;
+}
+
+.navbar > .container-fluid > .navbar-collapse {
+    flex-grow: 2;
+    flex-shrink: 2;
+    -ms-flex: 2 2 auto;
+    -webkit-flex: 2 2 auto;
+    max-height: 2em;    /* less than 1 line but it limits wrapping */
+}
+
 .textareaMonospace {
     font-family: monospace;
 }
