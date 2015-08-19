@@ -8,7 +8,9 @@ body {
 
 @media (min-width: 480px) {
     .navbar > .container-fluid > .navbar-collapse {
-        max-height: 2em; /* less than 1 line but it limits wrapping */
+        display: inline-block;
+        overflow-y: hidden;
+        max-height: 3em; /* limits wrapping */
     }
 }
 
