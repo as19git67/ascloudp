@@ -80,7 +80,7 @@ html
                                 span.icon-bar
                             a.navbar-brand(href="#") #{appName}
                         div(class="collapse navbar-collapse")
-                            ul(class="nav navbar-nav adjusted-nav-left")
+                            ul(class="nav navbar-nav")
                                 if pages
                                     each page in pages
                                         li
@@ -88,19 +88,6 @@ html
                                                 a(href='/#{page.Name}') #{page.EntityNameSingular}
                                             else
                                                 a(href='/#{page.Name}') #{page.EntityNamePlural}
-                            ul(class="nav navbar-nav", id="otherMenu")
-                                li(id="fat-menu-other", class="dropdown")
-                                    a(href="#", id="drop4", role="button", class="dropdown-toggle", data-toggle="dropdown") Weitere
-                                        span.caret
-                                    ul(class="dropdown-menu", role="menu", aria-labelledby="drop4")
-                                        if pages
-                                            each page in pages
-                                                li(role="presentation")
-                                                    if page.isSingleEntity
-                                                        a(role="menuitem", tabindex="-1", href='/#{page.Name}') #{page.EntityNameSingular}
-                                                    else
-                                                        a(role="menuitem", tabindex="-1", href='/#{page.Name}') #{page.EntityNamePlural}
-
                             if user != null && user.menu
                                 form(action="/logoff", class="nav navbar-nav navbar-right adjusted-nav-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
@@ -132,7 +119,7 @@ html
                                         li
                                             a(href="javascript:document.getElementById('logoutForm').submit()") Abmelden
                             else
-                                ul(class="nav navbar-nav navbar-right adjusted-nav-right")
+                                ul(class="nav navbar-nav navbar-right")
                                     li
                                         a(href='/login') Anmelden
             div(class="row", style="margin-top:55px")

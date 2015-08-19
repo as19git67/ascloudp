@@ -67,6 +67,7 @@ function adjustMaxWidthOfLeftNavbar() {
 }
 
 
+/*
 var resizeTimer;
 
 $(function () {
@@ -83,4 +84,21 @@ $(window).resize(function () {
         adjustMaxWidthOfLeftNavbar();
         adjustMaxWidthOfLeftNavbar(); // call second time to resolve some buggy behaviour where it resizes not correctly
     }, 100);
+});
+*/
+
+var onResize = function() {
+    var headerHeight = $('.navbar-header').height();
+    var navbarHeight = $(".navbar-fixed-top").height();
+    var paddingTop = navbarHeight - headerHeight;
+    // apply dynamic padding at the top of the body according to the fixed navbar height
+    $("body").css("padding-top", paddingTop);
+};
+
+// attach the function to the window resize event
+$(window).resize(onResize);
+
+// call it also when the page is ready after load or reload
+$(function() {
+    onResize();
 });
