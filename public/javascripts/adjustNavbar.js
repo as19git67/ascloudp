@@ -27,7 +27,7 @@ function adjustMaxWidthOfLeftNavbar() {
     var itemsLeft = leftNavBarToAdjust.children();
 
     //if (isBreakpoint('sm') || isBreakpoint('md') || isBreakpoint('lg')) {
-    if ($(window).width() > 480) {
+    if ($(window).width() >= 480) {
         var otherMenu = $('#otherMenu ul.dropdown-menu');
 
         var rightNavbarWidth = $('.adjusted-nav-right').width();
@@ -70,10 +70,11 @@ function adjustMaxWidthOfLeftNavbar() {
 var resizeTimer;
 
 $(function () {
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(function () {
-        adjustMaxWidthOfLeftNavbar();
-    }, 50);
+    adjustMaxWidthOfLeftNavbar();
+    //clearTimeout(resizeTimer);
+    //resizeTimer = setTimeout(function () {
+    //    adjustMaxWidthOfLeftNavbar();
+    //}, 50);
 });
 
 $(window).resize(function () {
@@ -81,5 +82,5 @@ $(window).resize(function () {
     resizeTimer = setTimeout(function () {
         adjustMaxWidthOfLeftNavbar();
         adjustMaxWidthOfLeftNavbar(); // call second time to resolve some buggy behaviour where it resizes not correctly
-    }, 200);
+    }, 100);
 });
