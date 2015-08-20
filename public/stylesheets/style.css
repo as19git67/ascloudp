@@ -6,6 +6,18 @@ body {
     width: 100%;
 }
 
+.nav > li:first-child > a {
+    padding-left: 0;
+}
+
+.nav > li:last-child > a {
+    padding-right: 0;
+}
+
+.nav:last-child > li > a {
+    padding-right: 15px;
+}
+
 /*
 @media (min-width: 480px) {
     .navbar > .container-fluid > .navbar-collapse {
