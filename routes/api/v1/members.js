@@ -12,7 +12,7 @@ var knex = model.bookshelf.knex;
 module.exports.get = function (req, res) {
     var personId = req.params.id;
 
-    var query = 'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "Birthday", "PersonItems"."Person_id" as "Person_id",' +
+    var query = 'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "BirthdayNoTZ", "PersonItems"."Person_id" as "Person_id",' +
         '"PersonContactDataAddresses"."PersonContactData_id" as "PersonContactDataAddressesId",' +
         '"PersonContactDataPhonenumbers"."PersonContactData_id" as "PersonContactDataPhonenumbersId",' +
         '"PersonContactDataAccounts"."PersonContactData_id" as "PersonContactDataAccountsId",' +
@@ -57,7 +57,7 @@ module.exports.get = function (req, res) {
                 currentPersonObj.firstname = p.Firstname;
                 currentPersonObj.lastname = p.Lastname;
                 currentPersonObj.suffix = p.Suffix;
-                currentPersonObj.birthday = p.Birthday;
+                currentPersonObj.birthday = p.BirthdayNoTZ;
                 currentPersonObj.entryDate = p.EntryDate;
                 currentPersonObj.leavingDate = p.LeavingDate;
                 currentPersonObj.passiveSince = p.PassiveSince;
@@ -136,7 +136,7 @@ module.exports.get = function (req, res) {
 };
 
 module.exports.listQuerySelectFrom =
-    'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "Birthday", "PersonItems"."Person_id" as "Person_id",' +
+    'select "Salutation", "Firstname", "PersonItems"."Lastname", "Suffix", "BirthdayNoTZ", "PersonItems"."Person_id" as "Person_id",' +
     '"PersonContactDataAddresses"."PersonContactData_id" as "PersonContactDataAddressesId",' +
     '"PersonContactDataPhonenumbers"."PersonContactData_id" as "PersonContactDataPhonenumbersId",' +
     '"PersonContactDataAccounts"."PersonContactData_id" as "PersonContactDataAccountsId",' +
@@ -227,7 +227,7 @@ module.exports.makeHierarchicalObjectStructureFromPersonResultRecords = function
             currentPersonObj.Firstname = p.Firstname;
             currentPersonObj.Lastname = p.Lastname;
             currentPersonObj.Suffix = p.Suffix;
-            currentPersonObj.Birthday = model.formatDate(p.Birthday);
+            currentPersonObj.Birthday = model.formatDate(p.BirthdayNoTZ);
             currentPersonObj.EntryDate = model.formatDate(p.EntryDate);
             currentPersonObj.Addresses = [];
             currentPersonObj.PhoneNumbers = [];
@@ -295,7 +295,7 @@ function updatePersonItem(transaction, personId, member) {
         console.log("Saving PersonItem with Person_id " + personId);
         new PersonItem({Person_id: personId}).fetch().then(function (person) {
             if (person) {
-                var birthdayIsDifferent = isDateDifferent(member, "birthday", person, "Birthday");
+                var birthdayIsDifferent = isDateDifferent(member, "birthday", person, "BirthdayNoTZ");
                 if (birthdayIsDifferent ||
                     person.get('Firstname') != member.firstname ||
                     person.get('Lastname') != member.lastname ||
@@ -311,7 +311,7 @@ function updatePersonItem(transaction, personId, member) {
                             console.log("PersonItem saved for history");
                             new PersonItem({
                                 'Person_id': personId,
-                                'Birthday': member.birthday,
+                                'BirthdayNoTZ': member.birthday,
                                 'Firstname': member.firstname,
                                 'Lastname': member.lastname,
                                 'Suffix': member.suffix,

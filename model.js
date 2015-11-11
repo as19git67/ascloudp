@@ -250,15 +250,6 @@ exports.upgradeSchema = function (upgradeVersion) {
                                     }, 0).then(function (total) {
                                             console.log(total + " Articles upgraded in ArticleItems");
                                             t.commit();
-                                            //knex.schema.table('PersonItems', function (table) {
-                                            //    table.timestamp('BirthdayNoTZ', true);
-                                            //}).then(function () {
-                                            //    console.log("Birthday field in PersonItems is now timestamp without timezone");
-                                            //    t.commit();
-                                            //}).catch(function (err) {
-                                            //    console.log("ERROR while fetching all PersonItems");
-                                            //    t.rollback(err);
-                                            //});
                                         })
                                         .catch(function (err) {
                                             console.log("ERROR while upgrading ArticleItems");
@@ -277,7 +268,16 @@ exports.upgradeSchema = function (upgradeVersion) {
 
                     }).then(function () {
                         console.log("Transaction (upgrading PersonItems in upgrade " + upgradeVersion + ") committed");
-                        resolve();
+                        knex.schema.table('PersonItems', function (table) {
+                            table.dropColumn('Birthday');
+                        }).then(function () {
+                            console.log("Old Birthday field dropped from PersonItems");
+                            resolve();
+                        }).catch(function (err) {
+                            console.log("ERROR while dropping Birthday field from PersonItems");
+                            reject(err);
+                        });
+
                     }).catch(function (error) {
                         console.log(error);
                         console.log("Transaction (upgrading PersonItems in upgrade " + upgradeVersion + ") rolled back");

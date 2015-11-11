@@ -210,7 +210,7 @@ exports.importTestData = function () {
                         Salutation: value.Anrede,
                         Firstname: value.Vorname,
                         Lastname: lastname,
-                        Birthday: value.Geboren,
+                        BirthdayNoTZ: value.Geboren,
                         valid_start: now
 
                     };
