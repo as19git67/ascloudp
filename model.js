@@ -121,9 +121,9 @@ exports.upgradeSchema = function (upgradeVersion) {
                                         });
 
                                     }, 0).then(function (total) {
-                                        console.log(total + " Articles upgraded in ArticleItems");
-                                        t.commit();
-                                    })
+                                            console.log(total + " Articles upgraded in ArticleItems");
+                                            t.commit();
+                                        })
                                         .catch(function (err) {
                                             console.log("ERROR while upgrading ArticleItems");
                                             t.rollback(err);
@@ -199,6 +199,95 @@ exports.upgradeSchema = function (upgradeVersion) {
                     });
 
                     break;
+                case 5:
+                    knex.schema.createTable('Assets', function (t) {
+                        t.increments('id').primary();
+                        t.string('Page_id').references('Name').inTable('Pages').notNullable();
+                        t.integer('Item_id').index();
+                        t.binary('Data').notNullable();
+                        t.binary('Thumbnail');
+                        t.string('Filename').notNullable().index();
+                        t.string('MimeType').notNullable().index();
+                        t.integer('Size').notNullable();
+                        t.string('Description');
+                        t.string('flowIdentifier').index();
+                    }).then(function () {
+                        console.log("Transaction (creating Assets table in upgrade " + upgradeVersion + ") finished");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log("Transaction (creating Assets table in upgrade " + upgradeVersion + ") failed");
+                        reject(error);
+                    });
+
+                    break;
+                case 6:
+                    model.bookshelf.transaction(function (t) {
+                        knex.schema.table('PersonItems', function (table) {
+                            table.timestamp('BirthdayNoTZ', true);
+                        }).then(function () {
+                            console.log("BirthdayNoTZ field in PersonItems created");
+                            new PersonItem().fetchAll().then(function (persons) {
+                                    moment.locale("de");
+                                    Promise.reduce(persons.models, function (total, person) {
+
+                                        var bd = moment(person.get('Birthday'));
+                                        //var tzOffset = bd.utcOffset();
+                                        //bd.add(tzOffset, 'minutes');
+                                        person.set('BirthdayNoTZ', bd.utc().toDate());
+
+                                        return person.save(null, {transacting: t}).then(function (updatedPersonItem) {
+                                            console.log("PersonItem saved. Person_id: " + updatedPersonItem.get('Person_id') + " Lastname: " + updatedPersonItem.get('Lastname'));
+                                            return total + 1;
+                                        });
+
+                                    }, 0).then(function (total) {
+                                            console.log(total + " Articles upgraded in ArticleItems");
+                                            t.commit();
+                                            //knex.schema.table('PersonItems', function (table) {
+                                            //    table.timestamp('BirthdayNoTZ', true);
+                                            //}).then(function () {
+                                            //    console.log("Birthday field in PersonItems is now timestamp without timezone");
+                                            //    t.commit();
+                                            //}).catch(function (err) {
+                                            //    console.log("ERROR while fetching all PersonItems");
+                                            //    t.rollback(err);
+                                            //});
+                                        })
+                                        .catch(function (err) {
+                                            console.log("ERROR while upgrading ArticleItems");
+                                            t.rollback(err);
+                                        });
+
+                                })
+                                .catch(function (err) {
+                                    console.log("ERROR while upgrading birthday in PersonItems");
+                                    t.rollback(err);
+                                });
+                        }).catch(function (err) {
+                            console.log("ERROR while fetching all PersonItems");
+                            t.rollback(err);
+                        });
+
+                    }).then(function () {
+                        console.log("Transaction (upgrading PersonItems in upgrade " + upgradeVersion + ") committed");
+                        resolve();
+                    }).catch(function (error) {
+                        console.log(error);
+                        console.log("Transaction (upgrading PersonItems in upgrade " + upgradeVersion + ") rolled back");
+
+                        knex.schema.table('PersonItems', function (table) {
+                            table.dropColumn('BirthdayNoTZ');
+                        }).then(function () {
+                            console.log("dropped column BirthdayNoTZ while upgrading PersonItems in upgrade " + upgradeVersion + ")");
+                            reject(error);
+                        }).catch(function (error) {
+                            console.log("Dropping column BirthdayNoTZ failed while upgrading PersonItems in upgrade " + upgradeVersion + ")");
+                            reject(error);
+                        });
+                    });
+
+                    break;
                 default:
                     resolve();
             }
@@ -232,61 +321,61 @@ exports.upgradeSchemaV0 = function (upgradeVersion) {
                         t.timestamp('valid_start').index();
                         t.timestamp('valid_end').index();
                     }).then(function () {
-                        // kopiere alle Einträge von ArticleItems nach ArticleItems2
-                        new ArticleItem()
-                            .query(function (qb) {
-                                qb.orderBy('publish_start', 'DESC');
-                            })
-                            .fetchAll()
-                            .then(function (articleItemList) {
-                                Promise.reduce(articleItemList, function (total, articleItem) {
-                                    var __ret = extractFromArticleItem(articleItem);
-                                    var title = __ret.title;
-                                    var text = __ret.text;
-                                    var leadText = __ret.leadText;
-                                    return new ArticleItem2({
-                                        Article_id: articleItem.get('Article_id'),
-                                        Date: articleItem.get('Date'),
-                                        Author: articleItem.get('Author'),
-                                        Title: title,
-                                        LeadText: leadText,
-                                        Text: text,
-                                        publish_start: articleItem.get('publish_start'),
-                                        publish_end: articleItem.get('publish_end'),
-                                        valid_start: articleItem.get('valid_start'),
-                                        valid_end: articleItem.get('valid_end')
-                                    })
-                                        .save(null, {transacting: t})
-                                        .then(function (savedArticle) {
-                                            console.log("ArticleItem2 saved. Article_id: " + savedArticle.get('Article_id') + " Title: " + savedArticle.get('Title'));
-                                            return total + 1;
-                                        })
-                                }, 0)
-                                    .then(function (total) {
-                                        console.log(total + " Articles saved in ArticleItem2");
-                                        //Total is 30
-                                        knex.schema.dropTable('ArticleItems')
-                                            .then(function () {
-                                                knex.schema.renameTable('ArticleItems2', 'ArticleItems')
-                                                    .then(function () {
-                                                        t.commit();
-                                                    })
-                                                    .catch(function (err) {
-                                                        t.rollback(err);
-                                                    });
+                            // kopiere alle Einträge von ArticleItems nach ArticleItems2
+                            new ArticleItem()
+                                .query(function (qb) {
+                                    qb.orderBy('publish_start', 'DESC');
+                                })
+                                .fetchAll()
+                                .then(function (articleItemList) {
+                                    Promise.reduce(articleItemList, function (total, articleItem) {
+                                            var __ret = extractFromArticleItem(articleItem);
+                                            var title = __ret.title;
+                                            var text = __ret.text;
+                                            var leadText = __ret.leadText;
+                                            return new ArticleItem2({
+                                                Article_id: articleItem.get('Article_id'),
+                                                Date: articleItem.get('Date'),
+                                                Author: articleItem.get('Author'),
+                                                Title: title,
+                                                LeadText: leadText,
+                                                Text: text,
+                                                publish_start: articleItem.get('publish_start'),
+                                                publish_end: articleItem.get('publish_end'),
+                                                valid_start: articleItem.get('valid_start'),
+                                                valid_end: articleItem.get('valid_end')
                                             })
-                                            .catch(function (err) {
-                                                t.rollback(err);
-                                            });
-                                    })
-                                    .catch(function (err) {
-                                        console.log("ERROR while creating new ArticleItem2: ", err);
-                                        t.rollback(err);
-                                    });
-                            }).catch(function (err) {
+                                                .save(null, {transacting: t})
+                                                .then(function (savedArticle) {
+                                                    console.log("ArticleItem2 saved. Article_id: " + savedArticle.get('Article_id') + " Title: " + savedArticle.get('Title'));
+                                                    return total + 1;
+                                                })
+                                        }, 0)
+                                        .then(function (total) {
+                                            console.log(total + " Articles saved in ArticleItem2");
+                                            //Total is 30
+                                            knex.schema.dropTable('ArticleItems')
+                                                .then(function () {
+                                                    knex.schema.renameTable('ArticleItems2', 'ArticleItems')
+                                                        .then(function () {
+                                                            t.commit();
+                                                        })
+                                                        .catch(function (err) {
+                                                            t.rollback(err);
+                                                        });
+                                                })
+                                                .catch(function (err) {
+                                                    t.rollback(err);
+                                                });
+                                        })
+                                        .catch(function (err) {
+                                            console.log("ERROR while creating new ArticleItem2: ", err);
+                                            t.rollback(err);
+                                        });
+                                }).catch(function (err) {
                                 t.rollback(err);
                             });
-                    })
+                        })
                         .catch(function (err) {
                             console.log("Error while creating ArticleItem2 table", err);
                             t.rollback(err);
@@ -323,23 +412,35 @@ function performUpgradeSchema2(resolve, reject) {
 }
 
 exports.createSchemaIfNotExists = function () {
-    return new Promise(function (resolve4, reject4) {
-        new Promise(function (resolve3, reject3) {
+    return new Promise(function (resolve6, reject6) {
+        return new Promise(function (resolve5, reject5) {
+            new Promise(function (resolve4, reject4) {
+                new Promise(function (resolve3, reject3) {
 
-            new Promise(function (resolve, reject) {
-                knex.schema.hasTable('RoleMenus').then(function (exists) {
-                    if (exists) {
-                        knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
+                    new Promise(function (resolve, reject) {
+                        knex.schema.hasTable('RoleMenus').then(function (exists) {
                             if (exists) {
-                                knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
+                                knex.schema.hasTable('PersonContactDataPhonenumbers').then(function (exists) {
                                     if (exists) {
-                                        performUpgradeSchema2(resolve, reject);
-                                    } else {
-                                        console.log('Must upgrade DB schema.');
-                                        exports.upgradeSchema(1).then(
-                                            function () {
+                                        knex.schema.hasColumn('ArticleItems', 'Title').then(function (exists) {
+                                            if (exists) {
                                                 performUpgradeSchema2(resolve, reject);
-                                            }, reject);
+                                            } else {
+                                                console.log('Must upgrade DB schema.');
+                                                exports.upgradeSchema(1).then(
+                                                    function () {
+                                                        performUpgradeSchema2(resolve, reject);
+                                                    }, reject);
+                                            }
+                                        });
+                                    } else {
+                                        console.log('Must create DB schema.');
+                                        exports.createSchema().then(
+                                            function () {
+                                                console.log('DB schema created.');
+                                                resolve();
+                                            },
+                                            reject);
                                     }
                                 });
                             } else {
@@ -351,59 +452,85 @@ exports.createSchemaIfNotExists = function () {
                                     },
                                     reject);
                             }
+                        }).catch(function (error) {
+                            reject(error);
                         });
-                    } else {
-                        console.log('Must create DB schema.');
-                        exports.createSchema().then(
-                            function () {
-                                console.log('DB schema created.');
-                                resolve();
-                            },
-                            reject);
-                    }
-                }).catch(function (error) {
-                    reject(error);
-                });
-            }).then(function () {
-                    knex.schema.hasTable('AppSettings')
-                        .then(function (exists) {
-                            if (exists) {
-                                resolve3();
-                            } else {
-                                console.log('Must upgrade DB schema (V3).');
-                                exports.upgradeSchema(3)
-                                    .then(function () {
-                                        console.log('DB schema upgraded to V3.');
+                    }).then(function () {
+                            knex.schema.hasTable('AppSettings')
+                                .then(function (exists) {
+                                    if (exists) {
                                         resolve3();
-                                    }, reject3);
-                            }
+                                    } else {
+                                        console.log('Must upgrade DB schema (V3).');
+                                        exports.upgradeSchema(3)
+                                            .then(function () {
+                                                console.log('DB schema upgraded to V3.');
+                                                resolve3();
+                                            }, reject3);
+                                    }
+                                })
+                                .catch(function (error) {
+                                    reject3(error);
+                                });
                         })
                         .catch(function (error) {
                             reject3(error);
                         });
                 })
-                .catch(function (error) {
-                    reject3(error);
+                    .then(function () {
+                        knex.schema.hasColumn('ArticleImages', 'flowIdentifier').then(function (exists) {
+                                if (exists) {
+                                    resolve4();
+                                } else {
+                                    console.log('Must upgrade DB schema (V4).');
+                                    exports.upgradeSchema(4)
+                                        .then(function () {
+                                            console.log('DB schema upgraded to V4.');
+                                            resolve4();
+                                        }, reject4);
+                                }
+                            })
+                            .catch(function (error) {
+                                reject4(error);
+                            });
+                    });
+            })
+                .then(function () {
+                    knex.schema.hasTable('Assets').then(function (exists) {
+                            if (exists) {
+                                resolve5();
+                            } else {
+                                console.log('Must upgrade DB schema (V5).');
+                                exports.upgradeSchema(5)
+                                    .then(function () {
+                                        console.log('DB schema upgraded to V5.');
+                                        resolve5();
+                                    }, reject5);
+                            }
+                        })
+                        .catch(function (error) {
+                            reject5(error);
+                        });
                 });
         })
             .then(function () {
-                knex.schema.hasColumn('ArticleImages', 'flowIdentifier').then(function (exists) {
-                    if (exists) {
-                        resolve4();
-                    } else {
-                        console.log('Must upgrade DB schema (V4).');
-                        exports.upgradeSchema(4)
-                            .then(function () {
-                                console.log('DB schema upgraded to V4.');
-                                resolve4();
-                            }, reject4);
-                    }
-                })
+                knex.schema.hasColumn('PersonItems', 'BirthdayNoTZ').then(function (exists) {
+                        if (exists) {
+                            resolve6();
+                        } else {
+                            console.log('Must upgrade DB schema (V6).');
+                            exports.upgradeSchema(6)
+                                .then(function () {
+                                    console.log('DB schema upgraded to V6.');
+                                    resolve6();
+                                }, reject6);
+                        }
+                    })
                     .catch(function (error) {
-                        reject4(error);
+                        reject6(error);
                     });
             });
-    });
+    })
 };
 
 exports.deleteInclompleteUploads = function () {
@@ -471,6 +598,9 @@ exports.createSchema = function () {
             },
             function () {
                 return knex.schema.dropTableIfExists('Uploads');
+            },
+            function () {
+                return knex.schema.dropTableIfExists('Assets');
             },
             function () {
                 return knex.schema.dropTableIfExists('ArticleImages');
@@ -635,7 +765,7 @@ exports.createSchema = function () {
                     t.string('Firstname', 20);
                     t.string('Lastname', 30).notNullable().index();
                     t.string('Suffix', 10);
-                    t.dateTime('Birthday');
+                    t.dateTime('BirthdayNoTZ', true);   // true means postgres does not store timezone with timestamp
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
                 });
@@ -822,6 +952,20 @@ exports.createSchema = function () {
                     t.string('flowIdentifier').index();
                     t.timestamp('valid_start').index();
                     t.timestamp('valid_end').index();
+                });
+            },
+            function () {
+                return knex.schema.createTable('Assets', function (t) {
+                    t.increments('id').primary();
+                    t.string('Page_id').references('Name').inTable('Pages').notNullable();
+                    t.integer('Item_id').index();
+                    t.binary('Data').notNullable();
+                    t.binary('Thumbnail');
+                    t.string('Filename').notNullable().index();
+                    t.string('MimeType').notNullable().index();
+                    t.integer('Size').notNullable();
+                    t.string('Description');
+                    t.string('flowIdentifier').index();
                 });
             },
             function () {
@@ -1373,6 +1517,14 @@ var Uploads = bookshelf.Collection.extend({
     model: Upload
 });
 
+var Asset = bookshelf.Model.extend({
+    tableName: 'Assets'
+});
+
+var Assets = bookshelf.Collection.extend({
+    model: Asset
+});
+
 var Contact = bookshelf.Model.extend({
     tableName: 'Contacts',
     Page: function () {
@@ -1443,30 +1595,30 @@ var checkPassword = function (hashedPassword, password, salt) {
 var saveNewPassword = function (userModel, newPassword) {
     return new Promise(function (resolve, reject) {
         model.bookshelf.transaction(function (t) {
-            var salt = model.createSalt();
-            userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
-            userModel.set('PasswordSalt', salt);
-            userModel.save(null, {transacting: t})
-                .then(function () {
-                    new Audit({
-                        ChangedAt: new Date(),
-                        Table: userModel.tableName,
-                        ChangedBy: userModel.get('UserName'),
-                        Description: "Password changed"
-                    }).save(null, {transacting: t})
-                        .then(function (auditEntry) {
-                            t.commit();
-                        })
-                        .catch(function (err) {
-                            console.log("Error while saving audit for password change:", err);
-                            t.rollback("Speichern der Auditinformationen in der Datenbank für die Passwortänderung gescheitert. Das Passwort wurde nicht geändert.");
-                        });
-                })
-                .catch(function (err) {
-                    console.log("Error while saving UserModel for password change:", err);
-                    t.rollback("Speichern der Benutzerinformationen in der Datenbank für die Passwortänderung gescheitert. Das Passwort wurde nicht geändert.");
-                });
-        })
+                var salt = model.createSalt();
+                userModel.set('PasswordHash', model.encryptPassword(newPassword, salt));
+                userModel.set('PasswordSalt', salt);
+                userModel.save(null, {transacting: t})
+                    .then(function () {
+                        new Audit({
+                            ChangedAt: new Date(),
+                            Table: userModel.tableName,
+                            ChangedBy: userModel.get('UserName'),
+                            Description: "Password changed"
+                        }).save(null, {transacting: t})
+                            .then(function (auditEntry) {
+                                t.commit();
+                            })
+                            .catch(function (err) {
+                                console.log("Error while saving audit for password change:", err);
+                                t.rollback("Speichern der Auditinformationen in der Datenbank für die Passwortänderung gescheitert. Das Passwort wurde nicht geändert.");
+                            });
+                    })
+                    .catch(function (err) {
+                        console.log("Error while saving UserModel for password change:", err);
+                        t.rollback("Speichern der Benutzerinformationen in der Datenbank für die Passwortänderung gescheitert. Das Passwort wurde nicht geändert.");
+                    });
+            })
             .then(function () {
                 console.log("Password changed for " + userModel.get('UserName'));
                 resolve();
@@ -1505,9 +1657,9 @@ var getPages = function () {
                 });
                 resolve(pages);
             }).catch(function (error) {
-                console.log("Retrieving pages from database failed: " + error);
-                resolve(pages);
-            });
+            console.log("Retrieving pages from database failed: " + error);
+            resolve(pages);
+        });
     });
 };
 
@@ -1547,9 +1699,9 @@ var getPagesForUser = function (user) {
                         });
                         resolve(pagesForUser);
                     }).catch(function (error) {
-                        console.log("ERROR while checking role permissions in getPagesForUser: " + error);
-                        reject(error);
-                    });
+                    console.log("ERROR while checking role permissions in getPagesForUser: " + error);
+                    reject(error);
+                });
             } else {
                 pages.forEach(function (page) {
                     if (page.AnonymousAccess) {
@@ -1736,6 +1888,8 @@ module.exports.models = {
     ArticleImages: ArticleImages,
     Upload: Upload,
     Uploads: Uploads,
+    Asset: Asset,
+    Assets: Assets,
     Contact: Contact,
     ContactItem: ContactItem,
     Contacts: Contacts,
