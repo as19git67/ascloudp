@@ -234,6 +234,11 @@ exports.upgradeSchema = function (upgradeVersion) {
                                         var bd = moment(person.get('Birthday'));
                                         if (bd.isValid()) {
                                             var tzOffset = bd.utcOffset();
+                                            if (tzOffset == 0) {
+                                                if (bd.hour() != 0) {
+                                                    tzOffset = (24 - bd.hour()) * 60;
+                                                }
+                                            }
                                             bd.add(tzOffset, 'minutes');
                                             person.set('BirthdayNoTZ', bd.utc().toDate());
                                         }
