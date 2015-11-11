@@ -233,8 +233,8 @@ exports.upgradeSchema = function (upgradeVersion) {
 
                                         var bd = moment(person.get('Birthday'));
                                         if (bd.isValid()) {
-                                            //var tzOffset = bd.utcOffset();
-                                            //bd.add(tzOffset, 'minutes');
+                                            var tzOffset = bd.utcOffset();
+                                            bd.add(tzOffset, 'minutes');
                                             person.set('BirthdayNoTZ', bd.utc().toDate());
                                         }
                                         return person.save(null, {transacting: t}).then(function (updatedPersonItem) {
