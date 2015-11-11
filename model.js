@@ -232,10 +232,11 @@ exports.upgradeSchema = function (upgradeVersion) {
                                     Promise.reduce(persons.models, function (total, person) {
 
                                         var bd = moment(person.get('Birthday'));
-                                        //var tzOffset = bd.utcOffset();
-                                        //bd.add(tzOffset, 'minutes');
-                                        person.set('BirthdayNoTZ', bd.utc().toDate());
-
+                                        if (bd.isValid()) {
+                                            //var tzOffset = bd.utcOffset();
+                                            //bd.add(tzOffset, 'minutes');
+                                            person.set('BirthdayNoTZ', bd.utc().toDate());
+                                        }
                                         return person.save(null, {transacting: t}).then(function (updatedPersonItem) {
                                             console.log("PersonItem saved. Person_id: " + updatedPersonItem.get('Person_id') + " Lastname: " + updatedPersonItem.get('Lastname'));
                                             return total + 1;
