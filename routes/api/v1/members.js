@@ -293,7 +293,7 @@ function updatePersonItem(transaction, personId, member) {
     return new Promise(function (resolve, reject) {
 
         console.log("Saving PersonItem with Person_id " + personId);
-        new PersonItem({Person_id: personId}).fetch().then(function (person) {
+        new PersonItem({Person_id: personId, 'valid_end': null}).fetch().then(function (person) {
             if (person) {
                 var birthdayIsDifferent = isDateDifferent(member, "birthday", person, "BirthdayNoTZ");
                 if (birthdayIsDifferent ||
@@ -318,16 +318,16 @@ function updatePersonItem(transaction, personId, member) {
                                 'Salutation': member.salutation,
                                 'valid_start': now
                             }).save(null, {transacting: transaction}).then(function (savedPerson) {
-                                    console.log("PersonItem saved");
-                                    resolve(savedPerson);
-                                }).catch(function (error) {
-                                    console.log("Error while saving new PersonItem with Person_id " + personId + ": " + error);
-                                    reject(new HttpError("Error 500: saving new PersonItem with Person_id " + personId + " failed", 500));
-                                });
+                                console.log("PersonItem saved");
+                                resolve(savedPerson);
+                            }).catch(function (error) {
+                                console.log("Error while saving new PersonItem with Person_id " + personId + ": " + error);
+                                reject(new HttpError("Error 500: saving new PersonItem with Person_id " + personId + " failed", 500));
+                            });
                         }).catch(function (error) {
-                            console.log("Error while updating PersonItem with Person_id " + personId + ": " + error);
-                            reject(new HttpError("Error 500: updating PersonItem with Person_id " + personId + " failed", 500));
-                        });
+                        console.log("Error while updating PersonItem with Person_id " + personId + ": " + error);
+                        reject(new HttpError("Error 500: updating PersonItem with Person_id " + personId + " failed", 500));
+                    });
                 }
                 else {
                     console.log("Not saving PersonItem because nothing changed.");
@@ -361,7 +361,7 @@ function updateMembership(transaction, personId, member) {
                                 console.log("MembershipItem not saved because nothing changed.");
                             }
                             resolve(savedMembership);
-                        }).catch(function(error){
+                        }).catch(function (error) {
                             reject(new HttpError("Error 500: updating Membership with Person_id " + personId + " failed", 500));
                         });
                     }).catch(function (error) {
@@ -379,7 +379,7 @@ function updateMembership(transaction, personId, member) {
                             console.log("MembershipItem not saved because nothing changed.");
                         }
                         resolve(savedMembership);
-                    }).catch(function(error){
+                    }).catch(function (error) {
                         reject(new HttpError("Error 500: updating Membership with Person_id " + personId + " failed", 500));
                     });
                 }
@@ -432,18 +432,18 @@ function updateMembershipItem(transaction, personId, member) {
                                 'MembershipFee_id': member.membershipFee_id,
                                 'valid_start': now
                             }).save(null, {transacting: transaction}).then(function (savedMembershipItem) {
-                                    console.log("MembershipItem saved");
-                                    //console.log("MembershipItem saved: "+ JSON.stringify(savedMembershipItem));
-                                    resolve(savedMembershipItem);
-                                }).catch(function (error) {
-                                    console.log("Error while saving new MembershipItem with Membership_id " + membershipId + ": " + error);
-                                    reject(new HttpError("Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed", 500));
-                                    //reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"});
-                                });
+                                console.log("MembershipItem saved");
+                                //console.log("MembershipItem saved: "+ JSON.stringify(savedMembershipItem));
+                                resolve(savedMembershipItem);
+                            }).catch(function (error) {
+                                console.log("Error while saving new MembershipItem with Membership_id " + membershipId + ": " + error);
+                                reject(new HttpError("Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed", 500));
+                                //reject({statusCode: 500, message: "Error 500: saving new MembershipItem with Membership_id " + membershipId + " failed"});
+                            });
                         }).catch(function (error) {
-                            console.log("Error while updating MembershipItem with Membership_id " + membershipId + ": " + error);
-                            reject(new HttpError("Error 500: updating MembershipItem with Membership_id " + membershipId + " failed", 500));
-                        });
+                        console.log("Error while updating MembershipItem with Membership_id " + membershipId + ": " + error);
+                        reject(new HttpError("Error 500: updating MembershipItem with Membership_id " + membershipId + " failed", 500));
+                    });
                 }
                 else {
                     console.log("Not saving MembershipItem because nothing changed.");
