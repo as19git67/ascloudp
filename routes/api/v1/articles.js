@@ -193,26 +193,31 @@ module.exports.postImageChunk = function (req, res) {
 
     form.parse(req, function (err, fields, files) {
 
-        console.log("Storing new flowChunk. flowChunkNumber: " + fields.flowChunkNumber + " flowFilename: " + fields.flowFilename);
-        new Upload({
-            flowChunkNumber: fields.flowChunkNumber,
-            flowChunkSize: fields.flowChunkSize,
-            flowCurrentChunkSize: fields.flowCurrentChunkSize,
-            flowFilename: fields.flowFilename,
-            flowIdentifier: fields.flowIdentifier,
-            flowRelativePath: fields.flowRelativePath,
-            flowTotalChunks: fields.flowTotalChunks,
-            flowTotalSize: fields.flowTotalSize,
-            mimeType: files.file.type,
-            tempFile: files.file.path
-        }).save().then(function (savedUpload) {
-                res.statusCode = 200; // OK
-                res.send('200 OK');
-            })
-            .catch(function (error) {
-                console.log("Error while inserting table Upload: ", error);
-                deleteFlowChunksAndSendRespond(fields.flowIdentifier, res, 500, "Insert into upload table of database failed");
-            });
+        if (files && files.file) {
+            console.log("Storing new flowChunk. flowChunkNumber: " + fields.flowChunkNumber + " flowFilename: " + fields.flowFilename);
+            new Upload({
+                flowChunkNumber: fields.flowChunkNumber,
+                flowChunkSize: fields.flowChunkSize,
+                flowCurrentChunkSize: fields.flowCurrentChunkSize,
+                flowFilename: fields.flowFilename,
+                flowIdentifier: fields.flowIdentifier,
+                flowRelativePath: fields.flowRelativePath,
+                flowTotalChunks: fields.flowTotalChunks,
+                flowTotalSize: fields.flowTotalSize,
+                mimeType: files.file.type,
+                tempFile: files.file.path
+            }).save().then(function (savedUpload) {
+                    res.statusCode = 200; // OK
+                    res.send('200 OK');
+                })
+                .catch(function (error) {
+                    console.log("Error while inserting table Upload: ", error);
+                    deleteFlowChunksAndSendRespond(fields.flowIdentifier, res, 500, "Insert into upload table of database failed");
+                });
+        } else {
+            console.log("Error while inserting table Upload: file is undefined");
+            deleteFlowChunksAndSendRespond(fields.flowIdentifier, res, 400, "Image chunk incomplete - ignoring");
+        }
     });
 
 };
@@ -340,8 +345,11 @@ module.exports.postImage = function (req, res) {
                                                                     console.log("image loaded");
                                                                     var width = jimage800.bitmap.width;
                                                                     if (width > 800) {
+                                                                        console.log("image width is " + width + " and will be scaled down");
                                                                         var factor = 800 / width;   // scale to specific pixel width
+                                                                        console.log("image scale with factor " + factor);
                                                                         jimage800.scale(factor);// scale
+                                                                        console.log("image scale finished");
                                                                     }
                                                                     jimage800.quality(40); // set JPEG quality
                                                                     jimage800.getBuffer(mimeType, function (err, image800Buffer) {
@@ -351,13 +359,15 @@ module.exports.postImage = function (req, res) {
                                                                             res.statusCode = 500;
                                                                             res.send('500 Saving image in database failed');
                                                                         } else {
-                                                                            console.log("Resized image generated. Size: " + image800Buffer.length);
+                                                                            var scaledWidth = jimage800.bitmap.width;
+                                                                            var scaledHeight = jimage800.bitmap.height;
+                                                                            console.log("Resized image generated. Size: " + image800Buffer.length + ", w: " + scaledWidth + ", h: " + scaledHeight);
 
                                                                             new ArticleImage(
                                                                                 {
                                                                                     Article_id: articleId,
-                                                                                    Image: imageFileBuffer,
-                                                                                    Thumbnail: image800Buffer,
+                                                                                    Image: image800Buffer,
+                                                                                    Thumbnail: thumbnailBuffer,
                                                                                     MimeType: mimeType,
                                                                                     Filename: flowFilename,
                                                                                     flowIdentifier: flowIdentifier,
