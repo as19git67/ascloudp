@@ -32,7 +32,7 @@
     "serve-favicon": "*",
     "tmp": "0.0.24",
     "underscore": "*",
-    "marked": "~0.3.3",
+    "marked": "~0.3.5",
     "jimp": "~0.2.4"
   }
 }
