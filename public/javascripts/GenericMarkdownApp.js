@@ -12,6 +12,8 @@ $.extend($.expr[":"], {
         }
 });
 
+var md = window.markdownit();
+
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
 var markdownEditApp = angular.module('markdownEditApp', ['ngCookies', 'ui.bootstrap', 'flow']);
 
@@ -219,7 +221,7 @@ markdownEditApp.controller('markdownEditCtrl', ['$sce', '$log', '$scope', '$cook
 
         $scope.renderMarkdown = function () {
 
-            var rawHtml = marked($scope.markdownPage.text);
+            var rawHtml = md.render($scope.markdownPage.text);
             // add class attribute to all image tags to apply bootstrap styles
             $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
             $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);

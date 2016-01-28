@@ -51,8 +51,8 @@ app.set('view engine', 'jade');
 
 app.use(favicon(__dirname + '/public/favicon.ico'));
 app.use(logger('dev'));
-app.use(bodyParser.json({defer: true}));
-app.use(bodyParser.urlencoded({defer: true}));
+app.use(bodyParser.json({limit: '50mb', defer: true}));
+app.use(bodyParser.urlencoded({limit: '50mb', defer: true}));
 var cookieSecret = config.get('cookieSecret');
 var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
 app.use(cookieParser(cookieSecret));
@@ -64,9 +64,9 @@ app.use(cookieSession({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/js', express.static(path.join(__dirname, 'bower_components/markdown-id/dist')));
+app.use('/js', express.static(path.join(__dirname, 'bower_components/markdown-it/dist')));
 
-app.use(bodyParser({defer: true})); // enables multipart form
+app.use(bodyParser({limit: '50mb', defer: true})); // enables multipart form
 
 app.use(passport.initialize());
 app.use(passport.session()); // persistent login sessions
@@ -215,7 +215,7 @@ app.use(function (req, res, next) {
                                             console.log("Warning: rendering page " + page.Name + " without content");
                                             rawMarked = "";
                                         }
-                                        rawHtml = marked(rawMarked);
+                                        rawHtml = md.render(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         res.render(viewName, {

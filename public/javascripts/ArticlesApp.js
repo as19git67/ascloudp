@@ -12,6 +12,8 @@ $.extend($.expr[":"], {
         }
 });
 
+var md = window.markdownit();
+
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
 var articleEditApp = angular.module('articleEditApp', ['ngCookies', 'ui.bootstrap', 'flow']);
 
@@ -164,6 +166,8 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             article.date = makeMidnightUtc($scope.article.date);
             article.publish_start = makeMidnightUtc($scope.article.publish_start);
             article.publish_end = makeMidnightUtc($scope.article.publish_end);
+            var maxArticleLength = $scope.article_schema.text.maxLength;
+            article.text = article.text.substr(0, $scope.article_schema.text.maxLength);
 
             articleService.saveArticle(article).then(function () {
                 ui.editArticleEntry.modal('hide');
@@ -233,20 +237,31 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
         $scope.renderMarkdown = function () {
 
-            var rawHtml = marked($scope.article.text);
+            if ($scope.article.text) {
+                if ($scope.article.text.length > $scope.article_schema.text.maxLength) {
 
-            // add class attribute to all image tags to apply bootstrap styles
-            $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
-            $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
+                }
+                var rawHtml = md.render($scope.article.text.substr(0, $scope.article_schema.text.maxLength));
 
-            // calculate rows for textarea
-            var charsPerLine = 40;
+                // add class attribute to all image tags to apply bootstrap styles
+                $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
 
-            var lines = $scope.article.text.split(/\r\n|\r|\n/);
-            $scope.textareaRows = _.reduce(lines, function (neededRows, line) {
-                var additionalRows = Math.round((line.length / charsPerLine));
-                return neededRows + additionalRows;
-            }, lines.length);
+                var maxTextLen = $scope.article_schema.text.maxLength;
+                if ($scope.article.text.length > maxTextLen) {
+                    $scope.textAsHtml += "<br><em>Achtung, der Text wurde abgeschnitten, da die maximale Länge (" + maxTextLen + ") überschritten ist</em>";
+                }
+
+                $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
+
+                // calculate rows for textarea
+                var charsPerLine = 40;
+
+                var lines = $scope.article.text.split(/\r\n|\r|\n/);
+                $scope.textareaRows = _.reduce(lines, function (neededRows, line) {
+                    var additionalRows = Math.round((line.length / charsPerLine));
+                    return neededRows + additionalRows;
+                }, lines.length);
+            }
         };
 
         // date picker event
