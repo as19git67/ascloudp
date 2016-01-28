@@ -3,7 +3,7 @@ var Promise = require('bluebird/js/release/promise')();
 var config = require('../config');
 var model = require('../model');
 var moment = require('moment');
-var marked = require('marked');
+var md = require('markdown-it')();
 var ArticleItem = model.models.ArticleItem;
 
 var appName = config.get('appName');
@@ -85,7 +85,7 @@ function getArticleData(nowMoment, articleItem) {
 
     var rawHtml = "";
     if (text && text.length > 0) {
-        rawHtml = marked(text);
+        rawHtml = md.render(text);
     }
     // add class attribute to all image tags to apply bootstrap styles
     rawHtml = rawHtml.replace(/<img\s*src=/g,
