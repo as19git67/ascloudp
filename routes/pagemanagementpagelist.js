@@ -3,7 +3,7 @@ var _ = require('underscore');
 var router = express.Router();
 var config = require('../config');
 var model = require('../model');
-var Promise = require('bluebird/js/main/promise')();
+var Promise = require('bluebird/js/release/promise')();
 
 var passportStrategies = require('../passportStrategies');
 var rolePermissions = require('../Roles');

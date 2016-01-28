@@ -234,6 +234,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         $scope.renderMarkdown = function () {
 
             var rawHtml = marked($scope.article.text);
+
             // add class attribute to all image tags to apply bootstrap styles
             $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
             $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);

@@ -1,4 +1,4 @@
-var Promise = require('bluebird/js/main/promise')();
+var Promise = require('bluebird/js/release/promise')();
 var model = require('./model');
 var _ = require('underscore');
 

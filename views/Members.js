@@ -1,5 +1,5 @@
 var _ = require('underscore');
-var Promise = require('bluebird/js/main/promise')();
+var Promise = require('bluebird/js/release/promise')();
 var config = require('../config');
 var model = require('../model');
 var members = require('../routes/api/v1/members');

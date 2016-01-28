@@ -1,6 +1,6 @@
 var _ = require('underscore');
 var moment = require('moment');
-var Promise = require('bluebird/js/main/promise')();
+var Promise = require('bluebird/js/release/promise')();
 
 var model = require('./model');
 var knex = model.bookshelf.knex;

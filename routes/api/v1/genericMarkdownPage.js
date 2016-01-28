@@ -7,62 +7,55 @@ var tmp = require('tmp');
 var path = require('path');
 var fs = require('fs');
 var Jimp = require('jimp');
-var Article = model.models.Article;
-var ArticleItem = model.models.ArticleItem;
-var ArticleImage = model.models.ArticleImage;
-var ArticleImages = model.models.ArticleImages;
+var PageContent = model.models.PageContent;
+var Asset = model.models.Asset;
+var Assets = model.models.Assets;
 var Upload = model.models.Upload;
 var Uploads = model.models.Uploads;
 var Audit = model.models.Audit;
 
 var knex = model.bookshelf.knex;
 
-function respondWithArticleItemData(req, res, articleItem, articleImages) {
-    getArticleItemSchema().then(function (article_schema) {
+function respondWithGenericMarkdownPageData(req, res, genericMarkdownPage, genericMarkdownPageAssets) {
+    getMarkdownPageSchema().then(function (markdownPage_schema) {
 
         var csrfToken = req.csrfToken();
         res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
         res.json(
             {
-                article: {
-                    article_id: articleItem.get('Article_id'),
-                    date: articleItem.get('Date'),
-                    title: articleItem.get('Title'),
-                    leadText: articleItem.get('LeadText'),
-                    text: articleItem.get('Text'),
-                    author: articleItem.get('Author'),
-                    publish_start: articleItem.get('publish_start'),
-                    publish_end: articleItem.get('publish_end')
+                markdownPage: {
+                    Page_id: genericMarkdownPage.get('Page_id'),
+                    Text: genericMarkdownPage.get('Text')
                 },
-                article_images: articleImages,
-                article_schema: article_schema
+                markdownPage_assets: genericMarkdownPageAssets,
+                markdownPage_schema: markdownPage_schema
             }
         );
     }).catch(function (error) {
-        console.log("Error while reading columnInfo for ArticleItem from database: " + error);
+        console.log("Error while reading columnInfo for PageContent from database: " + error);
         res.statusCode = 500;
-        return res.send('Error 500: reading schema info for articles from database failed');
+        return res.send('Error 500: reading schema info for generic markdown page from database failed');
     });
 }
 
 module.exports.get = function (req, res) {
     if (req.query && req.query.type && req.query.type == "schema") {
-        getArticleItemSchema().then(function (article_schema) {
+        getMarkdownPageSchema().then(function (markdownPage_schema) {
             var csrfToken = req.csrfToken();
             res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
             res.json(
                 {
-                    article_schema: article_schema
+                    markdownPage_schema: markdownPage_schema
                 }
             );
         }).catch(function (error) {
-            console.log("Error while reading columnInfo for ArticleItem from database: " + error);
+            console.log("Error while reading columnInfo for PageContent from database: " + error);
             res.statusCode = 500;
-            return res.send('Error 500: reading schema info for articles from database failed');
+            return res.send('Error 500: reading schema info for generic markdown page from database failed');
         });
     } else {
-        var articleId = req.params.id;
-        var whereClause = {Article_id: articleId};
+        var pageId = req.params.id;
+        var whereClause = {Page_id: pageId};
         var includeDeleted = false;
         if (req.query && req.query.include && req.query.include.indexOf("deleted") >= -1) {
             includeDeleted = true;
@@ -71,21 +64,19 @@ module.exports.get = function (req, res) {
             whereClause.valid_end = null;
         }
 
-        new ArticleItem(whereClause).fetch().then(function (articleItem) {
-            if (articleItem) {
-                var articleImages = [];
-                new ArticleImages()
+        new PageContent(whereClause).fetch().then(function (markdownPageData) {
+            if (markdownPageData) {
+                var markdownPageAssets = [];
+                new Assets()
                     .query(function (qb) {
-                        qb.where({'Article_id': articleId}).andWhere({'valid_end': null});
-                        qb.orderBy('Filename', 'ASC');
-                        qb.orderBy('Description', 'ASC');
+                        qb.where({'Page_id': pageId});
                     })
-                    .fetch({columns: ['id', 'Article_id', 'Description', 'Filename', 'Size', 'MimeType']})
-                    .then(function (images) {
-                        if (images) {
-                            images.each(function (image) {
-                                articleImages.push({
-                                    Article_id: image.get('Article_id'),
+                    .fetch({columns: ['id', 'Page_id', 'Description', 'Filename', 'Size', 'MimeType']})
+                    .then(function (assets) {
+                        if (assets) {
+                            assets.each(function (asset) {
+                                markdownPageAssets.push({
+                                    Page_id: image.get('Page_id'),
                                     Description: image.get('Description'),
                                     Filename: image.get('Filename'),
                                     Size: image.get('Size'),
@@ -94,27 +85,27 @@ module.exports.get = function (req, res) {
                                 });
                             });
                         }
-                        respondWithArticleItemData(req, res, articleItem, articleImages);
+                        respondWithArticleItemData(req, res, markdownPageData, markdownPageAssets);
                     })
                     .catch(function (error) {
-                        console.log("Error while reading article images from database: " + error);
+                        console.log("Error while reading assets for generic markdown page from database: " + error);
                         res.statusCode = 500;
-                        return res.send('Error 500: reading of article images from database failed');
+                        return res.send('Error 500: reading of assets for page from database failed');
                     });
             } else {
                 res.statusCode = 404;
-                res.send('Error 404: ArticleItem with Article_id ' + articleId + ' not found');
+                res.send('Error 404: page with Page_id ' + pageId + ' not found');
             }
 
         }).catch(function (error) {
-            console.log("Error while reading articles from database: " + error);
+            console.log("Error while reading generic markdown page from database: " + error);
             res.statusCode = 500;
-            return res.send('Error 500: reading of articles from database failed');
+            return res.send('Error 500: reading of generic markdown page from database failed');
         });
     }
 };
 
-module.exports.getImages = function (req, res) {
+module.exports.getAssets = function (req, res) {
     var articleId = req.params.id;
     if (articleId) {
         var articleImages = [];
@@ -193,31 +184,26 @@ module.exports.postImageChunk = function (req, res) {
 
     form.parse(req, function (err, fields, files) {
 
-        if (files && files.file) {
-            console.log("Storing new flowChunk. flowChunkNumber: " + fields.flowChunkNumber + " flowFilename: " + fields.flowFilename);
-            new Upload({
-                flowChunkNumber: fields.flowChunkNumber,
-                flowChunkSize: fields.flowChunkSize,
-                flowCurrentChunkSize: fields.flowCurrentChunkSize,
-                flowFilename: fields.flowFilename,
-                flowIdentifier: fields.flowIdentifier,
-                flowRelativePath: fields.flowRelativePath,
-                flowTotalChunks: fields.flowTotalChunks,
-                flowTotalSize: fields.flowTotalSize,
-                mimeType: files.file.type,
-                tempFile: files.file.path
-            }).save().then(function (savedUpload) {
-                    res.statusCode = 200; // OK
-                    res.send('200 OK');
-                })
-                .catch(function (error) {
-                    console.log("Error while inserting table Upload: ", error);
-                    deleteFlowChunksAndSendRespond(fields.flowIdentifier, res, 500, "Insert into upload table of database failed");
-                });
-        } else {
-            console.log("Error while inserting table Upload: file is undefined");
-            deleteFlowChunksAndSendRespond(fields.flowIdentifier, res, 400, "Image chunk incomplete - ignoring");
-        }
+        console.log("Storing new flowChunk. flowChunkNumber: " + fields.flowChunkNumber + " flowFilename: " + fields.flowFilename);
+        new Upload({
+            flowChunkNumber: fields.flowChunkNumber,
+            flowChunkSize: fields.flowChunkSize,
+            flowCurrentChunkSize: fields.flowCurrentChunkSize,
+            flowFilename: fields.flowFilename,
+            flowIdentifier: fields.flowIdentifier,
+            flowRelativePath: fields.flowRelativePath,
+            flowTotalChunks: fields.flowTotalChunks,
+            flowTotalSize: fields.flowTotalSize,
+            mimeType: files.file.type,
+            tempFile: files.file.path
+        }).save().then(function (savedUpload) {
+                res.statusCode = 200; // OK
+                res.send('200 OK');
+            })
+            .catch(function (error) {
+                console.log("Error while inserting table Upload: ", error);
+                deleteFlowChunksAndSendRespond(fields.flowIdentifier, res, 500, "Insert into upload table of database failed");
+            });
     });
 
 };
@@ -345,11 +331,8 @@ module.exports.postImage = function (req, res) {
                                                                     console.log("image loaded");
                                                                     var width = jimage800.bitmap.width;
                                                                     if (width > 800) {
-                                                                        console.log("image width is " + width + " and will be scaled down");
                                                                         var factor = 800 / width;   // scale to specific pixel width
-                                                                        console.log("image scale with factor " + factor);
                                                                         jimage800.scale(factor);// scale
-                                                                        console.log("image scale finished");
                                                                     }
                                                                     jimage800.quality(40); // set JPEG quality
                                                                     jimage800.getBuffer(mimeType, function (err, image800Buffer) {
@@ -359,15 +342,13 @@ module.exports.postImage = function (req, res) {
                                                                             res.statusCode = 500;
                                                                             res.send('500 Saving image in database failed');
                                                                         } else {
-                                                                            var scaledWidth = jimage800.bitmap.width;
-                                                                            var scaledHeight = jimage800.bitmap.height;
-                                                                            console.log("Resized image generated. Size: " + image800Buffer.length + ", w: " + scaledWidth + ", h: " + scaledHeight);
+                                                                            console.log("Resized image generated. Size: " + image800Buffer.length);
 
                                                                             new ArticleImage(
                                                                                 {
                                                                                     Article_id: articleId,
-                                                                                    Image: image800Buffer,
-                                                                                    Thumbnail: thumbnailBuffer,
+                                                                                    Image: imageFileBuffer,
+                                                                                    Thumbnail: image800Buffer,
                                                                                     MimeType: mimeType,
                                                                                     Filename: flowFilename,
                                                                                     flowIdentifier: flowIdentifier,
@@ -375,24 +356,24 @@ module.exports.postImage = function (req, res) {
                                                                                     valid_start: new Date()
                                                                                 }
                                                                             ).save().then(function (savedImage) {
-                                                                                console.log("Image with id " + savedImage.get('id') + " saved");
-                                                                                removeChunkFiles();
-                                                                                //res.statusCode = 200; // OK
-                                                                                res.json(
-                                                                                    {
-                                                                                        id: savedImage.get('id'),
-                                                                                        Article_id: savedImage.get('Article_id'),
-                                                                                        MimeType: savedImage.get('MimeType'),
-                                                                                        Filename: savedImage.get('Filename'),
-                                                                                        Size: savedImage.get('Size'),
-                                                                                        flowIdentifier: flowIdentifier
-                                                                                    });
-                                                                            }).catch(function (error) {
-                                                                                console.log("Error while saving image in table ArticleImages: ", error);
-                                                                                removeChunkFiles();
-                                                                                res.statusCode = 500;
-                                                                                res.send('500 Saving image in database failed');
-                                                                            });
+                                                                                    console.log("Image with id " + savedImage.get('id') + " saved");
+                                                                                    removeChunkFiles();
+                                                                                    //res.statusCode = 200; // OK
+                                                                                    res.json(
+                                                                                        {
+                                                                                            id: savedImage.get('id'),
+                                                                                            Article_id: savedImage.get('Article_id'),
+                                                                                            MimeType: savedImage.get('MimeType'),
+                                                                                            Filename: savedImage.get('Filename'),
+                                                                                            Size: savedImage.get('Size'),
+                                                                                            flowIdentifier: flowIdentifier
+                                                                                        });
+                                                                                }).catch(function (error) {
+                                                                                    console.log("Error while saving image in table ArticleImages: ", error);
+                                                                                    removeChunkFiles();
+                                                                                    res.statusCode = 500;
+                                                                                    res.send('500 Saving image in database failed');
+                                                                                });
                                                                         }
                                                                     });
                                                                 }
@@ -443,43 +424,19 @@ module.exports.postImage = function (req, res) {
         });
 };
 
-function getArticleItemSchema() {
+function getMarkdownPageSchema() {
     return new Promise(function (resolve, reject) {
-        var tableName = new ArticleItem().tableName;
+        var tableName = new PageContent().tableName;
         knex(tableName).columnInfo()
-            .then(function (articleItemSchema) {
-                var article_schema = {
-                    date: _.extend(articleItemSchema['Date'], {
-                        name: "date",
-                        label: "Datum",
-                        description: "Artikeldatum"
-                    }),
-                    text: _.extend(articleItemSchema['Text'], {
-                        label: "Artikeltext",
-                        description: "Text des Artikels"
-                    }),
-                    title: _.extend(articleItemSchema['Title'], {
-                        label: "Titel",
-                        description: "Titel des Artikels"
-                    }),
-                    leadText: _.extend(articleItemSchema['LeadText'], {
-                        label: "Zusammenfassung",
-                        description: "Zusammenfassung des Artikels"
-                    }),
-                    author: _.extend(articleItemSchema['Author'], {
-                        label: "Verfasser",
-                        description: "Autor des Artikels"
-                    }),
-                    publish_start: _.extend(articleItemSchema['publish_start'], {
-                        label: "Start Veröffentlichung",
-                        description: "Beginn der Veröffentlichung des Artikels"
-                    }),
-                    publish_end: _.extend(articleItemSchema['publish_end'], {
-                        label: "Ende Veröffentlichung",
-                        description: "Ende der Veröffentlichung des Artikels"
+            .then(function (markdownPageSchema) {
+                var schema = {
+                    date: _.extend(markdownPageSchema['Text'], {
+                        name: "markdown",
+                        label: "Markdown",
+                        description: "Seiteninhalt als Markdown"
                     })
                 };
-                resolve(article_schema);
+                resolve(schema);
             })
             .catch(function (error) {
                 reject(error);
@@ -567,30 +524,30 @@ module.exports.put = function (req, res) {
                             publish_end: req.body.publish_end,
                             valid_start: now
                         }).save(null, {transacting: t}).then(function (savedArticleItem) {
-                            var userName = req.user.UserName ? req.user.UserName : req.user.id;
-                            new Audit({
-                                    ChangedAt: new Date(),
-                                    Table: savedArticleItem.tableName,
-                                    ChangedBy: userName,
-                                    Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
-                                }
-                            ).save(null, {transacting: t}).then(function () {
-                                t.commit(savedArticleItem);
-                                // goes to then of transaction
+                                var userName = req.user.UserName ? req.user.UserName : req.user.id;
+                                new Audit({
+                                        ChangedAt: new Date(),
+                                        Table: savedArticleItem.tableName,
+                                        ChangedBy: userName,
+                                        Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
+                                    }
+                                ).save(null, {transacting: t}).then(function () {
+                                        t.commit(savedArticleItem);
+                                        // goes to then of transaction
 
+                                    }).catch(function (error) {
+                                        console.log("Error while saving Audit for new ArticleItem to database:", error);
+                                        console.log("Roll back transaction");
+                                        t.rollback({
+                                            statusCode: 500,
+                                            message: 'Error 500: saving of article to database failed'
+                                        });
+                                    });
                             }).catch(function (error) {
-                                console.log("Error while saving Audit for new ArticleItem to database:", error);
+                                console.log("Error while saving new ArticleItem to database:", error);
                                 console.log("Roll back transaction");
-                                t.rollback({
-                                    statusCode: 500,
-                                    message: 'Error 500: saving of article to database failed'
-                                });
+                                t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
                             });
-                        }).catch(function (error) {
-                            console.log("Error while saving new ArticleItem to database:", error);
-                            console.log("Roll back transaction");
-                            t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
-                        });
                     }).catch(function (error) {
                         console.log("Error while updating ArticleItem in database:", error);
                         console.log("Roll back transaction");
@@ -767,41 +724,41 @@ module.exports.delete = function (req, res) {
                         ChangedBy: userName,
                         Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
                     }).save(null, {transacting: t}).then(function () {
-                        new ArticleImage()
-                            .where({'Article_id': articleId, 'valid_end': null})
-                            .fetchAll({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
-                            if (images) {
-                                new Audit({
-                                    ChangedAt: new Date(),
-                                    Table: new ArticleImage().tableName,
-                                    ChangedBy: userName,
-                                    Description: "All ArticleImages for article " + articleId + " deleted by user " + userName
-                                }).save(null, {transacting: t}).then(function () {
-                                    var now = new Date();
-                                    images.each(function (image) {
-                                        image.set('valid_end', now);
-                                    });
-                                    images.invokeThen('save', null, {transacting: t}).then(function () {
+                            new ArticleImage()
+                                .where({'Article_id': articleId, 'valid_end': null})
+                                .fetchAll({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
+                                    if (images) {
+                                        new Audit({
+                                            ChangedAt: new Date(),
+                                            Table: new ArticleImage().tableName,
+                                            ChangedBy: userName,
+                                            Description: "All ArticleImages for article " + articleId + " deleted by user " + userName
+                                        }).save(null, {transacting: t}).then(function () {
+                                                var now = new Date();
+                                                images.each(function (image) {
+                                                    image.set('valid_end', now);
+                                                });
+                                                images.invokeThen('save', null, {transacting: t}).then(function () {
+                                                    t.commit(savedArticleItem);
+                                                }).catch(function (error) {
+                                                    console.log("Error while updating ArticleImages for article with id " + articleId + " from database:", error);
+                                                    t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                                                });
+                                            }).catch(function (error) {
+                                                console.log("Error while updating Audit for ArticleImages in database:", error);
+                                                t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                                            });
+                                    } else {
                                         t.commit(savedArticleItem);
-                                    }).catch(function (error) {
-                                        console.log("Error while updating ArticleImages for article with id " + articleId + " from database:", error);
-                                        t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
-                                    });
+                                    }
                                 }).catch(function (error) {
-                                    console.log("Error while updating Audit for ArticleImages in database:", error);
+                                    console.log("Error while reading ArticleImages from database:", error);
                                     t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
                                 });
-                            } else {
-                                t.commit(savedArticleItem);
-                            }
                         }).catch(function (error) {
-                            console.log("Error while reading ArticleImages from database:", error);
+                            console.log("Error while saving Audit for updated ArticleItem in database:", error);
                             t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
                         });
-                    }).catch(function (error) {
-                        console.log("Error while saving Audit for updated ArticleItem in database:", error);
-                        t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
-                    });
                 }).catch(function (error) {
                     console.log("Error while updating ArticleItem in database:", error);
                     t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
@@ -822,100 +779,6 @@ module.exports.delete = function (req, res) {
         console.log("Error while reading article from database:", error);
         res.status(500).send('Reading of article from database failed');
     });
-};
-
-module.exports.editImage = function (req, res) {
-    var imageId = req.params.id;
-    if (parseInt(imageId, 10).toString() == imageId) {
-        if (req.query && req.query.rotate) {
-            var degrees = parseInt(req.query.rotate);
-            if (degrees !== undefined && degrees !== null && "number" !== typeof degrees && degrees < 360 && degrees > -360) {
-                new ArticleImage({id: imageId})
-                    .fetch()
-                    .then(function (image) {
-                        if (image) {
-                            if (degrees < 0) {
-                                degrees = 360 + degrees;
-                            }
-                            var thumbnailFileBuffer = image.get('Thumbnail');
-                            new Jimp(thumbnailFileBuffer, function (err, jthumbnail) {
-                                if (err) {
-                                    console.log("ERROR while loading thumbnail with jimp", err);
-                                    res.statusCode = 500;
-                                    res.send('500 updating thumbnail failed');
-                                } else {
-                                    console.log("thumbnail loaded - rotating by " + degrees + " degrees");
-
-                                    jthumbnail.rotate(degrees, function (err, rotatedThumbnail) {
-                                        if (err) {
-                                            console.log("ERROR while rotating thumbnail with jimp", err);
-                                            res.statusCode = 500;
-                                            res.send('500 rotating thumbnail failed');
-                                        } else {
-                                            console.log("Thumbnail rotated by " + degrees + " + was ok");
-
-                                            var imageFileBuffer = image.get('Image');
-                                            new Jimp(imageFileBuffer, function (err, jimage) {
-                                                if (err) {
-                                                    console.log("ERROR while loading image with jimp", err);
-                                                    res.statusCode = 500;
-                                                    res.send('500 updating image failed');
-                                                } else {
-                                                    console.log("image loaded - rotating by " + degrees + " degrees");
-                                                    jimage.rotate(degrees, function (err, rotatedImage) {
-                                                        if (err) {
-                                                            console.log("ERROR while rotating image with jimp", err);
-                                                            res.statusCode = 500;
-                                                            res.send('500 rotating image failed');
-                                                        } else {
-                                                            console.log("Writing rotated image and thumbnail back to database");
-                                                            image.set("Thumbnail", rotatedThumbnail);
-                                                            image.set("Image", rotatedImage);
-                                                            image.save().then(function (savedImage) {
-                                                                var imageInResponse = req.query && req.query.imageInResponse && req.query.imageInResponse == "true";
-                                                                if (imageInResponse) {
-                                                                    res.status(200).send(rotatedImage);
-                                                                } else {
-                                                                    res.status(200).end();
-                                                                }
-                                                            }).catch(function (error) {
-                                                                console.log("Error while saving image in table ArticleImages: ", error);
-                                                                res.statusCode = 500;
-                                                                res.send('500 Saving image in database failed');
-                                                            });
-                                                        }
-                                                    });
-                                                }
-                                            });
-                                        }
-                                    });
-                                }
-                            });
-                        } else {
-                            console.log("Error: image with id " + imageId + " does not exist in database (ArticleImages)");
-                            res.statusCode = 401;
-                            res.send('401 image not in database');
-                        }
-                    })
-                    .catch(function (error) {
-                        console.log("Error while reading image with id " + imageId + " from ArticleImages: ", error);
-                        res.statusCode = 500;
-                        res.send('500 Error reading image from database');
-                    });
-            } else {
-                console.log("Error: malformed degrees parameter in image rotate request");
-                res.statusCode = 400;
-                res.send('400 malformed degrees parameter');
-            }
-        } else {
-            console.log("Error: missing query parameter");
-            res.statusCode = 400;
-            res.send('400 missing parameter');
-        }
-    } else {
-        res.statusCode = 401;
-        res.send('401 image not in database');
-    }
 };
 
 module.exports.deleteImage = function (req, res) {

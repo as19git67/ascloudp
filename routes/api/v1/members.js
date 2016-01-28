@@ -1,5 +1,5 @@
 var _ = require('underscore');
-var Promise = require('bluebird/js/main/promise')();
+var Promise = require('bluebird/js/release/promise')();
 var RejectionError = Promise.RejectionError;
 var model = require('../../../model');
 var moment = require('moment');

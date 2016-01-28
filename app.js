@@ -12,7 +12,7 @@ var fs = require('fs');
 var config = require('./config');
 var _ = require('underscore');
 var moment = require('moment');
-var marked = require('marked');
+var md = require('markdown-it')();
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
 
@@ -30,6 +30,7 @@ var loginRegister = require('./routes/loginRegister');
 var loginRegisterNew = require('./routes/loginRegisterNew');
 var loginManageAccount = require('./routes/loginManageAccount');
 var images = require('./routes/images');
+//var apiImages = require('./routes/api/v1/images');
 var settings = require('./routes/settings');
 
 var rolePermissions = require('./Roles');
@@ -38,6 +39,7 @@ var PageContent = model.models.PageContent;
 var apiMembers = require('./routes/api/v1/members');
 var apiEvents = require('./routes/api/v1/events');
 var apiArticles = require('./routes/api/v1/articles');
+var apiGenericMarkdownPages = require('./routes/api/v1/genericMarkdownPage');
 var apiCommunicationData = require('./routes/api/v1/communicationData');
 
 moment.locale("de"); // todo: use language from configuration or browser setting
@@ -62,6 +64,7 @@ app.use(cookieSession({
 }));
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/js', express.static(path.join(__dirname, 'bower_components/markdown-id/dist')));
 
 app.use(bodyParser({defer: true})); // enables multipart form
 
@@ -88,6 +91,11 @@ app.use('/images', images);
 
 var rp = new rolePermissions(model.models);
 
+app.get('/api/v1/genericMarkdownPages/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiGenericMarkdownPages.get);
+app.put('/api/v1/genericMarkdownPages/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiGenericMarkdownPages.put);
+app.delete('/api/v1/genericMarkdownPages/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiGenericMarkdownPages.delete);
+app.post('/api/v1/genericMarkdownPages', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiGenericMarkdownPages.post);
+
 app.get('/api/v1/events', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
 app.get('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.get);
 app.put('/api/v1/events/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiEvents.put);
@@ -99,6 +107,7 @@ app.get('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp
 app.put('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.put);
 app.delete('/api/v1/articles/:id', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.delete);
 app.post('/api/v1/articles/:id/images', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.postImage);
+app.put('/api/v1/articles/:id/images/:imageid', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.editImage);
 app.delete('/api/v1/articles/:id/images/:imageid', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.deleteImage);
 app.post('/api/v1/articles', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.post);
 app.get('/api/v1/articles/:id/imagechunks', passportStrategies.ensureAuthenticatedForApi, rp.middleware(3), apiArticles.getImageChunk);
@@ -164,7 +173,7 @@ app.use(function (req, res, next) {
                                         }
 
                                         rawMarked = req.body.rawMarked;
-                                        rawHtml = marked(rawMarked);
+                                        rawHtml = md.render(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         pageContent.set('Text', rawMarked);
