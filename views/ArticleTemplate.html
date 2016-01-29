@@ -152,7 +152,7 @@
 
                         <hr>
 
-                        <div class="row">
+                        <div class="row" ng-style="{height: editorHeight + 'px'}">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <button class="btn btn-info" ng-click="isRhoHelpOpen = !isRhoHelpOpen">
@@ -205,11 +205,14 @@
                                          flow-name="flowObj.flow"
                                          flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
                                         <div class="panel panel-default">
-                                            <div class="panel-body marked" flow-drop ng-class="dropClass">
-                                                <textarea class="marked form-control textareaMonospace" rows="{{textareaRows}}"
+                                            <div class="panel-body markdown-panel" flow-drop ng-class="dropClass">
+                                                <textarea class="markdown-source form-control" rows="{{textareaRows}}"
                                                           ng-model="article.text"
                                                           required="Ein Text muss eingegeben werden" ng-required="true"
-                                                          ng-change="renderMarkdown()">
+                                                          ng-change="renderMarkdown()"
+                                                          ng-mouseover="startSyncSrcScroll()"
+                                                          nt-touchstart="startSyncSrcScroll()"
+                                                          ng-scroll="srcScrolled()">
                                                 </textarea>
                                             </div>
                                             <div class="panel-footer">
@@ -221,8 +224,12 @@
                             </div>
                             <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
                                 <div class="panel panel-default">
-                                    <div class="panel-body" ng-bind-html="trustedTextAsHtml">
-                                    </div>
+                                    <section class="panel-body markdown-panel result-html"
+                                             ng-bind-html="trustedTextAsHtml"
+                                             ng-mouseover="startSyncResultScroll()"
+                                             nt-touchstart="startSyncResultScroll()"
+                                             ng-scroll="resultScrolled()">
+                                    </section>
                                 </div>
                             </div>
                         </div>
