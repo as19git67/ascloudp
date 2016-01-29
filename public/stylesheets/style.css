@@ -2,6 +2,42 @@ body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
+#articleItemView .modal-content {
+    display: flex;
+    flex-direction: column;
+}
+
+#articleItemView .modal-content .modal-header {
+    flex: 0 0 auto;
+}
+
+#articleItemView .modal-content .modal-body {
+    flex: 1 1 auto;
+    display: flex;
+}
+
+#articleItemView .modal-content .modal-body .container-fluid {
+    display: flex;
+    flex-direction: column;
+}
+
+#articleItemView .modal-content .modal-body .container-fluid .row {
+    flex: 0 0 auto;
+}
+
+#articleItemView .modal-content .modal-body .container-fluid .row.markdown-areas,
+#articleItemView .modal-content .modal-body .container-fluid .row.markdown-editor {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.markdown-area {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
 .navbar > .container-fluid {
     width: 100%;
 }

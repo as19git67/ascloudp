@@ -152,7 +152,8 @@
 
                         <hr>
 
-                        <div class="row" ng-style="{height: editorHeight + 'px'}">
+                        <div class="row markdown-editor">
+                            <div class="row">
                             <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                                 <div class="form-group">
                                     <button class="btn btn-info" ng-click="isRhoHelpOpen = !isRhoHelpOpen">
@@ -199,7 +200,9 @@
                                     </dl>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                            </div>
+                            <div class="row markdown-areas">
+                            <div class="markdown-area col-xs-12 col-sm-12 col-md-6 col-lg-6">
                                 <div class="form-group">
                                     <div flow-init
                                          flow-name="flowObj.flow"
@@ -222,7 +225,7 @@
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="markdown-area col-xs-12 col-sm-12 col-md-6 col-lg-6">
                                 <div class="panel panel-default">
                                     <section class="panel-body markdown-panel result-html"
                                              ng-bind-html="trustedTextAsHtml"
@@ -231,6 +234,7 @@
                                              ng-scroll="resultScrolled()">
                                     </section>
                                 </div>
+                            </div>
                             </div>
                         </div>
                         <hr>
