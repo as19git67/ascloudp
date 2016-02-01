@@ -56,7 +56,7 @@ body {
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-editor-help {
-  flex: 10 1 auto;
+  flex: 0 0 auto;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-areas {
@@ -81,6 +81,7 @@ body {
   flex-direction: column;
   overflow: auto;
   padding-bottom: 0;
+  margin-bottom: 0;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .markdown-panel {

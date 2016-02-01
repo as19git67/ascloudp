@@ -38,7 +38,11 @@ function buildScrollMap() {
     lineHeightMap = [];
 
     acc = 0;
-    textarea.val().split('\n').forEach(function (str) {
+  var textareaVal = textarea.val();
+  var allLines = textareaVal.split('\n');
+  console.log("source has " + allLines.length + " rows");
+
+  allLines.forEach(function (str) {
         var h, lh;
 
         lineHeightMap.push(acc);
@@ -49,7 +53,8 @@ function buildScrollMap() {
         }
 
         sourceLikeDiv.text(str);
-        h = parseFloat(sourceLikeDiv.css('height'));
+
+        h = sourceLikeDiv.height();
         lh = parseFloat(sourceLikeDiv.css('line-height'));
         acc += Math.round(h / lh);
     });
@@ -432,14 +437,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
                     $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
 
-                    // calculate rows for textarea
-                    var charsPerLine = 40;
-
-                    var lines = $scope.article.text.split(/\r\n|\r|\n/);
-                    $scope.textareaRows = _.reduce(lines, function (neededRows, line) {
-                        var additionalRows = Math.round((line.length / charsPerLine));
-                        return neededRows + additionalRows;
-                    }, lines.length);
+                    $scope.textareaRows = $scope.article.text.split(/\r\n|\r|\n/);
 
                     $scope.scrollMap = null;
                 }
