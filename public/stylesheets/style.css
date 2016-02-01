@@ -7,6 +7,12 @@ body {
     flex-direction: column;
 }
 
+.modal-flex-full-height {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
 #articleItemView .modal-content .modal-header {
     flex: 0 0 auto;
 }
@@ -14,28 +20,53 @@ body {
 #articleItemView .modal-content .modal-body {
     flex: 1 1 auto;
     display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 #articleItemView .modal-content .modal-body .container-fluid {
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    overflow: auto;
 }
 
 #articleItemView .modal-content .modal-body .container-fluid .row {
     flex: 0 0 auto;
 }
 
-#articleItemView .modal-content .modal-body .container-fluid .row.markdown-areas,
 #articleItemView .modal-content .modal-body .container-fluid .row.markdown-editor {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    overflow: auto;
+    padding-bottom: 1em;
 }
 
-.markdown-area {
+#articleItemView .modal-content .modal-body .container-fluid .row.markdown-areas {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+}
+
+.row.markdown-areas .markdown-area {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    overflow: auto;
+}
+
+.row.markdown-areas .markdown-area .form-group {
+    flex: 1 1 auto;
+    overflow: auto;
+}
+
+.markdown-area div {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .navbar > .container-fluid {

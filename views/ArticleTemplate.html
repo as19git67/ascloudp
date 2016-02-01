@@ -27,9 +27,14 @@
 
         <div class="modal-dialog modal-dialog-full">
             <div class="modal-content modal-content-full">
+
                 <div class="modal-header modal-header-full">
                     <button type="button" class="btn btn-primary" id="btSave" name="btSave"
                             ng-click="saveArticle($event)">Speichern und Zurück
+                    </button>
+                    <button ng-show="article.article_id" class="btn btn-default btn-danger" data-toggle="modal" data-target="#confirmModal">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        <span>Artikel löschen</span>
                     </button>
                     <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen</button>
                 </div>
@@ -150,65 +155,62 @@
                             </div>
                         </div>
 
-                        <hr>
-
                         <div class="row markdown-editor">
                             <div class="row">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <div class="form-group">
-                                    <button class="btn btn-info" ng-click="isRhoHelpOpen = !isRhoHelpOpen">
-                                        <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
-                                        <span ng-show="isRhoHelpOpen">Eingabehilfe verstecken</span>
-                                        <span ng-hide="isRhoHelpOpen">Eingabehilfe anzeigen</span>
-                                    </button>
-                                    <dl class="dl-horizontal" collapse="!isRhoHelpOpen">
-                                        <dt>Überschriften</dt>
-                                        <dd>Überschriften starten mit einem oder mehreren #. Die Anzahl der #-Zeichen
-                                            definieren die Ebene
-                                        </dd>
-                                        <dt>Absätze</dt>
-                                        <dd>Jeder neue Absatz wird mit einer Leerzeile bestimmt.</dd>
-                                        <dt>Kursiv</dt>
-                                        <dd>Text, der mit _ umschlossen ist, wird kursiv dargestellt</dd>
-                                        <dt>Fettschrift</dt>
-                                        <dd>Text, der mit * umschlossen ist, wird fett dargestellt</dd>
-                                        <dt>Durchgestrichen</dt>
-                                        <dd>~~Das war ein mal~~</dd>
-                                        <dt>Links</dt>
-                                        <dd>Links werden in folgender Form definiert: <code>[Link
-                                            text](http://myurl.com)</code></dd>
-                                        <dt>Bilder</dt>
-                                        <dd>Bilder werden in folgender Weise eingebettet: <code>![Alternativer
-                                            text](http://myurl.com/myimg.jpg)</code></dd>
-                                        <dt>Listen</dt>
-                                        <dd>Listen starten mit *. Jedes Listenelement muss die gleiche Einrückung haben.
-                                            Nach jedem Listenelement eine Leerzeile einfügen. Weiter eingerückte *
-                                            erzeugen
-                                            Listen in untergeordneten Ebenen.
-                                        </dd>
-                                        <dt>Nummerierte Listen</dt>
-                                        <dd>Nummerierte Listen starten mit 1 gefolgt von einem Punkt (1.)</dd>
-                                        <dt>Horizontale Linie</dt>
-                                        <dd>Ein Absatz mit genau drei Minuszeichen (---) erzeugt eine horizontale Linie.
-                                            Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.
-                                        </dd>
-                                        <dt>Weitere Informationen</dt>
-                                        <dd><a href="https://guides.github.com/features/mastering-markdown" target="_blank">Mastering Markdown</a></dd>
-                                        <dd><a href="https://help.github.com/articles/github-flavored-markdown" target="_blank">Markdown
-                                            Syntax (Englisch)</a></dd>
-                                        <dd><a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet" target="_blank">Markdown Cheatsheet</a></dd>
-                                    </dl>
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <div class="form-group">
+                                        <button class="btn btn-info" ng-click="isRhoHelpOpen = !isRhoHelpOpen">
+                                            <span class="glyphicon glyphicon-question-sign" aria-hidden="true"></span>
+                                            <span ng-show="isRhoHelpOpen">Eingabehilfe verstecken</span>
+                                            <span ng-hide="isRhoHelpOpen">Eingabehilfe anzeigen</span>
+                                        </button>
+                                        <dl class="dl-horizontal" collapse="!isRhoHelpOpen">
+                                            <dt>Überschriften</dt>
+                                            <dd>Überschriften starten mit einem oder mehreren #. Die Anzahl der #-Zeichen
+                                                definieren die Ebene
+                                            </dd>
+                                            <dt>Absätze</dt>
+                                            <dd>Jeder neue Absatz wird mit einer Leerzeile bestimmt.</dd>
+                                            <dt>Kursiv</dt>
+                                            <dd>Text, der mit _ umschlossen ist, wird kursiv dargestellt</dd>
+                                            <dt>Fettschrift</dt>
+                                            <dd>Text, der mit * umschlossen ist, wird fett dargestellt</dd>
+                                            <dt>Durchgestrichen</dt>
+                                            <dd>~~Das war ein mal~~</dd>
+                                            <dt>Links</dt>
+                                            <dd>Links werden in folgender Form definiert: <code>[Link
+                                                text](http://myurl.com)</code></dd>
+                                            <dt>Bilder</dt>
+                                            <dd>Bilder werden in folgender Weise eingebettet: <code>![Alternativer
+                                                text](http://myurl.com/myimg.jpg)</code></dd>
+                                            <dt>Listen</dt>
+                                            <dd>Listen starten mit *. Jedes Listenelement muss die gleiche Einrückung haben.
+                                                Nach jedem Listenelement eine Leerzeile einfügen. Weiter eingerückte *
+                                                erzeugen
+                                                Listen in untergeordneten Ebenen.
+                                            </dd>
+                                            <dt>Nummerierte Listen</dt>
+                                            <dd>Nummerierte Listen starten mit 1 gefolgt von einem Punkt (1.)</dd>
+                                            <dt>Horizontale Linie</dt>
+                                            <dd>Ein Absatz mit genau drei Minuszeichen (---) erzeugt eine horizontale Linie.
+                                                Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.
+                                            </dd>
+                                            <dt>Weitere Informationen</dt>
+                                            <dd><a href="https://guides.github.com/features/mastering-markdown" target="_blank">Mastering Markdown</a></dd>
+                                            <dd><a href="https://help.github.com/articles/github-flavored-markdown" target="_blank">Markdown
+                                                Syntax (Englisch)</a></dd>
+                                            <dd><a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet" target="_blank">Markdown Cheatsheet</a></dd>
+                                        </dl>
+                                    </div>
                                 </div>
                             </div>
-                            </div>
                             <div class="row markdown-areas">
-                            <div class="markdown-area col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                                <div class="form-group">
-                                    <div flow-init
-                                         flow-name="flowObj.flow"
-                                         flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
-                                        <div class="panel panel-default">
-                                            <div class="panel-body markdown-panel" flow-drop ng-class="dropClass">
+                                <div class="markdown-area col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                                    <div class="form-group">
+                                        <div flow-init
+                                             flow-name="flowObj.flow"
+                                             flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
+                                            <div class="markdown-panel" flow-drop ng-class="dropClass">
                                                 <textarea class="markdown-source form-control" rows="{{textareaRows}}"
                                                           ng-model="article.text"
                                                           required="Ein Text muss eingegeben werden" ng-required="true"
@@ -217,36 +219,22 @@
                                                           nt-touchstart="startSyncSrcScroll()"
                                                           ng-scroll="srcScrolled()">
                                                 </textarea>
-                                            </div>
-                                            <div class="panel-footer">
-                                                <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a> hinzu</div>
+                                                </div>
+                                                <div class="panel-footer">
+                                                    <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a> hinzu</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="markdown-area col-xs-12 col-sm-12 col-md-6 col-lg-6">
-                                <div class="panel panel-default">
-                                    <section class="panel-body markdown-panel result-html"
-                                             ng-bind-html="trustedTextAsHtml"
-                                             ng-mouseover="startSyncResultScroll()"
-                                             nt-touchstart="startSyncResultScroll()"
-                                             ng-scroll="resultScrolled()">
-                                    </section>
-                                </div>
-                            </div>
-                            </div>
-                        </div>
-                        <hr>
-
-                        <div class="row" ng-show="article.article_id">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <div class="form-group">
-                                    <button class="btn btn-default btn-danger" data-toggle="modal" ,
-                                            data-target="#confirmModal">
-                                        <span class="glyphicon glyphicon-trash"></span>
-                                        <span>Artikel löschen</span>
-                                    </button>
+                                <div class="markdown-area col-xs-12 col-sm-12 col-md-6 col-lg-6">
+                                    <div class="markdown-panel result-html"
+                                                 ng-bind-html="trustedTextAsHtml"
+                                                 ng-mouseover="startSyncResultScroll()"
+                                                 nt-touchstart="startSyncResultScroll()"
+                                                 ng-scroll="resultScrolled()">
+                                        </section>
+                                    </div>
                                 </div>
                             </div>
                         </div>
