@@ -32,32 +32,35 @@ function buildScrollMap() {
         'white-space': textarea.css('white-space')
     }).appendTo('body');
 
-    offset = $('.result-html').scrollTop() - $('.result-html').offset().top;
+    var resultHtmlEl = $('.result-html');
+    offset = resultHtmlEl.scrollTop() - resultHtmlEl.offset().top;
     _scrollMap = [];
     nonEmptyList = [];
     lineHeightMap = [];
 
     acc = 0;
-  var textareaVal = textarea.val();
-  var allLines = textareaVal.split('\n');
-  console.log("source has " + allLines.length + " rows");
+    var textareaVal = textarea.val();
+    var allLines = textareaVal.split('\n');
+    console.log("source has " + allLines.length + " rows");
 
-  allLines.forEach(function (str) {
+    for (var idx = 0; idx < allLines.length; idx++) {
+        var str = allLines[idx];
         var h, lh;
 
         lineHeightMap.push(acc);
 
         if (str.length === 0) {
             acc++;
-            return;
+        } else {
+
+            sourceLikeDiv.text(str);
+
+            h = sourceLikeDiv.height();
+            lh = parseFloat(sourceLikeDiv.css('line-height'));
+            acc += Math.round(h / lh);
         }
-
-        sourceLikeDiv.text(str);
-
-        h = sourceLikeDiv.height();
-        lh = parseFloat(sourceLikeDiv.css('line-height'));
-        acc += Math.round(h / lh);
-    });
+    };
+    console.log("acc: " + acc);
     sourceLikeDiv.remove();
     lineHeightMap.push(acc);
     linesCount = acc;
@@ -82,7 +85,7 @@ function buildScrollMap() {
     });
 
     nonEmptyList.push(linesCount);
-    _scrollMap[linesCount] = $('.result-html')[0].scrollHeight;
+    _scrollMap[linesCount] = resultHtmlEl[0].scrollHeight;
 
     pos = 0;
     for (i = 1; i < linesCount; i++) {
@@ -98,7 +101,6 @@ function buildScrollMap() {
 
     return _scrollMap;
 }
-
 
 
 var md = window.markdownit();
@@ -172,7 +174,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         flow.off('filesSubmitted');
                         flow.on('filesSubmitted', function (event) {
                             flow.opts.target = '/api/v1/articles/' + $scope.article.article_id +
-                                               '/imagechunks';
+                                '/imagechunks';
                             var csrfToken = $cookies['X-CSRF-Token'];
                             flow.opts.headers = {
                                 'X-CSRF-Token': csrfToken
@@ -202,7 +204,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                                     // add reference to image in textarea
                                     var placeholder = makeImageUploadingText(file);
                                     var imageTag = '\n![' + imageMetadata.Filename + '](/images/' +
-                                                   imageMetadata.id + ')\n';
+                                        imageMetadata.id + ')\n';
                                     if ($scope.article.text.indexOf(placeholder) != -1) {
                                         $scope.article.text = $scope.article.text.replace(placeholder,
                                             imageTag);
@@ -343,7 +345,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             // Synchronize scroll position from source to result
             $scope.syncResultScroll =
                 _.debounce(function () {
-                    var textarea   = $('.markdown-source'),
+                    var textarea = $('.markdown-source'),
                         lineHeight = parseFloat(textarea.css('line-height')),
                         lineNo, posTo;
 
@@ -362,8 +364,8 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             $scope.syncSrcScroll =
                 _.debounce(function () {
                     var resultHtml = $('.result-html'),
-                        scrollTop  = resultHtml.scrollTop(),
-                        textarea   = $('.markdown-source'),
+                        scrollTop = resultHtml.scrollTop(),
+                        textarea = $('.markdown-source'),
                         lineHeight = parseFloat(textarea.css('line-height')),
                         lines,
                         i,
@@ -432,7 +434,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     var maxTextLen = $scope.article_schema.text.maxLength;
                     if ($scope.article.text.length > maxTextLen) {
                         $scope.textAsHtml += "<br><em>Achtung, der Text wurde abgeschnitten, da die maximale Länge (" +
-                                             maxTextLen + ") überschritten ist</em>";
+                            maxTextLen + ") überschritten ist</em>";
                     }
 
                     $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
@@ -508,21 +510,21 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             });
         }
     ])
-    .directive('asscroll', function(){
-      return {
-        restrict: 'A',
-        link: function(scope,elem,attrs){
-            elem.on('scroll', function(evt){
-                if ($(evt.target).hasClass('markdown-source')) {
-                    scope.srcScrolled();
-                } else {
-                    if ($(evt.target).hasClass('result-html')) {
-                        scope.resultScrolled();
+    .directive('asscroll', function () {
+        return {
+            restrict: 'A',
+            link: function (scope, elem, attrs) {
+                elem.on('scroll', function (evt) {
+                    if ($(evt.target).hasClass('markdown-source')) {
+                        scope.srcScrolled();
+                    } else {
+                        if ($(evt.target).hasClass('result-html')) {
+                            scope.resultScrolled();
+                        }
                     }
-                }
-          });
+                });
+            }
         }
-      }
     })
     .factory('articleService', function ($http, $log, $q) {
             return {

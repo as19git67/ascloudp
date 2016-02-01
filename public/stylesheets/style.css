@@ -1,118 +1,118 @@
 body {
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
 #articleItemView .modal-content {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-flex-full-height {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-header {
-  flex: 0 0 auto;
+    flex: 0 0 auto;
 }
 
 .modal-body {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .modal-body .container-fluid {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .modal-body .container-fluid .row {
-  flex: 0 0 auto;
-  overflow: auto;
+    flex: 0 0 auto;
+    overflow: auto;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space > div {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-editor {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-editor-help {
-  flex: 0 0 auto;
+    flex: 0 0 auto;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-areas {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: row;
-  overflow: auto;
-  margin: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: row;
+    overflow: auto;
+    margin: 0;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  padding: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding: 0;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .form-group {
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
-  overflow: auto;
-  padding-bottom: 0;
-  margin-bottom: 0;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    padding-bottom: 0;
+    margin-bottom: 0;
 }
 
 .modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .markdown-panel {
-  flex: 1 1 auto;
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  padding: 0;
-  border: 0;
+    flex: 1 1 auto;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    border: 0;
 }
 
 .markdown-areas .markdown-area .markdown-panel .markdown-source {
-  flex: 1 1 auto;
-  overflow: auto;
+    flex: 1 1 auto;
+    overflow: auto;
 }
 
 .markdown-areas .markdown-area .markdown-panel-footer {
-  flex: 0 0 auto;
-  overflow: auto;
+    flex: 0 0 auto;
+    overflow: auto;
 }
 
 .navbar > .container-fluid {
-  width: 100%;
+    width: 100%;
 }
 
 .nav > li:last-child > a {
-  padding-right: 0;
+    padding-right: 0;
 }
 
 .nav:last-child > li > a {
-  padding-right: 15px;
+    padding-right: 15px;
 }
 
 /*
@@ -126,169 +126,169 @@ body {
 */
 
 .full-height {
-  height: 100%;
+    height: 100%;
 }
 
 .emoji {
-  height: 1.2em;
+    height: 1.2em;
 }
 
 .markdown-source {
-  width: 100%;
-  height: 100%;
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
-  font-size: 13px;
-  padding: 2px;
-  overflow-y: scroll;
+    width: 100%;
+    height: 100%;
+    font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+    font-size: 13px;
+    padding: 2px;
+    overflow-y: scroll;
 }
 
 .result-html {
-  flex: 1 1 auto;
-  padding: 2px;
-  overflow-y: scroll;
-  display: block;
+    flex: 1 1 auto;
+    padding: 2px;
+    overflow-y: scroll;
+    display: block;
 }
 
 .result-html img {
-  max-width: 35%;
+    max-width: 35%;
 }
 
 .hljs {
-  padding: 9px;
+    padding: 9px;
 }
 
 .hljs code {
-  white-space: pre;
+    white-space: pre;
 }
 
 .footnotes {
-  -moz-column-count: 2;
-  -webkit-column-count: 2;
-  column-count: 2;
+    -moz-column-count: 2;
+    -webkit-column-count: 2;
+    column-count: 2;
 }
 
 .footnotes-list {
-  padding-left: 2em;
+    padding-left: 2em;
 }
 
 textarea.markdown-source {
-  resize: none;
-  border: 0;
+    resize: none;
+    border: 0;
 }
 
 .panel-body.markdown-source {
-  padding: 0;
+    padding: 0;
 }
 
 .align-left {
-  text-align: left;
+    text-align: left;
 }
 
 .align-center {
-  text-align: center;
+    text-align: center;
 }
 
 .align-right {
-  text-align: right;
+    text-align: right;
 }
 
 .drop {
-  padding: 15px;
-  border: 2px #f1f1f1 dashed;
-  border-radius: 5px;
-  line-height: 34px;
+    padding: 15px;
+    border: 2px #f1f1f1 dashed;
+    border-radius: 5px;
+    line-height: 34px;
 }
 
 .drop.drag-over {
-  background: #5cb85c;
-  color: #ffffff
+    background: #5cb85c;
+    color: #ffffff
 }
 
 .transfer-box {
-  margin-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .transfer-box .progress {
-  margin-bottom: 0;
+    margin-bottom: 0;
 }
 
 .media-left a img {
-  max-height: 100px;
-  max-width: 100px;
+    max-height: 100px;
+    max-width: 100px;
 }
 
 h4.media-heading a {
-  color: inherit;
+    color: inherit;
 }
 
 h4.media-heading span.glyphicon {
-  padding-left: 0.5em;
-  font-size: smaller;
+    padding-left: 0.5em;
+    font-size: smaller;
 }
 
 h4.media-heading span.glyphicon:hover {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .media-body {
-  max-height: 100px;
-  text-overflow: ellipsis;
-  overflow: hidden;
+    max-height: 100px;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .calendarNew:hover {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .calendarListItem span.glyphicon {
-  padding-left: 0.5em;
+    padding-left: 0.5em;
 }
 
 .calendarListItem span.glyphicon:hover {
-  cursor: pointer;
+    cursor: pointer;
 }
 
 .calendarListItem .panel {
-  border: 0;
-  box-shadow: none;
-  margin-bottom: 0;
+    border: 0;
+    box-shadow: none;
+    margin-bottom: 0;
 }
 
 .calendarListItem .panel .panel-heading {
-  font-size: 1.1em;
-  font-weight: bold;
-  padding: 1px 5px;
-  border-bottom: none;
+    font-size: 1.1em;
+    font-weight: bold;
+    padding: 1px 5px;
+    border-bottom: none;
 }
 
 .calendarListItem .panel .panel-body {
-  padding: 2px;
+    padding: 2px;
 }
 
 .calendarListItem .panel blockquote {
-  padding: 1px 10px;
-  font-size: inherit;
+    padding: 1px 10px;
+    font-size: inherit;
 }
 
 .calendarListItem .panel blockquote.blockquote-reverse {
-  border-right-width: 1px;
-  margin-right: -15px;
+    border-right-width: 1px;
+    margin-right: -15px;
 }
 
 .time-picker {
-  margin-left: 2em;
-  max-width: 5em;
+    margin-left: 2em;
+    max-width: 5em;
 }
 
 .filter.btn-group {
-  margin-left: 1em;
+    margin-left: 1em;
 }
 
 .media-heading a:focus {
-  outline: none;
+    outline: none;
 }
 
 h3 .social-likes,
 .media-heading .social-likes {
-  margin-left: 1em;
+    margin-left: 1em;
 }
