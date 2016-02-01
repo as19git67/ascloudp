@@ -219,8 +219,8 @@
                                                           ng-required="true"
                                                           ng-change="renderMarkdown()"
                                                           ng-mouseover="startSyncSrcScroll()"
-                                                          nt-touchstart="startSyncSrcScroll()"
-                                                          ng-scroll="srcScrolled()">
+                                                          ng-touchstart="startSyncSrcScroll()"
+                                                          asscroll >
                                                 </textarea>
                         </div>
                         <div class="markdown-panel-footer panel-footer">
@@ -236,8 +236,7 @@
                         <div class="markdown-panel form-control">
                           <div class="result-html" ng-bind-html="trustedTextAsHtml"
                                ng-mouseover="startSyncResultScroll()"
-                               nt-touchstart="startSyncResultScroll()" ng-scroll="resultScrolled()">
-                            </section>
+                               ng-touchstart="startSyncResultScroll()" asscroll="true" >
                           </div>
                         </div>
                       </div>

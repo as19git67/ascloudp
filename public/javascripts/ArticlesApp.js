@@ -16,6 +16,7 @@ $.extend($.expr[":"], {
 // That's a bit dirty to process each line everytime, but ok for demo.
 // Optimizations are required only for big texts.
 function buildScrollMap() {
+    console.log("buildScrollMap");
     var i, offset, nonEmptyList, pos, a, b, lineHeightMap, linesCount,
         acc, sourceLikeDiv, textarea = $('.markdown-source'),
         _scrollMap;
@@ -93,57 +94,6 @@ function buildScrollMap() {
     return _scrollMap;
 }
 
-// Synchronize scroll position from source to result
-var syncResultScroll = _.debounce(function () {
-    var textarea = $('.markdown-source'),
-        lineHeight = parseFloat(textarea.css('line-height')),
-        lineNo, posTo;
-
-    lineNo = Math.floor(textarea.scrollTop() / lineHeight);
-    if (!scrollMap) {
-        scrollMap = buildScrollMap();
-    }
-    posTo = scrollMap[lineNo];
-    $('.result-html').stop(true).animate({
-        scrollTop: posTo
-    }, 100, 'linear');
-}, 50, {maxWait: 50});
-
-// Synchronize scroll position from result to source
-var syncSrcScroll = _.debounce(function () {
-    var resultHtml = $('.result-html'),
-        scrollTop = resultHtml.scrollTop(),
-        textarea = $('.markdown-source'),
-        lineHeight = parseFloat(textarea.css('line-height')),
-        lines,
-        i,
-        line;
-
-    if (!scrollMap) {
-        scrollMap = buildScrollMap();
-    }
-
-    lines = Object.keys(scrollMap);
-
-    if (lines.length < 1) {
-        return;
-    }
-
-    line = lines[0];
-
-    for (i = 1; i < lines.length; i++) {
-        if (scrollMap[lines[i]] < scrollTop) {
-            line = lines[i];
-            continue;
-        }
-
-        break;
-    }
-
-    textarea.stop(true).animate({
-        scrollTop: lineHeight * line
-    }, 100, 'linear');
-}, 50, {maxWait: 50});
 
 
 var md = window.markdownit();
@@ -216,7 +166,8 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         flow.off('fileError');
                         flow.off('filesSubmitted');
                         flow.on('filesSubmitted', function (event) {
-                            flow.opts.target = '/api/v1/articles/' + $scope.article.article_id + '/imagechunks';
+                            flow.opts.target = '/api/v1/articles/' + $scope.article.article_id +
+                                               '/imagechunks';
                             var csrfToken = $cookies['X-CSRF-Token'];
                             flow.opts.headers = {
                                 'X-CSRF-Token': csrfToken
@@ -234,16 +185,22 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                         });
                         flow.on('fileSuccess', function (file, message) {
                             console.log("flow event: fileSuccess");
-                            $scope.waitingImages[file.uniqueIdentifier] = {name: file.name, status: 'wait'};
-                            articleService.commitImageUpload($scope.article, file.uniqueIdentifier, file.chunks.length)
+                            $scope.waitingImages[file.uniqueIdentifier] = {
+                                name: file.name,
+                                status: 'wait'
+                            };
+                            articleService.commitImageUpload($scope.article, file.uniqueIdentifier,
+                                file.chunks.length)
                                 .then(function (imageMetadata) {
                                     delete $scope.waitingImages[imageMetadata.flowIdentifier];
                                     flow.removeFile(file);
                                     // add reference to image in textarea
                                     var placeholder = makeImageUploadingText(file);
-                                    var imageTag = '\n![' + imageMetadata.Filename + '](/images/' + imageMetadata.id + ')\n';
+                                    var imageTag = '\n![' + imageMetadata.Filename + '](/images/' +
+                                                   imageMetadata.id + ')\n';
                                     if ($scope.article.text.indexOf(placeholder) != -1) {
-                                        $scope.article.text = $scope.article.text.replace(placeholder, imageTag);
+                                        $scope.article.text = $scope.article.text.replace(placeholder,
+                                            imageTag);
                                     } else {
                                         $scope.article.text += imageTag;
                                     }
@@ -251,14 +208,19 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                                 })
                                 .catch(function (error) {
                                     console.log('Failed commitImageUpload: ', error);
-                                    $scope.waitingImages[file.uniqueIdentifier] = {name: file.name, status: 'error'};
+                                    $scope.waitingImages[file.uniqueIdentifier] = {
+                                        name: file.name,
+                                        status: 'error'
+                                    };
                                     var placeholder = makeImageUploadingText(file);
                                     var message = "der Server konnte das Bild nicht korrekt verarbeiten";
                                     if (typeof error == 'string') {
                                         message = error;
                                     }
                                     if ($scope.article.text.indexOf(placeholder) != -1) {
-                                        $scope.article.text = $scope.article.text.replace(placeholder, '\n![Fehler beim Hochladen von ' + file.Filename + ': ' + message + ']()');
+                                        $scope.article.text = $scope.article.text.replace(placeholder,
+                                            '\n![Fehler beim Hochladen von ' + file.Filename + ': ' +
+                                            message + ']()');
                                     }
                                 });
                         });
@@ -267,7 +229,9 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                             console.log('fileError: ', file, message);
                             var placeholder = makeImageUploadingText(file);
                             if ($scope.article.text.search(placeholder) != -1) {
-                                $scope.article.text = $scope.article.text.replace(placeholder, '\n![Fehler beim Hochladen von ' + file.Filename + ': ' + message + ']()');
+                                $scope.article.text = $scope.article.text.replace(placeholder,
+                                    '\n![Fehler beim Hochladen von ' + file.Filename + ': ' + message +
+                                    ']()');
                             }
                         });
 
@@ -371,24 +335,80 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 });
             };
 
+            // Synchronize scroll position from source to result
+            $scope.syncResultScroll =
+                _.debounce(function () {
+                    var textarea   = $('.markdown-source'),
+                        lineHeight = parseFloat(textarea.css('line-height')),
+                        lineNo, posTo;
+
+                    lineNo = Math.floor(textarea.scrollTop() / lineHeight);
+                    if (!$scope.scrollMap) {
+                        $scope.scrollMap = buildScrollMap();
+                    }
+                    posTo = $scope.scrollMap[lineNo];
+                    $('.result-html').stop(true).animate({
+                        scrollTop: posTo
+                    }, 100, 'linear');
+                }, 50, {maxWait: 50});
+
+
+            // Synchronize scroll position from result to source
+            $scope.syncSrcScroll =
+                _.debounce(function () {
+                    var resultHtml = $('.result-html'),
+                        scrollTop  = resultHtml.scrollTop(),
+                        textarea   = $('.markdown-source'),
+                        lineHeight = parseFloat(textarea.css('line-height')),
+                        lines,
+                        i,
+                        line;
+
+                    if (!$scope.scrollMap) {
+                        $scope.scrollMap = buildScrollMap();
+                    }
+
+                    lines = Object.keys($scope.scrollMap);
+
+                    if (lines.length < 1) {
+                        return;
+                    }
+
+                    line = lines[0];
+
+                    for (i = 1; i < lines.length; i++) {
+                        if ($scope.scrollMap[lines[i]] < scrollTop) {
+                            line = lines[i];
+                            continue;
+                        }
+
+                        break;
+                    }
+
+                    textarea.stop(true).animate({
+                        scrollTop: lineHeight * line
+                    }, 100, 'linear');
+                }, 50, {maxWait: 50});
+
+
             $scope.srcScrolled = function () {
-                if (this.syncDirSrcToResult === true) {
-                    syncResultScroll();
+                if ($scope.syncDirSrcToResult === true) {
+                    $scope.syncResultScroll();
                 }
             };
 
             $scope.resultScrolled = function () {
-                if (this.syncDirSrcToResult === false) {
-                    syncSrcScroll();
+                if ($scope.syncDirSrcToResult === false) {
+                    $scope.syncSrcScroll();
                 }
             };
 
             $scope.startSyncResultScroll = function ($event) {
-                this.syncDirSrcToResult = true;
+                $scope.syncDirSrcToResult = false;
             };
 
             $scope.startSyncSrcScroll = function ($event) {
-                this.syncDirSrcToResult = false;
+                $scope.syncDirSrcToResult = true;
             };
 
             $scope.renderMarkdown = function () {
@@ -397,14 +417,17 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     if ($scope.article.text.length > $scope.article_schema.text.maxLength) {
 
                     }
-                    var rawHtml = md.render($scope.article.text.substr(0, $scope.article_schema.text.maxLength));
+                    var rawHtml = md.render(
+                        $scope.article.text.substr(0, $scope.article_schema.text.maxLength));
 
                     // add class attribute to all image tags to apply bootstrap styles
-                    $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
+                    $scope.textAsHtml = rawHtml.replace(/<img\s*src=/g,
+                        "<img class=\"img-responsive\" src=");
 
                     var maxTextLen = $scope.article_schema.text.maxLength;
                     if ($scope.article.text.length > maxTextLen) {
-                        $scope.textAsHtml += "<br><em>Achtung, der Text wurde abgeschnitten, da die maximale Länge (" + maxTextLen + ") überschritten ist</em>";
+                        $scope.textAsHtml += "<br><em>Achtung, der Text wurde abgeschnitten, da die maximale Länge (" +
+                                             maxTextLen + ") überschritten ist</em>";
                     }
 
                     $scope.trustedTextAsHtml = $sce.trustAsHtml($scope.textAsHtml);
@@ -441,7 +464,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             };
             $scope.format = 'dd.MM.yyyy';
 
-
             // attach to click event (jquery)
 
             $(".media-heading .glyphicon.glyphicon-edit").click(function () {
@@ -451,13 +473,13 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     $scope.loadArticle(id)
                         .then(function () {
                             ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                                console.log("Modal dialog showed");
+                                //console.log("Modal dialog showed");
                             });
 
                             // show modal dialog
                             ui.editArticleEntry.modal({backdrop: true});
 
-                            console.log("showing modal dialog...");
+                            //console.log("showing modal dialog...");
                         })
                         .catch(function (error) {
                             if (error) {
@@ -486,9 +508,24 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 console.log("newArticle called");
 
             });
-
         }
     ])
+    .directive('asscroll', function(){
+      return {
+        restrict: 'A',
+        link: function(scope,elem,attrs){
+            elem.on('scroll', function(evt){
+                if ($(evt.target).hasClass('markdown-source')) {
+                    scope.srcScrolled();
+                } else {
+                    if ($(evt.target).hasClass('result-html')) {
+                        scope.resultScrolled();
+                    }
+                }
+          });
+        }
+      }
+    })
     .factory('articleService', function ($http, $log, $q) {
             return {
                 getArticleSchema: function () {
