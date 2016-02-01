@@ -36,7 +36,26 @@ body {
     overflow: auto;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space {
+.modal-body .container-fluid .nav.nav-tabs {
+    flex: 0 0 auto;
+}
+
+.modal-body .container-fluid .tab-content {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-body .container-fluid .tab-content .tab-pane {
+}
+
+.modal-body .container-fluid .tab-content .tab-pane.active.in {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.tab-content .tab-pane .row.row-use-remaining-space {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
@@ -103,15 +122,15 @@ body {
     overflow: auto;
 }
 
-.navbar > .container-fluid {
+.app-navbar.navbar > .container-fluid {
     width: 100%;
 }
 
-.nav > li:last-child > a {
+.app-navbar .nav > li:last-child > a {
     padding-right: 0;
 }
 
-.nav:last-child > li > a {
+.app-navbar .nav:last-child > li > a {
     padding-right: 15px;
 }
 
