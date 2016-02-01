@@ -59,7 +59,8 @@ function buildScrollMap() {
             lh = parseFloat(sourceLikeDiv.css('line-height'));
             acc += Math.round(h / lh);
         }
-    };
+    }
+    ;
     console.log("acc: " + acc);
     sourceLikeDiv.remove();
     lineHeightMap.push(acc);
@@ -140,6 +141,9 @@ articleEditApp.config(['flowFactoryProvider', function (flowFactoryProvider) {
 articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookies', 'articleService',
         function ($sce, $log, $scope, $cookies, articleService) {
             $scope.flowObj = {};
+            $scope.article = {};
+            $scope.article.text = '';
+            $scope.article.leadText = '';
 
             $scope.isNotEmpty = function (item) {
                 if (!item) {
@@ -270,24 +274,31 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
                 var article = _.clone($scope.article);
 
-                article.date = makeMidnightUtc($scope.article.date);
-                article.publish_start = makeMidnightUtc($scope.article.publish_start);
-                article.publish_end = makeMidnightUtc($scope.article.publish_end);
-                var maxArticleLength = $scope.article_schema.text.maxLength;
-                article.text = article.text.substr(0, $scope.article_schema.text.maxLength);
+                if (!article.text) {
+                    article.text = "";
+                }
+                if (article.leadText) {
+                    article.date = makeMidnightUtc($scope.article.date);
+                    article.publish_start = makeMidnightUtc($scope.article.publish_start);
+                    article.publish_end = makeMidnightUtc($scope.article.publish_end);
+                    var maxArticleLength = $scope.article_schema.text.maxLength;
+                    article.text = article.text.substr(0, $scope.article_schema.text.maxLength);
 
-                articleService.saveArticle(article).then(function () {
-                    ui.editArticleEntry.modal('hide');
-                    location.reload();
-                }, function (error) {
-                    if (error) {
-                        $scope.errorMessage = error.toString();
-                        $log.error("Error while saving the article", error);
-                    } else {
-                        $scope.errorMessage = "Fehler beim Speichern des Artikels. Verbindungsaufbau mit dem Server nicht möglich.";
-                        $log.error("Error while saving the article. Connection problem.");
-                    }
-                });
+                    articleService.saveArticle(article).then(function () {
+                        ui.editArticleEntry.modal('hide');
+                        location.reload();
+                    }, function (error) {
+                        if (error) {
+                            $scope.errorMessage = error.toString();
+                            $log.error("Error while saving the article", error);
+                        } else {
+                            $scope.errorMessage = "Fehler beim Speichern des Artikels. Verbindungsaufbau mit dem Server nicht möglich.";
+                            $log.error("Error while saving the article. Connection problem.");
+                        }
+                    });
+                } else {
+                    $scope.errorMessage = $scope.article_schema.leadText.label + " darf nicht leer sein";
+                }
             };
             $scope.deleteArticle = function ($event) {
                 articleService.deleteArticle($scope.article).then(function () {
