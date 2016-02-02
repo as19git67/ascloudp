@@ -173,6 +173,7 @@ app.use(function (req, res, next) {
                                         }
 
                                         rawMarked = req.body.rawMarked;
+                                        md.renderer.rules.table_open  = function () { return '<table class="table">'; };
                                         rawHtml = md.render(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
@@ -215,6 +216,7 @@ app.use(function (req, res, next) {
                                             console.log("Warning: rendering page " + page.Name + " without content");
                                             rawMarked = "";
                                         }
+                                        md.renderer.rules.table_open  = function () { return '<table class="table">'; };
                                         rawHtml = md.render(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");

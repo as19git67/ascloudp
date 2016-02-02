@@ -85,6 +85,7 @@ function getArticleData(nowMoment, articleItem) {
 
     var rawHtml = "";
     if (text && text.length > 0) {
+        md.renderer.rules.table_open  = function () { return '<table class="table">'; };
         rawHtml = md.render(text);
     }
     // add class attribute to all image tags to apply bootstrap styles

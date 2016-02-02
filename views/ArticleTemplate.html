@@ -29,14 +29,18 @@
 
                 <div class="modal-header modal-header-full">
                     <button type="button" class="btn btn-primary" id="btSave" name="btSave"
-                            ng-click="saveArticle($event)">Speichern
+                            ng-click="saveArticle($event)" title="Speichern">
+                        <span class="glyphicon glyphicon-save"></span>
+                        <span class="hidden-xs">Speichern</span>
                     </button>
                     <button ng-show="article.article_id" class="btn btn-default btn-danger"
-                            data-toggle="modal" data-target="#confirmModal">
+                            data-toggle="modal" data-target="#confirmModal" title="Artikel löschen" >
                         <span class="glyphicon glyphicon-trash"></span>
-                        <span>Artikel löschen</span>
+                        <span class="hidden-xs">Löschen</span>
                     </button>
-                    <button type="button" class="btn btn-default pull-right" data-dismiss="modal">Abbrechen
+                    <button type="button" class="btn btn-default pull-right" title="Abbrechen" data-dismiss="modal">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        <span class="hidden-xs">Abbrechen</span>
                     </button>
                 </div>
                 <div class="modal-body">

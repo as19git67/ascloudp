@@ -435,6 +435,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     if ($scope.article.text.length > $scope.article_schema.text.maxLength) {
 
                     }
+                    md.renderer.rules.table_open  = function () { return '<table class="table">'; };
                     var rawHtml = md.render(
                         $scope.article.text.substr(0, $scope.article_schema.text.maxLength));
 
