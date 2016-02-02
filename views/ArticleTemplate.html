@@ -221,12 +221,16 @@
                                                 <dt>Absätze</dt>
                                                 <dd>Jeder neue Absatz wird mit einer Leerzeile bestimmt.</dd>
                                                 <dt>Kursiv</dt>
-                                                <dd>Text, der mit _ umschlossen ist, wird kursiv dargestellt</dd>
+                                                <dd>Text, der mit _ oder * umschlossen ist, wird
+                                                  kursiv dargestellt</dd>
                                                 <dt>Fettschrift</dt>
-                                                <dd>Text, der mit * umschlossen ist, wird fett dargestellt</dd>
+                                                <dd>Text, der mit ** umschlossen ist, wird fett
+                                                  dargestellt</dd>
                                                 <dt>Durchgestrichen</dt>
                                                 <dd>~~Das war ein mal~~</dd>
-                                                <dt>Links</dt>
+                                              <dt>Programmcode, etc.</dt>
+                                              <dd>```for(var i=0;i<10;i++) { }```</dd>
+                                              <dt>Links</dt>
                                                 <dd>Links werden in folgender Form definiert: <code>[Link
                                                     text](http://myurl.com)</code></dd>
                                                 <dt>Bilder</dt>
@@ -246,6 +250,26 @@
                                                     Linie.
                                                     Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.
                                                 </dd>
+                                                <dt>Listen</dt>
+                                                <dd>You can create tables with pipes <code>|</code> and hyphens <code>-</code>. Hyphens are used to create each column's header, while pipes separate each column.<code>| First Header  | Second Header |
+                                                    | ------------- | ------------- |
+                                                    | Content Cell  | Content Cell  |
+                                                    | Content Cell  | Content Cell  |
+                                                </code></dd>
+                                                <dd>The pipes on either end of the table are optional.</dd>
+                                                <dd>Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least three hyphens in each column of the header row.</dd>
+                                              <dd>You can align text to the left, right, or center of a column by including colons : to the left, right, or on both sides of the hyphens within the header row.</dd>
+                                              <dd><code>| Left-aligned | Center-aligned | Right-aligned |
+                                                | :---         |     :---:      |          ---: |
+                                                | git status   | git status     | git status    |
+                                                | git diff     | git diff       | git diff      |
+                                              </code></dd>
+                                              <dd>To include a pipe <code>|</code> as content within your cell, use a <code>\</code> before the pipe:</dd>
+                                              <dd><code>| Name     | Character |
+                                                | ---      | ---       |
+                                                | Backtick | `         |
+                                                | Pipe     | \|        |
+                                              </code></dd>
                                                 <dt>Weitere Informationen</dt>
                                                 <dd><a href="https://guides.github.com/features/mastering-markdown"
                                                        target="_blank">Mastering Markdown</a></dd>
