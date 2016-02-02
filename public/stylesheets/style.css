@@ -120,6 +120,7 @@ body {
 .markdown-areas .markdown-area .markdown-panel-footer {
     flex: 0 0 auto;
     overflow: auto;
+    font-size: smaller;
 }
 
 .app-navbar.navbar > .container-fluid {
