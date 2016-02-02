@@ -16,7 +16,6 @@ $.extend($.expr[":"], {
 // That's a bit dirty to process each line everytime, but ok for demo.
 // Optimizations are required only for big texts.
 function buildScrollMap() {
-    console.log("buildScrollMap");
     var i, offset, nonEmptyList, pos, a, b, lineHeightMap, linesCount,
         acc, sourceLikeDiv, textarea = $('.markdown-source'),
         _scrollMap;
@@ -41,7 +40,6 @@ function buildScrollMap() {
     acc = 0;
     var textareaVal = textarea.val();
     var allLines = textareaVal.split('\n');
-    console.log("source has " + allLines.length + " rows");
 
     for (var idx = 0; idx < allLines.length; idx++) {
         var str = allLines[idx];
@@ -60,8 +58,7 @@ function buildScrollMap() {
             acc += Math.round(h / lh);
         }
     }
-    ;
-    console.log("acc: " + acc);
+
     sourceLikeDiv.remove();
     lineHeightMap.push(acc);
     linesCount = acc;
@@ -368,7 +365,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     $('.result-html').stop(true).animate({
                         scrollTop: posTo
                     }, 100, 'linear');
-                }, 50, {maxWait: 50});
+                }, 150, {maxWait: 150});
 
 
             // Synchronize scroll position from result to source
@@ -406,7 +403,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     textarea.stop(true).animate({
                         scrollTop: lineHeight * line
                     }, 100, 'linear');
-                }, 50, {maxWait: 50});
+                }, 150, {maxWait: 150});
 
 
             $scope.srcScrolled = function () {
