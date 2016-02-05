@@ -2,22 +2,22 @@ body {
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-#articleItemView .modal-content {
+#articleItemView .edit-content {
     display: flex;
     flex-direction: column;
 }
 
-.modal-flex-full-height {
+.edit-flex-full-height {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
 }
 
-.modal-header {
+.edit-header {
     flex: 0 0 auto;
 }
 
-.modal-body {
+.edit-body {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
@@ -25,32 +25,32 @@ body {
     padding: 0;
 }
 
-.modal-body .container-fluid {
+.edit-body .container-fluid {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     overflow: auto;
 }
 
-.modal-body .container-fluid .row {
+.edit-body .container-fluid .row {
     flex: 0 0 auto;
     overflow: auto;
 }
 
-.modal-body .container-fluid .nav.nav-tabs {
+.edit-body .container-fluid .nav.nav-tabs {
     flex: 0 0 auto;
 }
 
-.modal-body .container-fluid .tab-content {
+.edit-body .container-fluid .tab-content {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
 }
 
-.modal-body .container-fluid .tab-content .tab-pane {
+.edit-body .container-fluid .tab-content .tab-pane {
 }
 
-.modal-body .container-fluid .tab-content .tab-pane.active.in {
+.edit-body .container-fluid .tab-content .tab-pane.active.in {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
@@ -62,24 +62,24 @@ body {
     flex-direction: column;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space > div {
+.edit-body .container-fluid .row.row-use-remaining-space > div {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space .markdown-editor {
+.edit-body .container-fluid .row.row-use-remaining-space .markdown-editor {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     overflow: auto;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-editor-help {
+.edit-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-editor-help {
     flex: 0 0 auto;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-areas {
+.edit-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-areas {
     flex: 1 1 auto;
     display: flex;
     flex-direction: row;
@@ -87,14 +87,14 @@ body {
     margin: 0;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area {
+.edit-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area {
     flex: 1 1 50%;
     display: flex;
     flex-direction: column;
     padding: 0;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .form-group {
+.edit-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .form-group {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
@@ -103,7 +103,7 @@ body {
     margin-bottom: 0;
 }
 
-.modal-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .markdown-panel {
+.edit-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .markdown-panel {
     flex: 1 1 auto;
     overflow: auto;
     display: flex;

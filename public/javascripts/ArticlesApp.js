@@ -104,7 +104,7 @@ function buildScrollMap() {
 var md = window.markdownit();
 
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
-var articleEditApp = angular.module('articleEditApp', ['ngCookies', 'ui.bootstrap', 'flow']);
+var articleEditApp = angular.module('editArticleEntry', ['ngCookies', 'ui.bootstrap', 'flow']);
 
 articleEditApp.config(['$httpProvider',
     function (provider) {
@@ -432,7 +432,9 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     if ($scope.article.text.length > $scope.article_schema.text.maxLength) {
 
                     }
-                    md.renderer.rules.table_open  = function () { return '<table class="table">'; };
+                    md.renderer.rules.table_open = function () {
+                        return '<table class="table">';
+                    };
                     var rawHtml = md.render(
                         $scope.article.text.substr(0, $scope.article_schema.text.maxLength));
 
@@ -473,40 +475,23 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             };
             $scope.format = 'dd.MM.yyyy';
 
-            // attach to click event (jquery)
-
-            $(".media-heading .glyphicon.glyphicon-edit").click(function () {
-                var clickedElement = $(this);
-                var id = clickedElement.attr('data-id');
-                if (id) {
-                    $scope.loadArticle(id)
-                        .then(function () {
-                            ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                                //console.log("Modal dialog showed");
-                            });
-
-                            // show modal dialog
-                            ui.editArticleEntry.modal({backdrop: true});
-
-                            //console.log("showing modal dialog...");
-                        })
-                        .catch(function (error) {
-                            if (error) {
-                                location.href = "/login";
-                            }
-                        });
-                }
-                else {
-                    console.log("Can't open article because data-id on clicked element is missing");
-                }
-            });
+            if (article_id) {
+                $scope.loadArticle(article_id)
+                    .then(function () {
+                        //console.log("showing modal dialog...");
+                    })
+                    .catch(function (error) {
+                        if (error) {
+                            location.href = "/";
+                        }
+                    });
+            }
+            else {
+                console.log("Can't open article because data-id on clicked element is missing");
+            }
             ui.newItem.click(function () {
                 var clickedElement = $(this);
                 var pageid = clickedElement.attr('data-pageid');
-
-                ui.editArticleEntry.on('shown.bs.modal', function (e) {
-                    console.log("Modal dialog showed");
-                });
 
                 $scope.newArticle(pageid).then(function () {
                     // show modal dialog
