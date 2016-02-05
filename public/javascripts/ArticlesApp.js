@@ -104,7 +104,7 @@ function buildScrollMap() {
 var md = window.markdownit();
 
 // create the application module - dependencies to other modules are bootstrap modules for angularjs
-var articleEditApp = angular.module('editArticleEntry', ['ngCookies', 'ui.bootstrap', 'flow']);
+var articleEditApp = angular.module('articleEditApp', ['ngCookies', 'ui.bootstrap', 'flow']);
 
 articleEditApp.config(['$httpProvider',
     function (provider) {

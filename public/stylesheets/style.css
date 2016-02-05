@@ -15,6 +15,7 @@ body {
 
 .edit-header {
     flex: 0 0 auto;
+    padding-bottom: 1em;
 }
 
 .edit-body {
