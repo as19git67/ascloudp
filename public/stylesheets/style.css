@@ -1,60 +1,85 @@
+[ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}
+
+html {
+    height: 100%;
+}
+
 body {
+    height: 100%;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+    overflow: hidden;
 }
 
-#articleItemView .edit-content {
+body > .container-fluid {
+    height: 100%;
+}
+
+body > .container-fluid > .row.navbar-row {
+    height: 45px;
+}
+
+body > .container-fluid > .row.page-content-row {
+    padding-top: 5px;
+    height: calc(100% - 45px);
+}
+
+body > .container-fluid > .row.page-content-row > div {
+    height: 100%;
+}
+
+.article-edit-app {
+    height: 100%;
+}
+
+.article-edit-app .container-fluid {
+    height: 100%;
     display: flex;
     flex-direction: column;
 }
 
-.edit-flex-full-height {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
+.row.header-row {
+    flex: 0 0 auto;
 }
 
 .edit-header {
-    flex: 0 0 auto;
     padding-bottom: 1em;
 }
 
+.row.body-row {
+    flex: 1 1 auto;
+    height: 100%;
+}
+
+.row.body-row > div {
+    height: 100%;
+}
+
 .edit-body {
-    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
-    overflow: auto;
-    padding: 0;
+    height: calc(100% - 55px);
 }
 
-.edit-body .container-fluid {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
-}
-
-.edit-body .container-fluid .row {
-    flex: 0 0 auto;
-    overflow: auto;
-}
-
-.edit-body .container-fluid .nav.nav-tabs {
+.edit-body .nav.nav-tabs {
     flex: 0 0 auto;
 }
 
-.edit-body .container-fluid .tab-content {
+.edit-body .tab-content {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
+    height: 100%;
+    padding-right: 15px;
+    overflow-y: scroll;
 }
 
-.edit-body .container-fluid .tab-content .tab-pane {
-}
-
-.edit-body .container-fluid .tab-content .tab-pane.active.in {
+.edit-body .tab-content .tab-pane {
     flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
+}
+
+.edit-body .tab-content .tab-pane.active.in {
 }
 
 .tab-content .tab-pane .row.row-use-remaining-space {

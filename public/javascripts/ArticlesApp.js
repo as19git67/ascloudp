@@ -282,7 +282,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     article.text = article.text.substr(0, $scope.article_schema.text.maxLength);
 
                     articleService.saveArticle(article).then(function () {
-                        ui.editArticleEntry.modal('hide');
+                        location.href = "/" + page_id;
                         location.reload();
                     }, function (error) {
                         if (error) {
@@ -299,8 +299,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             };
             $scope.deleteArticle = function ($event) {
                 articleService.deleteArticle($scope.article).then(function () {
-                    ui.editArticleEntry.modal('hide');
-                    location.reload();
+                    location.href = "/" + page_id;
                 }, function (error) {
                     if (error) {
                         $scope.errorMessage = error.toString();
@@ -351,60 +350,56 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             };
 
             // Synchronize scroll position from source to result
-            $scope.syncResultScroll =
-                _.debounce(function () {
-                    var textarea = $('.markdown-source'),
-                        lineHeight = parseFloat(textarea.css('line-height')),
-                        lineNo, posTo;
+            $scope.syncResultScroll = _.debounce(function () {
+                var textarea = $('.markdown-source'),
+                    lineHeight = parseFloat(textarea.css('line-height')),
+                    lineNo, posTo;
 
-                    lineNo = Math.floor(textarea.scrollTop() / lineHeight);
-                    if (!$scope.scrollMap) {
-                        $scope.scrollMap = buildScrollMap();
-                    }
-                    posTo = $scope.scrollMap[lineNo];
-                    $('.result-html').stop(true).animate({
-                        scrollTop: posTo
-                    }, 100, 'linear');
-                }, 150, {maxWait: 150});
-
+                lineNo = Math.floor(textarea.scrollTop() / lineHeight);
+                if (!$scope.scrollMap) {
+                    $scope.scrollMap = buildScrollMap();
+                }
+                posTo = $scope.scrollMap[lineNo];
+                $('.result-html').stop(true).animate({
+                    scrollTop: posTo
+                }, 100, 'linear');
+            }, 150, {maxWait: 150});
 
             // Synchronize scroll position from result to source
-            $scope.syncSrcScroll =
-                _.debounce(function () {
-                    var resultHtml = $('.result-html'),
-                        scrollTop = resultHtml.scrollTop(),
-                        textarea = $('.markdown-source'),
-                        lineHeight = parseFloat(textarea.css('line-height')),
-                        lines,
-                        i,
-                        line;
+            $scope.syncSrcScroll = _.debounce(function () {
+                var resultHtml = $('.result-html'),
+                    scrollTop = resultHtml.scrollTop(),
+                    textarea = $('.markdown-source'),
+                    lineHeight = parseFloat(textarea.css('line-height')),
+                    lines,
+                    i,
+                    line;
 
-                    if (!$scope.scrollMap) {
-                        $scope.scrollMap = buildScrollMap();
+                if (!$scope.scrollMap) {
+                    $scope.scrollMap = buildScrollMap();
+                }
+
+                lines = Object.keys($scope.scrollMap);
+
+                if (lines.length < 1) {
+                    return;
+                }
+
+                line = lines[0];
+
+                for (i = 1; i < lines.length; i++) {
+                    if ($scope.scrollMap[lines[i]] < scrollTop) {
+                        line = lines[i];
+                        continue;
                     }
 
-                    lines = Object.keys($scope.scrollMap);
+                    break;
+                }
 
-                    if (lines.length < 1) {
-                        return;
-                    }
-
-                    line = lines[0];
-
-                    for (i = 1; i < lines.length; i++) {
-                        if ($scope.scrollMap[lines[i]] < scrollTop) {
-                            line = lines[i];
-                            continue;
-                        }
-
-                        break;
-                    }
-
-                    textarea.stop(true).animate({
-                        scrollTop: lineHeight * line
-                    }, 100, 'linear');
-                }, 150, {maxWait: 150});
-
+                textarea.stop(true).animate({
+                    scrollTop: lineHeight * line
+                }, 100, 'linear');
+            }, 150, {maxWait: 150});
 
             $scope.srcScrolled = function () {
                 if ($scope.syncDirSrcToResult === true) {
@@ -456,6 +451,10 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 }
             };
 
+            $scope.cancelEdit = function() {
+                location.href = "/" + page_id;
+            };
+
             // date picker event
             $scope.openDatePicker = function ($event, isOpenAttrName) {
                 $event.preventDefault();
@@ -477,11 +476,9 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
             if (article_id) {
                 $scope.loadArticle(article_id)
-                    .then(function () {
-                        //console.log("showing modal dialog...");
-                    })
                     .catch(function (error) {
                         if (error) {
+                            console.log("ERROR: ", error);
                             location.href = "/";
                         }
                     });
@@ -491,15 +488,14 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             }
             ui.newItem.click(function () {
                 var clickedElement = $(this);
-                var pageid = clickedElement.attr('data-pageid');
 
-                $scope.newArticle(pageid).then(function () {
-                    // show modal dialog
-                    ui.editArticleEntry.modal({backdrop: true});
-
-                    console.log("showing modal dialog...");
-                });
-                console.log("newArticle called");
+                $scope.newArticle(page_id)
+                    .catch(function (error) {
+                        if (error) {
+                            console.log("ERROR: ", error);
+                            location.href = "/";
+                        }
+                    });
 
             });
         }

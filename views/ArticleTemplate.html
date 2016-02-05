@@ -23,59 +23,63 @@
     </div>
 
     <div class="container-fluid">
-
-        <div class="edit-header">
-            <button type="button" class="btn btn-primary" id="btSave" name="btSave"
-                    ng-click="saveArticle($event)" title="Speichern">
-                <span class="glyphicon glyphicon-save"></span>
-                <span class="hidden-xs">Speichern</span>
-            </button>
-            <button ng-show="article.article_id" class="btn btn-default btn-danger"
-                    data-toggle="modal" data-target="#confirmModal" title="Artikel löschen">
-                <span class="glyphicon glyphicon-trash"></span>
-                <span class="hidden-xs">Löschen</span>
-            </button>
-            <button type="button" class="btn btn-default pull-right" title="Abbrechen" data-dismiss="modal">
-                <span class="glyphicon glyphicon-remove"></span>
-                <span class="hidden-xs">Abbrechen</span>
-            </button>
-        </div>
-        <div class="edit-body">
-            <div class="alert alert-danger" role="alert" ng-show="errorMessage" id="errorMessage">
-                {{errorMessage}}
+        <div class="row header-row">
+            <div class="col-xs-12">
+                <div class="edit-header">
+                    <button type="button" class="btn btn-primary" id="btSave" name="btSave"
+                            ng-click="saveArticle($event)" title="Speichern">
+                        <span class="glyphicon glyphicon-save"></span>
+                        <span class="hidden-xs">Speichern</span>
+                    </button>
+                    <button ng-show="article.article_id" class="btn btn-default btn-danger"
+                            data-toggle="modal" data-target="#confirmModal" title="Artikel löschen">
+                        <span class="glyphicon glyphicon-trash"></span>
+                        <span class="hidden-xs">Löschen</span>
+                    </button>
+                    <button type="button" class="btn btn-default pull-right" title="Abbrechen" ng-click="cancelEdit()">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        <span class="hidden-xs">Abbrechen</span>
+                    </button>
+                </div>
             </div>
+        </div>
+        <div class="row body-row">
+            <div class="col-xs-12">
+                <div class="edit-body" ng-cloak>
+                    <div class="alert alert-danger" role="alert" ng-show="errorMessage" id="errorMessage">
+                        {{errorMessage}}
+                    </div>
 
-            <div class="row container-fluid">
-                <ul class="nav nav-tabs" role="tablist">
-                    <li role="presentation" class="active"><a href="#articleHeader" aria-controls="Daten" role="tab" data-toggle="tab">Daten</a></li>
-                    <li role="presentation"><a href="#articleText" aria-controls="Text" role="tab" data-toggle="tab">Text</a></li>
-                    <li role="presentation"><a href="#markdownHelp" aria-controls="Hilfe" role="tab" data-toggle="tab">Hilfe</a></li>
-                </ul>
-                <div class="tab-content">
-                    <div role="tabpanel" class="tab-pane fade in active" id="articleHeader">
-                        <div class="row">
-                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
-                                <div class="row">
-                                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                        <form class="form" role="form">
-                                            <div class="form-group">
-                                                <label for="author"
-                                                       class="control-label">{{article_schema.author.label}}:</label>
+                    <ul class="nav nav-tabs" role="tablist">
+                        <li role="presentation" class="active"><a href="#articleHeader" aria-controls="Daten" role="tab" data-toggle="tab">Daten</a></li>
+                        <li role="presentation"><a href="#articleText" aria-controls="Text" role="tab" data-toggle="tab">Text</a></li>
+                        <li role="presentation"><a href="#markdownHelp" aria-controls="Hilfe" role="tab" data-toggle="tab">Hilfe</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane fade in active" id="articleHeader">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                            <form class="form" role="form">
+                                                <div class="form-group">
+                                                    <label for="author"
+                                                           class="control-label">{{article_schema.author.label}}:</label>
 
-                                                <div id="author">
-                                                    <input type="text" class="form-control" ng-model="article.author">
+                                                    <div id="author">
+                                                        <input type="text" class="form-control" ng-model="article.author">
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="artikeldatum" class="control-label">{{article_schema.date.label}}:</label>
+                                                <div class="form-group">
+                                                    <label for="artikeldatum" class="control-label">{{article_schema.date.label}}:</label>
 
-                                                <div id="artikeldatum">
-                                                    <p class="input-group">
-                                                        <input type="text" class="form-control" datepicker-popup="{{format}}"
-                                                               ng-model="article.date" is-open="article_date_opened"
-                                                               min-date="minDate" datepicker-options="dateOptions"
-                                                               date-disabled="disabled(date, mode)" ng-required="true"
-                                                               close-text="Close"/>
+                                                    <div id="artikeldatum">
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                                                   ng-model="article.date" is-open="article_date_opened"
+                                                                   min-date="minDate" datepicker-options="dateOptions"
+                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   close-text="Close"/>
                                                     <span class="input-group-btn">
                                                         <button type="button"
                                                                 class="btn btn-default"
@@ -83,28 +87,28 @@
                                                             <i class="glyphicon glyphicon-calendar"></i>
                                                         </button>
                                                     </span>
-                                                    </p>
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </form>
+                                            </form>
+                                        </div>
                                     </div>
+                                    <hr class="visible-xs">
                                 </div>
-                                <hr class="visible-xs">
-                            </div>
-                            <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
-                                <div class="row">
-                                    <div class="col-xs-12">
-                                        <form class="form" role="form">
-                                            <div class="form-group">
-                                                <label for="publish_start" class="control-label">{{article_schema.publish_start.label}}:</label>
+                                <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6 ascloud-left-border-sm">
+                                    <div class="row">
+                                        <div class="col-xs-12">
+                                            <form class="form" role="form">
+                                                <div class="form-group">
+                                                    <label for="publish_start" class="control-label">{{article_schema.publish_start.label}}:</label>
 
-                                                <div id="publish_start">
-                                                    <p class="input-group">
-                                                        <input type="text" class="form-control" datepicker-popup="{{format}}"
-                                                               ng-model="article.publish_start" is-open="publish_start_opened"
-                                                               min-date="minDate" datepicker-options="dateOptions"
-                                                               date-disabled="disabled(date, mode)" ng-required="true"
-                                                               close-text="Close"/>
+                                                    <div id="publish_start">
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                                                   ng-model="article.publish_start" is-open="publish_start_opened"
+                                                                   min-date="minDate" datepicker-options="dateOptions"
+                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   close-text="Close"/>
                                                         <span class="input-group-btn">
                                                             <button type="button"
                                                                     class="btn btn-default"
@@ -112,19 +116,19 @@
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
-                                                    </p>
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div class="form-group">
-                                                <label for="publish_end" class="control-label">{{article_schema.publish_end.label}}:</label>
+                                                <div class="form-group">
+                                                    <label for="publish_end" class="control-label">{{article_schema.publish_end.label}}:</label>
 
-                                                <div id="publish_end">
-                                                    <p class="input-group">
-                                                        <input type="text" class="form-control" datepicker-popup="{{format}}"
-                                                               ng-model="article.publish_end" is-open="publish_end_opened"
-                                                               min-date="minDate" datepicker-options="dateOptions"
-                                                               date-disabled="disabled(date, mode)" ng-required="true"
-                                                               close-text="Close"/>
+                                                    <div id="publish_end">
+                                                        <p class="input-group">
+                                                            <input type="text" class="form-control" datepicker-popup="{{format}}"
+                                                                   ng-model="article.publish_end" is-open="publish_end_opened"
+                                                                   min-date="minDate" datepicker-options="dateOptions"
+                                                                   date-disabled="disabled(date, mode)" ng-required="true"
+                                                                   close-text="Close"/>
                                                         <span class="input-group-btn">
                                                             <button type="button"
                                                                     class="btn btn-default"
@@ -132,46 +136,46 @@
                                                                 <i class="glyphicon glyphicon-calendar"></i>
                                                             </button>
                                                         </span>
-                                                    </p>
+                                                        </p>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        </form>
+                                            </form>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <form class="form" role="form">
-                                    <div class="form-group">
-                                        <label for="title" class="control-label">{{article_schema.title.label}}:</label>
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <form class="form" role="form">
+                                        <div class="form-group">
+                                            <label for="title" class="control-label">{{article_schema.title.label}}:</label>
 
-                                        <div id="title">
-                                            <input type="text" class="form-control" ng-model="article.title">
+                                            <div id="title">
+                                                <input type="text" class="form-control" ng-model="article.title">
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="leadText"
-                                               class="control-label">{{article_schema.leadText.label}}:</label>
+                                        <div class="form-group">
+                                            <label for="leadText"
+                                                   class="control-label">{{article_schema.leadText.label}}:</label>
 
-                                        <div id="leadText">
-                                            <input type="text" class="form-control" ng-model="article.leadText"
-                                                   placeholder="Ein Text muss eingegeben werden">
+                                            <div id="leadText">
+                                                <input type="text" class="form-control" ng-model="article.leadText"
+                                                       placeholder="Ein Text muss eingegeben werden">
+                                            </div>
                                         </div>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div role="tabpanel" class="tab-pane" id="articleText">
-                        <div class="row row-use-remaining-space">
-                            <!--<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">-->
-                            <div class="markdown-editor">
-                                <div class="row markdown-areas">
-                                    <div class="markdown-area">
-                                        <div class="form-group" flow-init flow-name="flowObj.flow"
-                                             flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
-                                            <div class="markdown-panel" flow-drop ng-class="dropClass">
+                        <div role="tabpanel" class="tab-pane" id="articleText">
+                            <div class="row row-use-remaining-space">
+                                <!--<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">-->
+                                <div class="markdown-editor">
+                                    <div class="row markdown-areas">
+                                        <div class="markdown-area">
+                                            <div class="form-group" flow-init flow-name="flowObj.flow"
+                                                 flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
+                                                <div class="markdown-panel" flow-drop ng-class="dropClass">
                                                 <textarea class="markdown-source form-control"
                                                           rows="{{textareaRows}}"
                                                           ng-model="article.text"
@@ -182,105 +186,107 @@
                                                           ng-touchstart="startSyncSrcScroll()"
                                                           asscroll>
                                                 </textarea>
-                                            </div>
-                                            <div class="markdown-panel-footer panel-footer">
-                                                <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a>
-                                                    hinzu
+                                                </div>
+                                                <div class="markdown-panel-footer panel-footer">
+                                                    <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a>
+                                                        hinzu
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
 
-                                    <div class="markdown-area hidden-xs">
-                                        <div class="form-group">
-                                            <div class="markdown-panel form-control">
-                                                <div class="result-html" ng-bind-html="trustedTextAsHtml"
-                                                     ng-mouseover="startSyncResultScroll()"
-                                                     ng-touchstart="startSyncResultScroll()" asscroll>
+                                        <div class="markdown-area hidden-xs">
+                                            <div class="form-group">
+                                                <div class="markdown-panel form-control">
+                                                    <div class="result-html" ng-bind-html="trustedTextAsHtml"
+                                                         ng-mouseover="startSyncResultScroll()"
+                                                         ng-touchstart="startSyncResultScroll()" asscroll>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <!--</div>-->
                                 </div>
-                                <!--</div>-->
                             </div>
                         </div>
-                    </div>
-                    <div role="tabpanel" class="tab-pane fade" id="markdownHelp">
-                        <div class="row row-use-remaining-space">
-                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                                <div class="form-group markdown-editor-help">
-                                    <dl class="dl-horizontal">
-                                        <dt>Überschriften</dt>
-                                        <dd>Überschriften starten mit einem oder mehreren #. Die Anzahl der #-Zeichen
-                                            definieren die Ebene
-                                        </dd>
-                                        <dt>Absätze</dt>
-                                        <dd>Jeder neue Absatz wird mit einer Leerzeile bestimmt.</dd>
-                                        <dt>Kursiv</dt>
-                                        <dd>Text, der mit _ oder * umschlossen ist, wird
-                                            kursiv dargestellt
-                                        </dd>
-                                        <dt>Fettschrift</dt>
-                                        <dd>Text, der mit ** umschlossen ist, wird fett
-                                            dargestellt
-                                        </dd>
-                                        <dt>Durchgestrichen</dt>
-                                        <dd>~~Das war ein mal~~</dd>
-                                        <dt>Programmcode, etc.</dt>
-                                        <dd>```for(var i=0;i<10;i++) { }```</dd>
-                                        <dt>Links</dt>
-                                        <dd>Links werden in folgender Form definiert: <code>[Link
-                                            text](http://myurl.com)</code></dd>
-                                        <dt>Bilder</dt>
-                                        <dd>Bilder werden in folgender Weise eingebettet: <code>![Alternativer
-                                            text](http://myurl.com/myimg.jpg)</code></dd>
-                                        <dt>Listen</dt>
-                                        <dd>Listen starten mit *. Jedes Listenelement muss die gleiche Einrückung
-                                            haben.
-                                            Nach jedem Listenelement eine Leerzeile einfügen. Weiter eingerückte *
-                                            erzeugen
-                                            Listen in untergeordneten Ebenen.
-                                        </dd>
-                                        <dt>Nummerierte Listen</dt>
-                                        <dd>Nummerierte Listen starten mit 1 gefolgt von einem Punkt (1.)</dd>
-                                        <dt>Horizontale Linie</dt>
-                                        <dd>Ein Absatz mit genau drei Minuszeichen (---) erzeugt eine horizontale
-                                            Linie.
-                                            Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.
-                                        </dd>
-                                        <dt>Listen</dt>
-                                        <dd>You can create tables with pipes <code>|</code> and hyphens <code>-</code>. Hyphens are used to create each column's header, while pipes separate each
-                                            column.<code>| First Header | Second Header |
-                                                | ------------- | ------------- |
-                                                | Content Cell | Content Cell |
-                                                | Content Cell | Content Cell |
+                        <div role="tabpanel" class="tab-pane fade" id="markdownHelp">
+                            <div class="row row-use-remaining-space">
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <div class="form-group markdown-editor-help">
+                                        <dl class="dl-horizontal">
+                                            <dt>Überschriften</dt>
+                                            <dd>Überschriften starten mit einem oder mehreren #. Die Anzahl der #-Zeichen
+                                                definieren die Ebene
+                                            </dd>
+                                            <dt>Absätze</dt>
+                                            <dd>Jeder neue Absatz wird mit einer Leerzeile bestimmt.</dd>
+                                            <dt>Kursiv</dt>
+                                            <dd>Text, der mit _ oder * umschlossen ist, wird
+                                                kursiv dargestellt
+                                            </dd>
+                                            <dt>Fettschrift</dt>
+                                            <dd>Text, der mit ** umschlossen ist, wird fett
+                                                dargestellt
+                                            </dd>
+                                            <dt>Durchgestrichen</dt>
+                                            <dd>~~Das war ein mal~~</dd>
+                                            <dt>Programmcode, etc.</dt>
+                                            <dd>```for(var i=0;i<10;i++) { }```</dd>
+                                            <dt>Links</dt>
+                                            <dd>Links werden in folgender Form definiert: <code>[Link
+                                                text](http://myurl.com)</code></dd>
+                                            <dt>Bilder</dt>
+                                            <dd>Bilder werden in folgender Weise eingebettet: <code>![Alternativer
+                                                text](http://myurl.com/myimg.jpg)</code></dd>
+                                            <dt>Listen</dt>
+                                            <dd>Listen starten mit *. Jedes Listenelement muss die gleiche Einrückung
+                                                haben.
+                                                Nach jedem Listenelement eine Leerzeile einfügen. Weiter eingerückte *
+                                                erzeugen
+                                                Listen in untergeordneten Ebenen.
+                                            </dd>
+                                            <dt>Nummerierte Listen</dt>
+                                            <dd>Nummerierte Listen starten mit 1 gefolgt von einem Punkt (1.)</dd>
+                                            <dt>Horizontale Linie</dt>
+                                            <dd>Ein Absatz mit genau drei Minuszeichen (---) erzeugt eine horizontale
+                                                Linie.
+                                                Vor und nach den drei Minuszeichen müssen jeweils eine Leerzeile sein.
+                                            </dd>
+                                            <dt>Listen</dt>
+                                            <dd>You can create tables with pipes <code>|</code> and hyphens <code>-</code>. Hyphens are used to create each column's header, while pipes separate each
+                                                column.<code>| First Header | Second Header |
+                                                    | ------------- | ------------- |
+                                                    | Content Cell | Content Cell |
+                                                    | Content Cell | Content Cell |
+                                                </code></dd>
+                                            <dd>The pipes on either end of the table are optional.</dd>
+                                            <dd>Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least three hyphens in each column of the header row.
+                                            </dd>
+                                            <dd>You can align text to the left, right, or center of a column by including colons : to the left, right, or on both sides of the hyphens within the header
+                                                row.
+                                            </dd>
+                                            <dd><code>| Left-aligned | Center-aligned | Right-aligned |
+                                                | :--- | :---: | ---: |
+                                                | git status | git status | git status |
+                                                | git diff | git diff | git diff |
                                             </code></dd>
-                                        <dd>The pipes on either end of the table are optional.</dd>
-                                        <dd>Cells can vary in width and do not need to be perfectly aligned within columns. There must be at least three hyphens in each column of the header row.</dd>
-                                        <dd>You can align text to the left, right, or center of a column by including colons : to the left, right, or on both sides of the hyphens within the header
-                                            row.
-                                        </dd>
-                                        <dd><code>| Left-aligned | Center-aligned | Right-aligned |
-                                            | :--- | :---: | ---: |
-                                            | git status | git status | git status |
-                                            | git diff | git diff | git diff |
-                                        </code></dd>
-                                        <dd>To include a pipe <code>|</code> as content within your cell, use a <code>\</code> before the pipe:</dd>
-                                        <dd><code>| Name | Character |
-                                            | --- | --- |
-                                            | Backtick | ` |
-                                            | Pipe | \| |
-                                        </code></dd>
-                                        <dt>Weitere Informationen</dt>
-                                        <dd><a href="https://guides.github.com/features/mastering-markdown"
-                                               target="_blank">Mastering Markdown</a></dd>
-                                        <dd><a href="https://help.github.com/articles/github-flavored-markdown"
-                                               target="_blank">Markdown
-                                            Syntax (Englisch)</a></dd>
-                                        <dd><a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet"
-                                               target="_blank">Markdown Cheatsheet</a></dd>
-                                    </dl>
+                                            <dd>To include a pipe <code>|</code> as content within your cell, use a <code>\</code> before the pipe:</dd>
+                                            <dd><code>| Name | Character |
+                                                | --- | --- |
+                                                | Backtick | ` |
+                                                | Pipe | \| |
+                                            </code></dd>
+                                            <dt>Weitere Informationen</dt>
+                                            <dd><a href="https://guides.github.com/features/mastering-markdown"
+                                                   target="_blank">Mastering Markdown</a></dd>
+                                            <dd><a href="https://help.github.com/articles/github-flavored-markdown"
+                                                   target="_blank">Markdown
+                                                Syntax (Englisch)</a></dd>
+                                            <dd><a href="https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet"
+                                                   target="_blank">Markdown Cheatsheet</a></dd>
+                                        </dl>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -290,6 +296,7 @@
         </div>
     </div>
 </div>
+
 
 
 
