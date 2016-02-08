@@ -85,11 +85,33 @@ html
                             ul(class="nav navbar-nav")
                                 if pages
                                     each page in pages
-                                        li
+                                        li.hidden-xs
                                             if page.isSingleEntity
                                                 a(href='/#{page.Name}') #{page.EntityNameSingular}
                                             else
                                                 a(href='/#{page.Name}') #{page.EntityNamePlural}
+
+                                li(class="dropdown")
+                                    a(href="#",class="dropdown-toggle",data-toggle="dropdown") More
+                                        b.caret
+                                    ul.dropdown-menu
+                                        li(class="hidden-lg hidden-md")
+                                            a(href="/blackouts/") Blackouts
+                                        li(class="hidden-lg hidden-md")
+                                            a(href="/tasks/") Tasks
+                                        li(class="hidden-lg")
+                                            a(href="/songs/")  Songs
+                                        li(class="hidden-lg")
+                                            a(href="/testimonials/") Testimonials
+                                        li(class="divider hidden-lg")
+
+                                        // These menu items will only appear in the "More" dropdown menu.
+                                        li
+                                            a(href="/artists/") Artists
+                                        li
+                                            a(href="/categories/") Categories
+                                        li
+                                            a(href="/cities/") Cities
                             if user != null && user.menu
                                 form(action="/logoff", class="nav navbar-nav navbar-right adjusted-nav-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
