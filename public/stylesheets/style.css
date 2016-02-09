@@ -2,149 +2,52 @@
     display: none !important;
 }
 
-html {
-    height: 100%;
-}
-
 body {
-    height: 100%;
     font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
 }
 
-body > .container-fluid {
-    height: 100%;
-}
-
 body > .container-fluid > .row.navbar-row {
-    height: 45px;
 }
 
 body > .container-fluid > .row.page-content-row {
-    padding-top: 5px;
-    height: calc(100% - 45px);
-}
-
-body > .container-fluid > .row.page-content-row > div {
-    height: 100%;
+    padding-top: 45px;
 }
 
 .article-edit-app {
-    height: 100%;
-}
-
-.article-edit-app .container-fluid {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
+    padding-top: 5px;
 }
 
 .row.header-row {
-    flex: 0 0 auto;
 }
 
 .edit-header {
     padding-bottom: 1em;
 }
 
-.row.body-row {
-    flex: 1 1 auto;
+.row-use-remaining-space > div {
     height: 100%;
 }
 
-.row.body-row > div {
-    height: 100%;
-}
-
-.edit-body {
-    display: flex;
-    flex-direction: column;
-    height: calc(100% - 55px);
-}
-
-.edit-body .nav.nav-tabs {
-    flex: 0 0 auto;
-}
-
-.edit-body .tab-content {
-    flex: 1 1 auto;
+.row-use-remaining-space > div > .form-group  {
     display: flex;
     flex-direction: column;
     height: 100%;
-    padding-right: 15px;
+    border: 1px solid #777;
+}
+
+.row-use-remaining-space > div > .form-group > .markdown-panel {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.row-use-remaining-space > div > .form-group > .markdown-panel > .markdown-source {
+    flex: 1 1 auto;
     overflow-y: scroll;
 }
 
-.edit-body .tab-content .tab-pane {
-    flex: 1 1 auto;
-}
-
-.edit-body .tab-content .tab-pane.active.in {
-}
-
-.tab-content .tab-pane .row.row-use-remaining-space {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space > div {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space .markdown-editor {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-editor-help {
+.row-use-remaining-space > div > .form-group > .markdown-panel-footer {
     flex: 0 0 auto;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space .markdown-editor .markdown-areas {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: row;
-    overflow: auto;
-    margin: 0;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area {
-    flex: 1 1 50%;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .form-group {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    overflow: auto;
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
-
-.edit-body .container-fluid .row.row-use-remaining-space .markdown-areas .markdown-area .markdown-panel {
-    flex: 1 1 auto;
-    overflow: auto;
-    display: flex;
-    flex-direction: column;
-    padding: 0;
-    border: 0;
-}
-
-.markdown-areas .markdown-area .markdown-panel .markdown-source {
-    flex: 1 1 auto;
-    overflow: auto;
-}
-
-.markdown-areas .markdown-area .markdown-panel-footer {
-    flex: 0 0 auto;
-    overflow: auto;
     font-size: smaller;
 }
 

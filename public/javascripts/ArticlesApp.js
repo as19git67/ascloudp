@@ -451,7 +451,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 }
             };
 
-            $scope.cancelEdit = function() {
+            $scope.cancelEdit = function () {
                 location.href = "/" + page_id;
             };
 
@@ -514,6 +514,38 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     }
                 });
             }
+        }
+    })
+    .directive('resize', function ($window) {
+        return function (scope, element) {
+
+            var w = angular.element($window);
+            var changeHeight = function () {
+
+                function getTopAbsolute(el, pos) {
+                    if (!pos) {
+                        pos = 0;
+                    }
+                    if (el.is('body')) {
+                        return pos;
+                    }
+                    else {
+                        var offsetParent = el[0].offsetParent;
+                        var oTop = el[0].offsetTop;
+                        var absoluteTop = pos + oTop;
+                        getTopAbsolute(offsetParent, absoluteTop);
+                    }
+                }
+
+                //var t = getTopAbsolute(element, 0);
+
+                var t = element.offset();
+                element.css('height', (w.height() - t) + 'px');
+            };
+            w.bind('resize', function () {
+                changeHeight();   // when window size gets changed
+            });
+            changeHeight(); // when page loads
         }
     })
     .factory('articleService', function ($http, $log, $q) {

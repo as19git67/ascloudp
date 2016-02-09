@@ -20,6 +20,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 csrfToken: req.csrfToken(),
                 bootstrapTheme: config.get('bootstrapStyle'),
                 canEdit: canEdit,
+                pages: pages,
                 appName: appName,
                 user: req.user,
                 page: page,

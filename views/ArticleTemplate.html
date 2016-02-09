@@ -53,6 +53,7 @@
                     <ul class="nav nav-tabs" role="tablist">
                         <li role="presentation" class="active"><a href="#articleHeader" aria-controls="Daten" role="tab" data-toggle="tab">Daten</a></li>
                         <li role="presentation"><a href="#articleText" aria-controls="Text" role="tab" data-toggle="tab">Text</a></li>
+                        <li role="presentation"><a href="#articlePreview" aria-controls="Vorschau" role="tab" data-toggle="tab">Vorschau</a></li>
                         <li role="presentation"><a href="#markdownHelp" aria-controls="Hilfe" role="tab" data-toggle="tab">Hilfe</a></li>
                     </ul>
                     <div class="tab-content">
@@ -168,14 +169,11 @@
                             </div>
                         </div>
                         <div role="tabpanel" class="tab-pane" id="articleText">
-                            <div class="row row-use-remaining-space">
-                                <!--<div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">-->
-                                <div class="markdown-editor">
-                                    <div class="row markdown-areas">
-                                        <div class="markdown-area">
-                                            <div class="form-group" flow-init flow-name="flowObj.flow"
-                                                 flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
-                                                <div class="markdown-panel" flow-drop ng-class="dropClass">
+                            <div class="row row-use-remaining-space" resize>
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                    <div class="form-group" flow-init flow-name="flowObj.flow"
+                                         flow-file-added="!!{png:1,gif:1,jpg:1,jpeg:1}[$file.getExtension()]">
+                                        <div class="markdown-panel" flow-drop ng-class="dropClass">
                                                 <textarea class="markdown-source form-control"
                                                           rows="{{textareaRows}}"
                                                           ng-model="article.text"
@@ -186,27 +184,28 @@
                                                           ng-touchstart="startSyncSrcScroll()"
                                                           asscroll>
                                                 </textarea>
-                                                </div>
-                                                <div class="markdown-panel-footer panel-footer">
-                                                    <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a>
-                                                        hinzu
-                                                    </div>
-                                                </div>
-                                            </div>
                                         </div>
-
-                                        <div class="markdown-area hidden-xs">
-                                            <div class="form-group">
-                                                <div class="markdown-panel form-control">
-                                                    <div class="result-html" ng-bind-html="trustedTextAsHtml"
-                                                         ng-mouseover="startSyncResultScroll()"
-                                                         ng-touchstart="startSyncResultScroll()" asscroll>
-                                                    </div>
-                                                </div>
+                                        <div class="markdown-panel-footer panel-footer">
+                                            <div>Füge Bilder durch Drag & Drop oder durch <a href="#" flow-btn>auswählen</a>
+                                                hinzu
                                             </div>
                                         </div>
                                     </div>
-                                    <!--</div>-->
+
+                                </div>
+                            </div>
+                        </div>
+                        <div role="tabpanel" class="tab-pane" id="articlePreview">
+                            <div class="row row-use-remaining-space">
+                                <div class="markdown-area hidden-xs">
+                                    <div class="form-group">
+                                        <div class="markdown-panel form-control">
+                                            <div class="result-html" ng-bind-html="trustedTextAsHtml"
+                                                 ng-mouseover="startSyncResultScroll()"
+                                                 ng-touchstart="startSyncResultScroll()" asscroll>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
