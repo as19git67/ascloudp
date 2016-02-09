@@ -520,27 +520,39 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         return function (scope, element) {
 
             var w = angular.element($window);
+
             var changeHeight = function () {
 
                 function getTopAbsolute(el, pos) {
-                    if (!pos) {
-                        pos = 0;
+                    var absoluteTop = 0;
+                    if (pos) {
+                        absoluteTop = pos;
                     }
                     if (el.is('body')) {
-                        return pos;
-                    }
-                    else {
+                        return absoluteTop;
+                    } else {
                         var offsetParent = el[0].offsetParent;
                         var oTop = el[0].offsetTop;
-                        var absoluteTop = pos + oTop;
-                        getTopAbsolute(offsetParent, absoluteTop);
+                        var absoluteTop = absoluteTop + oTop;
+                        if (offsetParent) {
+                            getTopAbsolute($(offsetParent), absoluteTop);
+                        } else {
+                            return absoluteTop;
+                        }
                     }
                 }
 
                 //var t = getTopAbsolute(element, 0);
 
                 var t = element.offset();
-                element.css('height', (w.height() - t) + 'px');
+                var tt = getTopAbsolute(element, 0);
+
+                var windowHeight = w.height();
+
+                if (t.top > 0) {
+                    element.css('height', (windowHeight - t.top) + 'px');
+                }
+
             };
             w.bind('resize', function () {
                 changeHeight();   // when window size gets changed
