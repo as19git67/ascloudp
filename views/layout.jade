@@ -85,7 +85,19 @@ html
                             ul(class="nav navbar-nav")
                                 if pages
                                     each page, pageIndex in pages
-                                        if pageIndex > 5
+                                        if pageIndex > 9
+                                            li.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
+                                                if page.isSingleEntity
+                                                    a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                else
+                                                    a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                        else if pageIndex > 7
+                                            li.hidden-lg.hidden-md.hidden-sm.hidden-xs
+                                                if page.isSingleEntity
+                                                    a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                else
+                                                    a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                        else if pageIndex > 5
                                             li.hidden-md.hidden-sm.hidden-xs
                                                 if page.isSingleEntity
                                                     a(href='/#{page.Name}') #{page.EntityNameSingular}
@@ -109,37 +121,63 @@ html
                                                     a(href='/#{page.Name}') #{page.EntityNameSingular}
                                                 else
                                                     a(href='/#{page.Name}') #{page.EntityNamePlural}
+
                                     if pages.length > 2
-                                        li(class="dropdown hidden-lg")
-                                            a(href="#",class="dropdown-toggle",
-                                            data-toggle="dropdown") Mehr&nbsp;
-                                                b.caret
-                                            ul.dropdown-menu
-                                                each page, pageIndex in pages
-                                                    if pageIndex > 5
-                                                        li
-                                                            if page.isSingleEntity
-                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                            else
-                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                    else if pageIndex > 3
-                                                        li.hidden-lg.hidden-md
-                                                            if page.isSingleEntity
-                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                            else
-                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                    else if pageIndex > 1
-                                                        li.hidden-lg.hidden-md.hidden-sm
-                                                            if page.isSingleEntity
-                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                            else
-                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                    else
-                                                        li.hidden.lg-hidden-md.hidden-sm.hidden-xs
-                                                            if page.isSingleEntity
-                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                            else
-                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                        if pages.length > 12
+                                            li.dropdown.dropdown-more
+                                        else if pages.length > 9
+                                            li.dropdown.dropdown-more.hidden-xxl
+                                        else if pages.length > 7
+                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl
+                                        else if pages.length > 5
+                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg
+                                        else if pages.length > 3
+                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg.hidden-md
+                                        else if pages.length > 1
+                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm
+                                        else
+                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
+
+                                        a(href="#",class="dropdown-toggle", data-toggle="dropdown") Mehr&nbsp;
+                                            b.caret
+                                        ul.dropdown-menu
+                                            each page, pageIndex in pages
+                                                if pageIndex > 9
+                                                    li
+                                                        if page.isSingleEntity
+                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                        else
+                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                else if pageIndex > 7
+                                                    li.hidden-xl.hidden-lg
+                                                        if page.isSingleEntity
+                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                        else
+                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                else if pageIndex > 5
+                                                    li.hidden-xl.hidden-lg
+                                                        if page.isSingleEntity
+                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                        else
+                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                else if pageIndex > 3
+                                                    li.hidden-xl.hidden-lg.hidden-md
+                                                        if page.isSingleEntity
+                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                        else
+                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                else if pageIndex > 1
+                                                    li.hidden-xl.hidden-lg.hidden-md.hidden-sm
+                                                        if page.isSingleEntity
+                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                        else
+                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                else
+                                                    li.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
+                                                        if page.isSingleEntity
+                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                        else
+                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
 
                             if user != null && user.menu
                                 form(action="/logoff", class="nav navbar-nav navbar-right adjusted-nav-right", id="logoutForm", method="post")

@@ -523,30 +523,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
 
             var changeHeight = function () {
 
-                function getTopAbsolute(el, pos) {
-                    var absoluteTop = 0;
-                    if (pos) {
-                        absoluteTop = pos;
-                    }
-                    if (el.is('body')) {
-                        return absoluteTop;
-                    } else {
-                        var offsetParent = el[0].offsetParent;
-                        var oTop = el[0].offsetTop;
-                        var absoluteTop = absoluteTop + oTop;
-                        if (offsetParent) {
-                            getTopAbsolute($(offsetParent), absoluteTop);
-                        } else {
-                            return absoluteTop;
-                        }
-                    }
-                }
-
-                //var t = getTopAbsolute(element, 0);
-
                 var t = element.offset();
-                var tt = getTopAbsolute(element, 0);
-
                 var windowHeight = w.height();
 
                 if (t.top > 0) {
@@ -558,6 +535,12 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 changeHeight();   // when window size gets changed
             });
             changeHeight(); // when page loads
+            $('.article-edit-app .nav.nav-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                //e.target // newly activated tab
+                //e.relatedTarget // previous active tab
+                console.log("Tab activated");
+                changeHeight();
+            });
         }
     })
     .factory('articleService', function ($http, $log, $q) {

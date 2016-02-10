@@ -147,7 +147,17 @@
   }
 }
 .hidden-lg {
-  @media (min-width: @screen-lg-min) {
+  @media (min-width: @screen-lg-min) and (max-width: @screen-lg-max) {
+    .responsive-invisibility();
+  }
+}
+.hidden-xl {
+  @media (min-width: @screen-xl-min) and (max-width: @screen-xl-max) {
+    .responsive-invisibility();
+  }
+}
+.hidden-xxl {
+  @media (min-width: @screen-xxl-min) {
     .responsive-invisibility();
   }
 }
