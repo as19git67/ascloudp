@@ -1,6 +1,6 @@
 /*!
  * Bootstrap v3.3.0 (http://getbootstrap.com)
- * Copyright 2011-2015 [object Object]
+ * Copyright 2011-2016 [object Object]
  * Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
  */
 
@@ -1257,7 +1257,7 @@ dt {
 dd {
   margin-left: 0;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .dl-horizontal dt {
     float: left;
     width: 160px;
@@ -3336,7 +3336,7 @@ tbody.collapse.in {
   bottom: 100%;
   margin-bottom: 1px;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-right .dropdown-menu {
     right: 0;
     left: auto;
@@ -3872,12 +3872,12 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   margin-bottom: 20px;
   border: 1px solid transparent;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar {
     border-radius: 4px;
   }
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-header {
     float: left;
   }
@@ -3894,7 +3894,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-collapse.in {
   overflow-y: auto;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-collapse {
     width: auto;
     border-top: 0;
@@ -3935,7 +3935,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   margin-right: -15px;
   margin-left: -15px;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .container > .navbar-header,
   .container-fluid > .navbar-header,
   .container > .navbar-collapse,
@@ -3948,7 +3948,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   z-index: 1000;
   border-width: 0 0 1px;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-static-top {
     border-radius: 0;
   }
@@ -3960,7 +3960,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   left: 0;
   z-index: 1030;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-fixed-top,
   .navbar-fixed-bottom {
     border-radius: 0;
@@ -3989,7 +3989,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-brand > img {
   display: block;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar > .container .navbar-brand,
   .navbar > .container-fluid .navbar-brand {
     margin-left: -15px;
@@ -4019,7 +4019,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
 .navbar-toggle .icon-bar + .icon-bar {
   margin-top: 4px;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-toggle {
     display: none;
   }
@@ -4032,7 +4032,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   padding-bottom: 10px;
   line-height: 20px;
 }
-@media (max-width: 479px) {
+@media (max-width: 49px) {
   .navbar-nav .open .dropdown-menu {
     position: static;
     float: none;
@@ -4055,7 +4055,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     background-image: none;
   }
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-nav {
     float: left;
     margin: 0;
@@ -4129,7 +4129,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     top: 0;
   }
 }
-@media (max-width: 479px) {
+@media (max-width: 49px) {
   .navbar-form .form-group {
     margin-bottom: 5px;
   }
@@ -4137,7 +4137,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
     margin-bottom: 0;
   }
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-form {
     width: auto;
     padding-top: 0;
@@ -4174,14 +4174,14 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   margin-top: 15px;
   margin-bottom: 15px;
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-text {
     float: left;
     margin-right: 15px;
     margin-left: 15px;
   }
 }
-@media (min-width: 480px) {
+@media (min-width: 50px) {
   .navbar-left {
     float: left !important;
   }
@@ -4248,7 +4248,7 @@ select[multiple].input-group-sm > .input-group-btn > .btn {
   color: #555;
   background-color: #e7e7e7;
 }
-@media (max-width: 479px) {
+@media (max-width: 49px) {
   .navbar-default .navbar-nav .open .dropdown-menu > li > a {
     color: #777;
   }
@@ -4344,7 +4344,7 @@ fieldset[disabled] .navbar-default .btn-link:focus {
   color: #fff;
   background-color: #080808;
 }
-@media (max-width: 479px) {
+@media (max-width: 49px) {
   .navbar-inverse .navbar-nav .open .dropdown-menu > .dropdown-header {
     border-color: #080808;
   }
@@ -6303,8 +6303,18 @@ button.close {
     display: none !important;
   }
 }
-@media (min-width: 1200px) {
+@media (min-width: 1200px) and (max-width: 1439px) {
   .hidden-lg {
+    display: none !important;
+  }
+}
+@media (min-width: 1440px) and (max-width: 1599px) {
+  .hidden-xl {
+    display: none !important;
+  }
+}
+@media (min-width: 1600px) {
+  .hidden-xxl {
     display: none !important;
   }
 }

@@ -624,6 +624,23 @@
   </div>
   <div class="clearfix"></div>
   <div class="col-xs-4">
+    <label for="input-@screen-xl">@screen-xl</label>
+    <input id="input-@screen-xl" type="text" value="1440px" data-var="@screen-xl" class="form-control"/>
+  </div>
+  <div class="col-xs-4">
+    <label for="input-@screen-xl-min">@screen-xl-min</label>
+    <input id="input-@screen-xl-min" type="text" value="@screen-xl" data-var="@screen-xl-min" class="form-control"/>
+  </div>
+  <div class="col-xs-4">
+    <label for="input-@screen-xxl">@screen-xxl</label>
+    <input id="input-@screen-xxl" type="text" value="1600px" data-var="@screen-xxl" class="form-control"/>
+  </div>
+  <div class="clearfix"></div>
+  <div class="col-xs-4">
+    <label for="input-@screen-xxl-min">@screen-xxl-min</label>
+    <input id="input-@screen-xxl-min" type="text" value="@screen-xxl" data-var="@screen-xxl-min" class="form-control"/>
+  </div>
+  <div class="col-xs-4">
     <label for="input-@screen-xs-max">@screen-xs-max</label>
     <input id="input-@screen-xs-max" type="text" value="(@screen-sm-min - 1)" data-var="@screen-xs-max" class="form-control"/>
   </div>
@@ -631,9 +648,18 @@
     <label for="input-@screen-sm-max">@screen-sm-max</label>
     <input id="input-@screen-sm-max" type="text" value="(@screen-md-min - 1)" data-var="@screen-sm-max" class="form-control"/>
   </div>
+  <div class="clearfix"></div>
   <div class="col-xs-4">
     <label for="input-@screen-md-max">@screen-md-max</label>
     <input id="input-@screen-md-max" type="text" value="(@screen-lg-min - 1)" data-var="@screen-md-max" class="form-control"/>
+  </div>
+  <div class="col-xs-4">
+    <label for="input-@screen-lg-max">@screen-lg-max</label>
+    <input id="input-@screen-lg-max" type="text" value="(@screen-xl-min - 1)" data-var="@screen-lg-max" class="form-control"/>
+  </div>
+  <div class="col-xs-4">
+    <label for="input-@screen-xl-max">@screen-xl-max</label>
+    <input id="input-@screen-xl-max" type="text" value="(@screen-xxl-min - 1)" data-var="@screen-xl-max" class="form-control"/>
   </div>
 </div>
 <h2 id="grid-system">Grid system</h2>
@@ -651,8 +677,8 @@
   </div>
   <div class="col-xs-4">
     <label for="input-@grid-float-breakpoint">@grid-float-breakpoint</label>
-    <input id="input-@grid-float-breakpoint" type="text" value="@screen-xs-min" data-var="@grid-float-breakpoint" class="form-control"/>
-    <p class="help-block">Point at which the navbar becomes uncollapsed.</p>
+    <input id="input-@grid-float-breakpoint" type="text" value="50px" data-var="@grid-float-breakpoint" class="form-control"/>
+    <p class="help-block">Point at which the navbar becomes uncollapsed. (set to a minimum at which no device will collapse the menu)</p>
   </div>
   <div class="clearfix"></div>
   <div class="col-xs-4">
