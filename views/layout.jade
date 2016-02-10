@@ -85,7 +85,13 @@ html
                             ul(class="nav navbar-nav")
                                 if pages
                                     each page, pageIndex in pages
-                                        if pageIndex > 9
+                                        if pageIndex > 11
+                                            li.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
+                                                if page.isSingleEntity
+                                                    a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                else
+                                                    a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                        else if pageIndex > 9
                                             li.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
                                                 if page.isSingleEntity
                                                     a(href='/#{page.Name}') #{page.EntityNameSingular}
@@ -123,76 +129,85 @@ html
                                                     a(href='/#{page.Name}') #{page.EntityNamePlural}
 
                                     if pages.length > 2
+                                        -var liClasses = "dropdown dropdown-more"
                                         if pages.length > 12
-                                            li.dropdown.dropdown-more
-                                        else if pages.length > 9
-                                            li.dropdown.dropdown-more.hidden-xxl
-                                        else if pages.length > 7
-                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl
-                                        else if pages.length > 5
-                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg
-                                        else if pages.length > 3
-                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg.hidden-md
-                                        else if pages.length > 1
-                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm
+                                            -liClasses += ""
+                                        else if pages.length > 10
+                                            -liClasses += " hidden-xxl"
+                                        else if pages.length > 8
+                                            -liClasses += " hidden-xxl hidden-xl"
+                                        else if pages.length > 6
+                                            -liClasses += " hidden-xxl hidden-xl hidden-lg"
+                                        else if pages.length > 4
+                                            -liClasses += " hidden-xxl hidden-xl hidden-lg hidden-md"
                                         else
-                                            li.dropdown.dropdown-more.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
-
-                                        a(href="#",class="dropdown-toggle", data-toggle="dropdown") Mehr&nbsp;
-                                            b.caret
-                                        ul.dropdown-menu
-                                            each page, pageIndex in pages
-                                                if pageIndex > 9
-                                                    li
-                                                        if page.isSingleEntity
-                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                        else
-                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                else if pageIndex > 7
-                                                    li.hidden-xl.hidden-lg
-                                                        if page.isSingleEntity
-                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                        else
-                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                else if pageIndex > 5
-                                                    li.hidden-xl.hidden-lg
-                                                        if page.isSingleEntity
-                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                        else
-                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                else if pageIndex > 3
-                                                    li.hidden-xl.hidden-lg.hidden-md
-                                                        if page.isSingleEntity
-                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                        else
-                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                else if pageIndex > 1
-                                                    li.hidden-xl.hidden-lg.hidden-md.hidden-sm
-                                                        if page.isSingleEntity
-                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                        else
-                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
-                                                else
-                                                    li.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
-                                                        if page.isSingleEntity
-                                                            a(href='/#{page.Name}') #{page.EntityNameSingular}
-                                                        else
-                                                            a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                            -liClasses += " hidden-xxl hidden-xl hidden-lg hidden-md hidden-sm"
+                                        li(class=liClasses)
+                                            a(href="#",class="dropdown-toggle", data-toggle="dropdown") Mehr&nbsp;
+                                                b.caret
+                                            ul.dropdown-menu
+                                                each page, pageIndex in pages
+                                                    if pageIndex > 11
+                                                        li
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                    else if pageIndex > 9
+                                                        li.hidden-xxl
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                    else if pageIndex > 7
+                                                        li.hidden-xxl.hidden-xl
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                    else if pageIndex > 5
+                                                        li.hidden-xxl.hidden-xl.hidden-lg
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                    else if pageIndex > 3
+                                                        li.hidden-xxl.hidden-xl.hidden-lg.hidden-md
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                    else if pageIndex > 1
+                                                        li.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
+                                                    else
+                                                        li.hidden-xxl.hidden-xl.hidden-lg.hidden-md.hidden-sm.hidden-xs
+                                                            if page.isSingleEntity
+                                                                a(href='/#{page.Name}') #{page.EntityNameSingular}
+                                                            else
+                                                                a(href='/#{page.Name}') #{page.EntityNamePlural}
 
                             if user != null && user.menu
                                 form(action="/logoff", class="nav navbar-nav navbar-right adjusted-nav-right", id="logoutForm", method="post")
                                     input(type="hidden", value="#{csrfToken}" name="_csrf")
                                     ul(class="nav navbar-nav")
                                         if user.menu.admin
-                                            li(id="fat-menu-admin", class="dropdown")
-                                                a(href="#", id="drop3", role="button", class="dropdown-toggle", data-toggle="dropdown") Verwaltung
-                                                    span.caret
-                                                ul(class="dropdown-menu", role="menu", aria-labelledby="drop3")
-                                                    li.hidden-lg
-                                                        a(href="/loginManageAccount", title="Manage") #{user.UserName} bearbeiten
-                                                    li.hidden-lg
-                                                        a(href="javascript:document.getElementById('logoutForm').submit()") Abmelden
-                                                    li.hidden-lg.divider(role="presentation")
+                                            -var adminLiClasses="dropdown"
+                                        else
+                                            -var adminLiClasses="dropdown hidden-lg hidden-xl hidden-xxl"
+                                        li(id="fat-menu-admin", class=adminLiClasses)
+                                            a(href="#", id="drop3", role="button", class="dropdown-toggle", data-toggle="dropdown") Verwaltung
+                                                span.caret
+                                            ul(class="dropdown-menu", role="menu", aria-labelledby="drop3")
+                                                li.hidden-lg.hidden-xl.hidden-xxl
+                                                    a(href="/loginManageAccount", title="Manage") #{user.UserName} bearbeiten
+                                                li.hidden-lg.hidden-xl.hidden-xxl
+                                                    a(href="javascript:document.getElementById('logoutForm').submit()") Abmelden
+                                                if user.menu.admin
+                                                    li.hidden-lg.hidden-xl.hidden-xxl.divider(role="presentation")
                                                     if user.menu.admin.settings
                                                         li(role="presentation")
                                                             a(role="menuitem", tabindex="-1", href="/admin/settings") Einstellungen
