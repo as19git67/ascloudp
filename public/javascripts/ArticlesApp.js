@@ -282,8 +282,8 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     article.text = article.text.substr(0, $scope.article_schema.text.maxLength);
 
                     articleService.saveArticle(article).then(function () {
+                        // navigate back to "base" page
                         location.href = "/" + page_id;
-                        location.reload();
                     }, function (error) {
                         if (error) {
                             $scope.errorMessage = error.toString();
@@ -299,6 +299,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             };
             $scope.deleteArticle = function ($event) {
                 articleService.deleteArticle($scope.article).then(function () {
+                    // navigate back to "base" page
                     location.href = "/" + page_id;
                 }, function (error) {
                     if (error) {
@@ -538,7 +539,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
             $('.article-edit-app .nav.nav-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
                 //e.target // newly activated tab
                 //e.relatedTarget // previous active tab
-                console.log("Tab activated");
                 changeHeight();
             });
         }

@@ -196,16 +196,14 @@
                             </div>
                         </div>
                         <div role="tabpanel" class="tab-pane" id="articlePreview">
-                            <div class="row row-use-remaining-space">
-                                <div class="markdown-area hidden-xs">
-                                    <div class="form-group">
-                                        <div class="markdown-panel form-control">
-                                            <div class="result-html" ng-bind-html="trustedTextAsHtml"
+                            <div class="row row-use-remaining-space" resize>
+                                <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                                  <div class="form-group">
+                                    <div class="result-html" ng-bind-html="trustedTextAsHtml"
                                                  ng-mouseover="startSyncResultScroll()"
                                                  ng-touchstart="startSyncResultScroll()" asscroll>
-                                            </div>
-                                        </div>
                                     </div>
+                                  </div>
                                 </div>
                             </div>
                         </div>
@@ -295,7 +293,4 @@
         </div>
     </div>
 </div>
-
-
-
 
