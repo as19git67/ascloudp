@@ -505,15 +505,18 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         return {
             restrict: 'A',
             link: function (scope, elem, attrs) {
-                elem.on('scroll', function (evt) {
-                    if ($(evt.target).hasClass('markdown-source')) {
-                        scope.srcScrolled();
-                    } else {
-                        if ($(evt.target).hasClass('result-html')) {
-                            scope.resultScrolled();
-                        }
-                    }
+                $('.article-edit-app .nav.nav-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+
                 });
+                //elem.on('scroll', function (evt) {
+                //    if ($(evt.target).hasClass('markdown-source')) {
+                //        scope.srcScrolled();
+                //    } else {
+                //        if ($(evt.target).hasClass('result-html')) {
+                //            scope.resultScrolled();
+                //        }
+                //    }
+                //});
             }
         }
     })
