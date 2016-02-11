@@ -505,8 +505,8 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         return {
             restrict: 'A',
             link: function (scope, elem, attrs) {
-                $('.article-edit-app .nav.nav-tabs a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-
+                elem.find('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                    console.log("Target tab: ", e.target);
                 });
                 //elem.on('scroll', function (evt) {
                 //    if ($(evt.target).hasClass('markdown-source')) {

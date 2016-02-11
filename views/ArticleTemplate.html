@@ -50,7 +50,7 @@
                         {{errorMessage}}
                     </div>
 
-                    <ul class="nav nav-tabs" role="tablist">
+                    <ul class="nav nav-tabs" role="tablist" asscroll>
                         <li role="presentation" class="active"><a href="#articleHeader" aria-controls="Daten" role="tab" data-toggle="tab">Daten</a></li>
                         <li role="presentation"><a href="#articleText" aria-controls="Text" role="tab" data-toggle="tab">Text</a></li>
                         <li role="presentation"><a href="#articlePreview" aria-controls="Vorschau" role="tab" data-toggle="tab">Vorschau</a></li>
@@ -182,7 +182,7 @@
                                                           ng-change="renderMarkdown()"
                                                           ng-mouseover="startSyncSrcScroll()"
                                                           ng-touchstart="startSyncSrcScroll()"
-                                                          asscroll>
+                                                          >
                                                 </textarea>
                                         </div>
                                         <div class="markdown-panel-footer panel-footer">
@@ -201,7 +201,7 @@
                                   <div class="form-group">
                                     <div class="result-html" ng-bind-html="trustedTextAsHtml"
                                                  ng-mouseover="startSyncResultScroll()"
-                                                 ng-touchstart="startSyncResultScroll()" asscroll>
+                                                 ng-touchstart="startSyncResultScroll()">
                                     </div>
                                   </div>
                                 </div>
