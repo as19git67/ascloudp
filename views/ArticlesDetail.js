@@ -63,9 +63,10 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                     });
                 } else {
                     console.log("ArticleItem with Article_id=" + req.params.id + " does not exist");
-                    var err = new Error("Wrong Article_id");
-                    err.status = 404;
-                    next(err);
+                    res.redirect('/' + page.Name);
+                    //var err = new Error("Wrong Article_id");
+                    //err.status = 404;
+                    //next(err);
                 }
             }).catch(function (error) {
                 console.log("Error while retrieving ArticleItem from the database: " + error);
