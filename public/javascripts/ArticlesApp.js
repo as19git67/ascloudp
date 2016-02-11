@@ -16,6 +16,7 @@ $.extend($.expr[":"], {
 // That's a bit dirty to process each line everytime, but ok for demo.
 // Optimizations are required only for big texts.
 function buildScrollMap() {
+    console.log("building scroll map");
     var i, offset, nonEmptyList, pos, a, b, lineHeightMap, linesCount,
         acc, sourceLikeDiv, textarea = $('.markdown-source'),
         _scrollMap;
@@ -357,6 +358,7 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     lineNo, posTo;
 
                 lineNo = Math.floor(textarea.scrollTop() / lineHeight);
+
                 if (!$scope.scrollMap) {
                     $scope.scrollMap = buildScrollMap();
                 }
@@ -365,7 +367,6 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                     scrollTop: posTo
                 }, 100, 'linear');
             }, 150, {maxWait: 150});
-
             // Synchronize scroll position from result to source
             $scope.syncSrcScroll = _.debounce(function () {
                 var resultHtml = $('.result-html'),
@@ -402,24 +403,26 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
                 }, 100, 'linear');
             }, 150, {maxWait: 150});
 
-            $scope.srcScrolled = function () {
-                if ($scope.syncDirSrcToResult === true) {
-                    $scope.syncResultScroll();
+            $scope.setResultScrollPos = function (lineNo) {
+                if (lineNo !== undefined) {
+                    if (!$scope.scrollMap) {
+                        $scope.scrollMap = buildScrollMap();
+                    }
+                    var posTo = $scope.scrollMap[lineNo];
+                    $('.result-html').stop(true).animate({
+                        scrollTop: posTo
+                    }, 100, 'linear');
                 }
             };
 
-            $scope.resultScrolled = function () {
-                if ($scope.syncDirSrcToResult === false) {
-                    $scope.syncSrcScroll();
-                }
-            };
+            $scope.setSrcScrollPos = function (lineNo) {
+                var textarea = $('.markdown-source');
+                var lineHeight = parseFloat(textarea.css('line-height'));
 
-            $scope.startSyncResultScroll = function ($event) {
-                $scope.syncDirSrcToResult = false;
-            };
+                textarea.stop(true).animate({
+                    scrollTop: lineHeight * lineNo
+                }, 100, 'linear');
 
-            $scope.startSyncSrcScroll = function ($event) {
-                $scope.syncDirSrcToResult = true;
             };
 
             $scope.renderMarkdown = function () {
@@ -505,8 +508,54 @@ articleEditApp.controller('articleEditCtrl', ['$sce', '$log', '$scope', '$cookie
         return {
             restrict: 'A',
             link: function (scope, elem, attrs) {
+                elem.find('a[data-toggle="tab"]').on('show.bs.tab', function (e) {
+                    var tab = $(e.target).attr('href');
+                    console.log("About to show " + tab);
+                    if (tab === '#articleText') {
+                        var resultHtml = $('.result-html');
+                        var scrollTop = resultHtml.scrollTop();
+
+                        if (!scope.scrollMap) {
+                            scope.scrollMap = buildScrollMap();
+                        }
+
+                        var lines = Object.keys(scope.scrollMap);
+
+                        if (lines.length < 1) {
+                            scope.resultLineNo = undefined;
+                            return;
+                        }
+
+                        var line = lines[0];
+
+                        for (var i = 1; i < lines.length; i++) {
+                            if (scope.scrollMap[lines[i]] < scrollTop) {
+                                line = lines[i];
+                                continue;
+                            }
+                            break;
+                        }
+                        console.log("Result ist gescrollt zu Zeile " + line);
+                        scope.resultLineNo = line;
+                    } else {
+                        if (tab === '#articlePreview') {
+                            var textarea = elem.parent().find('.markdown-source');
+                            var lineHeight = parseFloat(textarea.css('line-height'));
+                            scope.srcLineNo = Math.floor(textarea.scrollTop() / lineHeight);
+                            console.log("Source ist gescrollt zu Zeile " + scope.srcLineNo);
+                        }
+                    }
+                });
                 elem.find('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
-                    console.log("Target tab: ", e.target);
+                    var tab = $(e.target).attr('href');
+                    console.log("Tab showed: " + tab);
+                    if (tab === '#articleText') {
+                        scope.setSrcScrollPos(scope.resultLineNo);
+                    } else {
+                        if (tab === '#articlePreview') {
+                            scope.setResultScrollPos(scope.srcLineNo);
+                        }
+                    }
                 });
                 //elem.on('scroll', function (evt) {
                 //    if ($(evt.target).hasClass('markdown-source')) {
