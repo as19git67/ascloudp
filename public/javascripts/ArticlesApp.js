@@ -250,6 +250,15 @@ articleEditApp.controller('articleEditCtrl',
 
             $scope.editorHeight = $(window).height() - 50;
 
+            var inputEls = $('.input-date>input');
+            if (inputEls.prop('type') === 'date') {
+                $scope.useDatePicker = false;
+            } else {
+                $scope.useDatePicker = true;
+                //$('p.input-date').addClass('hidden');
+                //$('p.input-date-picker').removeClass('hidden');
+            }
+
             $scope.loadArticle = function (id) {
                 $scope.errorMessage = undefined;
                 var promise = articleService.getArticle(id);
@@ -259,6 +268,11 @@ articleEditApp.controller('articleEditCtrl',
                         $scope.article_schema = payload.article_schema;
                         $scope.article_images = payload.article_images;
 
+                        if (!$scope.useDatePicker) {
+                            $scope.article.date_asDate = new Date($scope.article.date);
+                            $scope.article.publish_start_asDate = new Date($scope.article.publish_start);
+                            $scope.article.publish_end_asDate = new Date($scope.article.publish_end);
+                        }
                         if ($scope.article.text) {
                             $scope.renderMarkdown();
                         }
@@ -370,9 +384,15 @@ articleEditApp.controller('articleEditCtrl',
                     article.text = "";
                 }
                 if (article.leadText) {
-                    article.date = makeMidnightUtc($scope.article.date);
-                    article.publish_start = makeMidnightUtc($scope.article.publish_start);
-                    article.publish_end = makeMidnightUtc($scope.article.publish_end);
+                    if ($scope.useDatePicker) {
+                        article.date = makeMidnightUtc($scope.article.date);
+                        article.publish_start = makeMidnightUtc($scope.article.publish_start);
+                        article.publish_end = makeMidnightUtc($scope.article.publish_end);
+                    } else {
+                        article.date = makeMidnightUtc($scope.article.date_asDate);
+                        article.publish_start = makeMidnightUtc($scope.article.publish_start_asDate);
+                        article.publish_end = makeMidnightUtc($scope.article.publish_end_asDate);
+                    }
                     var maxArticleLength = $scope.article_schema.text.maxLength;
                     article.text = article.text.substr(0, $scope.article_schema.text.maxLength);
 
