@@ -14,7 +14,8 @@ block content
     if !Records || Records.length == 0
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen
 
-    each record in Records
+    each record, recIndex in Records
+        -var tabIndex = 100 + recIndex
         div(class="media articleListItem", data-id='#{record.article_id}')
             a(id="#{record.article_id}")
             if record.image
@@ -30,7 +31,7 @@ block content
                         a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
                     if canEdit
                         a(href="#{page.Name}/#{record.article_id}?edit")
-                            span.glyphicon.glyphicon-edit
+                            span.glyphicon.glyphicon-edit(tabindex="#{tabIndex}")
                 if record.notPublished
                     p.text-warning
                         strong Dieser Artikel wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
