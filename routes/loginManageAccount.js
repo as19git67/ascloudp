@@ -59,11 +59,11 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                 }
                                 res.render('loginManageAccount', responseData);
                             }).catch(function (error) {
-                                console.log("Error while updating user in the database: " + error);
-                                var err = new Error(error);
-                                err.status = 500;
-                                next(err);
-                            });
+                            console.log("Error while updating user in the database: " + error);
+                            var err = new Error(error);
+                            err.status = 500;
+                            next(err);
+                        });
                     }
 
                     if (userModel) {
@@ -128,8 +128,8 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                     ProviderKey: providerKey,
                     User_id: user_id
                 }).fetch({
-                        withRelated: ['User']
-                    }).then(function (userLogin) {
+                    withRelated: ['User']
+                }).then(function (userLogin) {
                         model.getPagesForUser(req.user).then(function (pages) {
                             if (userLogin) {
                                 var userModel = userLogin.related('User');
@@ -144,27 +144,27 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
                                         }
                                     ).save().then(function () {
 
-                                            // reload user and render same page again
+                                        // reload user and render same page again
 
-                                            new User({'id': user_id}).fetch({
-                                                withRelated: ['UserLogin']
-                                            }).then(function (userModel) {
-                                                if (userModel) {
-                                                    var responseData = prepareResponseDataFromUser(userModel, req);
-                                                    responseData.info = "Der " + provider + " Login wurde entfernt.";
-                                                    res.render('loginManageAccount', responseData);
-                                                } else {
-                                                    console.log("Can't manage user: user not found in database.");
-                                                    res.redirect('/');
-                                                }
+                                        new User({'id': user_id}).fetch({
+                                            withRelated: ['UserLogin']
+                                        }).then(function (userModel) {
+                                            if (userModel) {
+                                                var responseData = prepareResponseDataFromUser(userModel, req);
+                                                responseData.info = "Der " + provider + " Login wurde entfernt.";
+                                                res.render('loginManageAccount', responseData);
+                                            } else {
+                                                console.log("Can't manage user: user not found in database.");
+                                                res.redirect('/');
+                                            }
 
-                                            }).catch(function (error) {
-                                                console.log("Error while accessing users in the database: " + error);
-                                                var err = new Error(error);
-                                                err.status = 500;
-                                                next(err);
-                                            });
+                                        }).catch(function (error) {
+                                            console.log("Error while accessing users in the database: " + error);
+                                            var err = new Error(error);
+                                            err.status = 500;
+                                            next(err);
                                         });
+                                    });
                                 });
                             }
                             else {
@@ -192,6 +192,10 @@ router.post('/', passportStrategies.ensureAuthenticated, function (req, res, nex
 });
 
 function prepareResponseDataFromUser(userModel, pages, req) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var appName = config.get('appName');
     var strategies = passportStrategies.getEnabledStrategies();
     var canAssociateWithAzure = strategies.azure;
@@ -235,7 +239,7 @@ function prepareResponseDataFromUser(userModel, pages, req) {
         });
     }
     var responseData = {
-        csrfToken: req.csrfToken(),
+        csrfToken: csrfToken,
         bootstrapTheme: config.get('bootstrapStyle'),
         appName: appName,
         title: 'Benutzereinstellungen',

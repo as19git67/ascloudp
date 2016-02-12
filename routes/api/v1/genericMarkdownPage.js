@@ -19,8 +19,11 @@ var knex = model.bookshelf.knex;
 function respondWithGenericMarkdownPageData(req, res, genericMarkdownPage, genericMarkdownPageAssets) {
     getMarkdownPageSchema().then(function (markdownPage_schema) {
 
-        var csrfToken = req.csrfToken();
-        res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+            res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+        }
         res.json(
             {
                 markdownPage: {
@@ -41,8 +44,11 @@ function respondWithGenericMarkdownPageData(req, res, genericMarkdownPage, gener
 module.exports.get = function (req, res) {
     if (req.query && req.query.type && req.query.type == "schema") {
         getMarkdownPageSchema().then(function (markdownPage_schema) {
-            var csrfToken = req.csrfToken();
-            res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+            var csrfToken;
+            if (req.csrfToken) {
+                csrfToken = req.csrfToken();
+                res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+            }
             res.json(
                 {
                     markdownPage_schema: markdownPage_schema
@@ -129,8 +135,11 @@ module.exports.getAssets = function (req, res) {
                         });
                     });
                 }
-                var csrfToken = req.csrfToken();
-                res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+                var csrfToken;
+                if (req.csrfToken) {
+                    csrfToken = req.csrfToken();
+                    res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+                }
                 res.json({article_images: articleImages}
                 );
             })
@@ -356,24 +365,24 @@ module.exports.postImage = function (req, res) {
                                                                                     valid_start: new Date()
                                                                                 }
                                                                             ).save().then(function (savedImage) {
-                                                                                    console.log("Image with id " + savedImage.get('id') + " saved");
-                                                                                    removeChunkFiles();
-                                                                                    //res.statusCode = 200; // OK
-                                                                                    res.json(
-                                                                                        {
-                                                                                            id: savedImage.get('id'),
-                                                                                            Article_id: savedImage.get('Article_id'),
-                                                                                            MimeType: savedImage.get('MimeType'),
-                                                                                            Filename: savedImage.get('Filename'),
-                                                                                            Size: savedImage.get('Size'),
-                                                                                            flowIdentifier: flowIdentifier
-                                                                                        });
-                                                                                }).catch(function (error) {
-                                                                                    console.log("Error while saving image in table ArticleImages: ", error);
-                                                                                    removeChunkFiles();
-                                                                                    res.statusCode = 500;
-                                                                                    res.send('500 Saving image in database failed');
-                                                                                });
+                                                                                console.log("Image with id " + savedImage.get('id') + " saved");
+                                                                                removeChunkFiles();
+                                                                                //res.statusCode = 200; // OK
+                                                                                res.json(
+                                                                                    {
+                                                                                        id: savedImage.get('id'),
+                                                                                        Article_id: savedImage.get('Article_id'),
+                                                                                        MimeType: savedImage.get('MimeType'),
+                                                                                        Filename: savedImage.get('Filename'),
+                                                                                        Size: savedImage.get('Size'),
+                                                                                        flowIdentifier: flowIdentifier
+                                                                                    });
+                                                                            }).catch(function (error) {
+                                                                                console.log("Error while saving image in table ArticleImages: ", error);
+                                                                                removeChunkFiles();
+                                                                                res.statusCode = 500;
+                                                                                res.send('500 Saving image in database failed');
+                                                                            });
                                                                         }
                                                                     });
                                                                 }
@@ -524,30 +533,30 @@ module.exports.put = function (req, res) {
                             publish_end: req.body.publish_end,
                             valid_start: now
                         }).save(null, {transacting: t}).then(function (savedArticleItem) {
-                                var userName = req.user.UserName ? req.user.UserName : req.user.id;
-                                new Audit({
-                                        ChangedAt: new Date(),
-                                        Table: savedArticleItem.tableName,
-                                        ChangedBy: userName,
-                                        Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
-                                    }
-                                ).save(null, {transacting: t}).then(function () {
-                                        t.commit(savedArticleItem);
-                                        // goes to then of transaction
+                            var userName = req.user.UserName ? req.user.UserName : req.user.id;
+                            new Audit({
+                                    ChangedAt: new Date(),
+                                    Table: savedArticleItem.tableName,
+                                    ChangedBy: userName,
+                                    Description: "ArticleItem changed by user " + userName + ". Id of new item in ArticleItem is " + savedArticleItem.id
+                                }
+                            ).save(null, {transacting: t}).then(function () {
+                                t.commit(savedArticleItem);
+                                // goes to then of transaction
 
-                                    }).catch(function (error) {
-                                        console.log("Error while saving Audit for new ArticleItem to database:", error);
-                                        console.log("Roll back transaction");
-                                        t.rollback({
-                                            statusCode: 500,
-                                            message: 'Error 500: saving of article to database failed'
-                                        });
-                                    });
                             }).catch(function (error) {
-                                console.log("Error while saving new ArticleItem to database:", error);
+                                console.log("Error while saving Audit for new ArticleItem to database:", error);
                                 console.log("Roll back transaction");
-                                t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
+                                t.rollback({
+                                    statusCode: 500,
+                                    message: 'Error 500: saving of article to database failed'
+                                });
                             });
+                        }).catch(function (error) {
+                            console.log("Error while saving new ArticleItem to database:", error);
+                            console.log("Roll back transaction");
+                            t.rollback({statusCode: 500, message: 'Error 500: saving of article to database failed'});
+                        });
                     }).catch(function (error) {
                         console.log("Error while updating ArticleItem in database:", error);
                         console.log("Roll back transaction");
@@ -724,41 +733,41 @@ module.exports.delete = function (req, res) {
                         ChangedBy: userName,
                         Description: "ArticleItem deleted by user " + userName + ". Id of deleted item in ArticleItem is " + savedArticleItem.id
                     }).save(null, {transacting: t}).then(function () {
-                            new ArticleImage()
-                                .where({'Article_id': articleId, 'valid_end': null})
-                                .fetchAll({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
-                                    if (images) {
-                                        new Audit({
-                                            ChangedAt: new Date(),
-                                            Table: new ArticleImage().tableName,
-                                            ChangedBy: userName,
-                                            Description: "All ArticleImages for article " + articleId + " deleted by user " + userName
-                                        }).save(null, {transacting: t}).then(function () {
-                                                var now = new Date();
-                                                images.each(function (image) {
-                                                    image.set('valid_end', now);
-                                                });
-                                                images.invokeThen('save', null, {transacting: t}).then(function () {
-                                                    t.commit(savedArticleItem);
-                                                }).catch(function (error) {
-                                                    console.log("Error while updating ArticleImages for article with id " + articleId + " from database:", error);
-                                                    t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
-                                                });
-                                            }).catch(function (error) {
-                                                console.log("Error while updating Audit for ArticleImages in database:", error);
-                                                t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
-                                            });
-                                    } else {
+                        new ArticleImage()
+                            .where({'Article_id': articleId, 'valid_end': null})
+                            .fetchAll({columns: ['id', 'Article_id', 'valid_end']}).then(function (images) {
+                            if (images) {
+                                new Audit({
+                                    ChangedAt: new Date(),
+                                    Table: new ArticleImage().tableName,
+                                    ChangedBy: userName,
+                                    Description: "All ArticleImages for article " + articleId + " deleted by user " + userName
+                                }).save(null, {transacting: t}).then(function () {
+                                    var now = new Date();
+                                    images.each(function (image) {
+                                        image.set('valid_end', now);
+                                    });
+                                    images.invokeThen('save', null, {transacting: t}).then(function () {
                                         t.commit(savedArticleItem);
-                                    }
+                                    }).catch(function (error) {
+                                        console.log("Error while updating ArticleImages for article with id " + articleId + " from database:", error);
+                                        t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                                    });
                                 }).catch(function (error) {
-                                    console.log("Error while reading ArticleImages from database:", error);
+                                    console.log("Error while updating Audit for ArticleImages in database:", error);
                                     t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
                                 });
+                            } else {
+                                t.commit(savedArticleItem);
+                            }
                         }).catch(function (error) {
-                            console.log("Error while saving Audit for updated ArticleItem in database:", error);
+                            console.log("Error while reading ArticleImages from database:", error);
                             t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
                         });
+                    }).catch(function (error) {
+                        console.log("Error while saving Audit for updated ArticleItem in database:", error);
+                        t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});
+                    });
                 }).catch(function (error) {
                     console.log("Error while updating ArticleItem in database:", error);
                     t.rollback({statusCode: 500, message: 'Error 500: deleting of article in database failed'});

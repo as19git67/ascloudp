@@ -81,6 +81,10 @@ function prepareResponse(userId) {
 }
 
 router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+        }
         var userId = req.params.userId;
         if (userId) {
             model.getPagesForUser(req.user).then(function (pages) {
@@ -91,7 +95,7 @@ router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                         res.redirect(userObj);
                     } else {
                         res.render('usermanagementuseredit', {
-                            csrfToken: req.csrfToken(),
+                            csrfToken: csrfToken,
                             bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: title,
@@ -132,6 +136,10 @@ function makeRoleNamesFormatted(roles, allRoleNamesById) {
 
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     if (req.user) {
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+        }
         model.getPagesForUser(req.user).then(function (pages) {
             var userId = req.body.User_id;
             if (userId) {
@@ -238,7 +246,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                                                     res.redirect(userObj);
                                                                 } else {
                                                                     res.render('usermanagementuseredit', {
-                                                                        csrfToken: req.csrfToken(),
+                                                                        csrfToken: csrfToken,
                                                                         bootstrapTheme: config.get('bootstrapStyle'),
                                                                         appName: appName,
                                                                         title: title,
@@ -261,20 +269,20 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                                             function handleRoleUnassignments() {
                                                                 model.bookshelf.knex('UserRoles').where('User_id', userId).whereIn('Role_id',
                                                                     rolesToRemove).del().then(function () {
-                                                                        var rolesFormatted = makeRoleNamesFormatted(rolesToRemove, allRoleNamesById);
-                                                                        var changeText = "Roles removed from user " + origUserName + " (" + userId + "): " +
-                                                                            rolesFormatted;
-                                                                        new Audit({
-                                                                                ChangedAt: new Date(),
-                                                                                Table: 'UserRoles',
-                                                                                ChangedBy: req.user.UserName,
-                                                                                Description: changeText
-                                                                            }
-                                                                        ).save().then(function () {
-                                                                                renderResponse(savedMessage);
-                                                                            }
-                                                                        );
-                                                                    });
+                                                                    var rolesFormatted = makeRoleNamesFormatted(rolesToRemove, allRoleNamesById);
+                                                                    var changeText = "Roles removed from user " + origUserName + " (" + userId + "): " +
+                                                                        rolesFormatted;
+                                                                    new Audit({
+                                                                            ChangedAt: new Date(),
+                                                                            Table: 'UserRoles',
+                                                                            ChangedBy: req.user.UserName,
+                                                                            Description: changeText
+                                                                        }
+                                                                    ).save().then(function () {
+                                                                            renderResponse(savedMessage);
+                                                                        }
+                                                                    );
+                                                                });
                                                             }
 
                                                             if (rolesToAdd.length > 0) {
@@ -326,7 +334,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                                             }).catch(function (error) {
                                                                 console.log("ERROR while saving user: " + error);
                                                                 res.render('usermanagementuseredit', {
-                                                                    csrfToken: req.csrfToken(),
+                                                                    csrfToken: csrfToken,
                                                                     bootstrapTheme: config.get('bootstrapStyle'),
                                                                     appName: appName,
                                                                     title: title,
@@ -346,7 +354,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                         })
                                         .catch(function (error) {
                                             res.render('usermanagementuseredit', {
-                                                csrfToken: req.csrfToken(),
+                                                csrfToken: csrfToken,
                                                 bootstrapTheme: config.get('bootstrapStyle'),
                                                 appName: appName,
                                                 title: title,
@@ -379,7 +387,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                     }
 
                                     res.render('usermanagementuseredit', {
-                                        csrfToken: req.csrfToken(),
+                                        csrfToken: csrfToken,
                                         bootstrapTheme: config.get('bootstrapStyle'),
                                         appName: appName,
                                         title: title,

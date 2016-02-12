@@ -10,6 +10,10 @@ var appName = config.get('appName');
 
 /* GET loginRegisterNew page. */
 router.get('/', function (req, res) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var email = '';
     if (req.user) {
         var emails = req.user.profile.emails;
@@ -19,7 +23,7 @@ router.get('/', function (req, res) {
     }
     model.getPagesForUser(req.user).then(function (pages) {
         res.render('loginRegisterNew', {
-            csrfToken: req.csrfToken(),
+            csrfToken: csrfToken,
             bootstrapTheme: config.get('bootstrapStyle'),
             appName: appName,
             title: 'Neuen Benutzer registrieren.',
@@ -31,6 +35,10 @@ router.get('/', function (req, res) {
 });
 
 router.post('/', function (req, res, next) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var username = req.body.Email;
     var password = req.body.Password;
     var passwordConfirmation = req.body.ConfirmPassword;
@@ -40,7 +48,7 @@ router.post('/', function (req, res, next) {
     model.getPagesForUser(req.user).then(function (pages) {
         if (password != passwordConfirmation) {
             res.render('loginRegisterNew', {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: 'Benutzerregistrierung',
@@ -57,7 +65,7 @@ router.post('/', function (req, res, next) {
             if (err) {
                 console.log('Fehler bei der Suche nach registriertem Benutzer: ' + username);
                 res.render('loginRegisterNew', {
-                    csrfToken: req.csrfToken(),
+                    csrfToken: csrfToken,
                     bootstrapTheme: config.get('bootstrapStyle'),
                     appName: appName,
                     title: 'Fehler bei der Registrierung.',
@@ -70,7 +78,7 @@ router.post('/', function (req, res, next) {
             else {
                 if (user) {
                     res.render('loginRegisterNew', {
-                        csrfToken: req.csrfToken(),
+                        csrfToken: csrfToken,
                         bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: 'Fehler bei der Benutzerregistrierung.',
@@ -101,7 +109,7 @@ router.post('/', function (req, res, next) {
                                 if (err) {
                                     console.log('Failed to do passport.login with newly registered user: ' + err);
                                     res.render('loginRegisterNew', {
-                                        csrfToken: req.csrfToken(),
+                                        csrfToken: csrfToken,
                                         bootstrapTheme: config.get('bootstrapStyle'),
                                         appName: appName,
                                         title: 'Fehler bei der Benutzerregistrierung',
@@ -120,11 +128,11 @@ router.post('/', function (req, res, next) {
                                 }
                             });
                         }).catch(function (error) {
-                            console.log("Error while saving new user in DB: " + error);
-                            var err = new Error(error);
-                            err.status = 500;
-                            next(err);
-                        });
+                        console.log("Error while saving new user in DB: " + error);
+                        var err = new Error(error);
+                        err.status = 500;
+                        next(err);
+                    });
                 }
             }
         });

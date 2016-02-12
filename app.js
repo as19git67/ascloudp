@@ -57,11 +57,19 @@ var cookieSecret = config.get('cookieSecret');
 var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
 app.use(cookieParser(cookieSecret));
 
-app.use(cookieSession({
+var sessionMW = cookieSession({
     name: config.get('appName'),
     secret: cookieSecret,
+    rolling: true,
+    resave: true,
     maxage: sessionTimeout
-}));
+});
+
+app.use(sessionMW);
+//app.use('/admin', sessionMW);
+//app.use('/login*', sessionMW);
+//app.use('/logoff', sessionMW);
+//app.use('/api', sessionMW);
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/js', express.static(path.join(__dirname, 'bower_components/markdown-it/dist')));
@@ -69,8 +77,14 @@ app.use('/js', express.static(path.join(__dirname, 'bower_components/markdown-it
 app.use(bodyParser({limit: '50mb', defer: true})); // enables multipart form
 
 app.use(passport.initialize());
+
 app.use(passport.session()); // persistent login sessions
 app.use(csrf());
+//app.use('/admin', csrf());
+//app.use('/login*', csrf());
+//app.use('/logoff', csrf());
+//app.use('/api', csrf());
+
 
 app.use('/', routes);
 
@@ -166,21 +180,26 @@ app.use(function (req, res, next) {
                             console.log("Loading view " + viewName + " for model " + m);
                             if (page.isSingleEntity) {
                                 new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
-
+                                    var csrfToken;
+                                    if (req.csrfToken) {
+                                        csrfToken = req.csrfToken();
+                                    }
                                     if (isPost && req.body.save) {
                                         if (!pageContent) {
                                             pageContent = new PageContent({Page_id: page.Name});
                                         }
 
                                         rawMarked = req.body.rawMarked;
-                                        md.renderer.rules.table_open  = function () { return '<table class="table">'; };
+                                        md.renderer.rules.table_open = function () {
+                                            return '<table class="table">';
+                                        };
                                         rawHtml = md.render(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         pageContent.set('Text', rawMarked);
                                         pageContent.save().then(function (savedPageContent) {
                                             res.render(viewName, {
-                                                csrfToken: req.csrfToken(),
+                                                csrfToken: csrfToken,
                                                 bootstrapTheme: config.get('bootstrapStyle'),
                                                 Page_id: page.Name,
                                                 appName: config.get('appName'),
@@ -194,7 +213,7 @@ app.use(function (req, res, next) {
                                         }).catch(function (error) {
                                             console.log("Error while saving page content: " + error);
                                             res.render(viewName, {
-                                                csrfToken: req.csrfToken(),
+                                                csrfToken: csrfToken,
                                                 bootstrapTheme: config.get('bootstrapStyle'),
                                                 Page_id: page.Name,
                                                 appName: config.get('appName'),
@@ -216,12 +235,14 @@ app.use(function (req, res, next) {
                                             console.log("Warning: rendering page " + page.Name + " without content");
                                             rawMarked = "";
                                         }
-                                        md.renderer.rules.table_open  = function () { return '<table class="table">'; };
+                                        md.renderer.rules.table_open = function () {
+                                            return '<table class="table">';
+                                        };
                                         rawHtml = md.render(rawMarked);
                                         // add class attribute to all image tags to apply bootstrap styles
                                         rawHtml = rawHtml.replace(/<img\s*src=/g, "<img class=\"img-responsive\" src=");
                                         res.render(viewName, {
-                                            csrfToken: req.csrfToken(),
+                                            csrfToken: csrfToken,
                                             bootstrapTheme: config.get('bootstrapStyle'),
                                             Page_id: page.Name,
                                             appName: config.get('appName'),

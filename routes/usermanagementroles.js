@@ -13,6 +13,10 @@ var rp = new rolePermissions(model.models);
 var appName = config.get('appName');
 
 router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+        }
         var title = 'User Management - Rollen';
 
         model.getPagesForUser(req.user).then(function (pages) {
@@ -37,7 +41,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                         roles.push(roleObj);
                     });
                     res.render('usermanagementroles', {
-                        csrfToken: req.csrfToken(),
+                        csrfToken: csrfToken,
                         bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: title,
@@ -47,19 +51,19 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                     });
                 })
                 .catch(function (error) {
-                    res.render('usermanagementroles', {
-                            csrfToken: req.csrfToken(),
-                            bootstrapTheme: config.get('bootstrapStyle'),
-                            appName: appName,
-                            title: title,
-                            user: req.user,
-                            pages: pages,
-                            error: 'Error: ' + error,
-                            roles: []
-                        }
-                    );
-                }
-            );
+                        res.render('usermanagementroles', {
+                                csrfToken: csrfToken,
+                                bootstrapTheme: config.get('bootstrapStyle'),
+                                appName: appName,
+                                title: title,
+                                user: req.user,
+                                pages: pages,
+                                error: 'Error: ' + error,
+                                roles: []
+                            }
+                        );
+                    }
+                );
         });
     }
 );
@@ -77,12 +81,12 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                         res.redirect('/admin/userManagementRoles');
                     })
                     .catch(function (error) {
-                        console.log("Error while saving new role in the database: " + error);
-                        var err = new Error(error);
-                        err.status = 500;
-                        next(err);
-                    }
-                );
+                            console.log("Error while saving new role in the database: " + error);
+                            var err = new Error(error);
+                            err.status = 500;
+                            next(err);
+                        }
+                    );
             }
             else {
                 console.log("Not saving role without name");

@@ -18,6 +18,10 @@ var rp = new rolePermissions(model.models);
 var appName = config.get('appName');
 
 router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var title = 'User Management - Rollendetails';
     var roleId = req.params.roleId;
 
@@ -69,7 +73,7 @@ router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                     });
 
                     res.render('usermanagementroleedit', {
-                        csrfToken: req.csrfToken(),
+                        csrfToken: csrfToken,
                         bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: title,
@@ -85,14 +89,18 @@ router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                     handleError(errMsg, errMsgDetailed, req, res, {id: roleId});
                 });
             }).catch(function (error) {
-                var errMsg = "Die Rolle konnte wegen eines Fehlers nicht von der Datenbank geladen werden.";
-                var errMsgDetailed = "Error while retrieving role from database. RoleId: " + roleId + ". " + error;
-                handleError(errMsg, errMsgDetailed, req, res, {id: roleId});
-            });
+            var errMsg = "Die Rolle konnte wegen eines Fehlers nicht von der Datenbank geladen werden.";
+            var errMsgDetailed = "Error while retrieving role from database. RoleId: " + roleId + ". " + error;
+            handleError(errMsg, errMsgDetailed, req, res, {id: roleId});
+        });
     });
 });
 
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var title = 'User Management - Rollendetails';
     if (req.user) {
         model.getPagesForUser(req.user).then(function (pages) {
@@ -211,7 +219,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                             console.log("Error while deleting role with id " + roleId + ". Error: " + error);
                                             getProfiles().then(function (profiles) {
                                                 res.render('usermanagementroleedit', {
-                                                    csrfToken: req.csrfToken(),
+                                                    csrfToken: csrfToken,
                                                     bootstrapTheme: config.get('bootstrapStyle'),
                                                     appName: appName,
                                                     title: title,
@@ -263,12 +271,16 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
 });
 
 function handleError(errMsg, errMsgDetailed, req, res, roleObj) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var title = 'User Management - Rollendetails';
     console.log(errMsgDetailed);
     model.getPagesForUser(req.user).then(function (pages) {
         getProfiles().then(function (profiles) {
             res.render('usermanagementroleedit', {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: title,
@@ -281,7 +293,7 @@ function handleError(errMsg, errMsgDetailed, req, res, roleObj) {
         }).catch(function (error) {
             console.log("Error in handleError while getting profiles: " + error);
             res.render('usermanagementroleedit', {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: title,

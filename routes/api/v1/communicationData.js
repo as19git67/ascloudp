@@ -87,6 +87,10 @@ function makePersonContactData(personContactData_id, now, contactTypeName, conta
 }
 
 function putContactData(req, res, contactType, personContactData, contactItemDataObject) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
 
     var contactTypeName = contactType.get('Name');
     var entityClassName;
@@ -131,7 +135,9 @@ function putContactData(req, res, contactType, personContactData, contactItemDat
             // add new PersonContactDataXXXXX record where valid_end is null
             new model.models[entityClassName](personContactData).save().then(function (newPersonContactDataItem) {
                 console.log("New " + contactTypeName + " with PersonContactData_id " + newPersonContactDataItem.get('PersonContactData_id') + " saved");
-                res.setHeader('X-CSRF-Token', req.csrfToken());
+                if (csrfToken) {
+                    res.setHeader('X-CSRF-Token', csrfToken);
+                }
                 var responseObject = makeResponseObject(contactType, newPersonContactDataItem, personContactData);
                 res.json(responseObject);
             }).catch(function (error) {
@@ -169,30 +175,30 @@ function addPersonContactItem(req, res, bodyObjectName, resourceName, contactTyp
                     PersonContactType_id: personContactType_id,
                     Usage: requestDataObject.usage
                 }).fetch().then(function (personContactData) {
-                        if (personContactData) {
-                            // use existing PersonContactData
+                    if (personContactData) {
+                        // use existing PersonContactData
+                        putContactData.call(self, req, res, contactType, personContactData, requestDataObject);
+                    }
+                    else {
+                        // create new PersonContactData record
+                        new PersonContactData({
+                            Person_id: personId,
+                            PersonContactType_id: personContactType_id,
+                            Usage: requestDataObject.usage
+                        }).save().then(function (personContactData) {
                             putContactData.call(self, req, res, contactType, personContactData, requestDataObject);
-                        }
-                        else {
-                            // create new PersonContactData record
-                            new PersonContactData({
-                                Person_id: personId,
-                                PersonContactType_id: personContactType_id,
-                                Usage: requestDataObject.usage
-                            }).save().then(function (personContactData) {
-                                    putContactData.call(self, req, res, contactType, personContactData, requestDataObject);
-                                }).catch(function (error) {
-                                    console.log("Saving PersonContactData failed: " + error);
-                                    res.statusCode = 500;
-                                    res.send('Error 500: Saving PersonContactData failed');
-                                }
-                            );
-                        }
-                    }).catch(function (error) {
-                        console.log("Reading PersonContactData failed: " + error);
-                        res.statusCode = 500;
-                        res.send('Error 500: Reading PersonContactData failed');
-                    });
+                        }).catch(function (error) {
+                                console.log("Saving PersonContactData failed: " + error);
+                                res.statusCode = 500;
+                                res.send('Error 500: Saving PersonContactData failed');
+                            }
+                        );
+                    }
+                }).catch(function (error) {
+                    console.log("Reading PersonContactData failed: " + error);
+                    res.statusCode = 500;
+                    res.send('Error 500: Reading PersonContactData failed');
+                });
             } else {
                 res.statusCode = 404;
                 res.send("Error 404: PersonContactType '" + contactTypeName + "' not found");
@@ -213,7 +219,7 @@ function markPersonContactDataItemAsDeleted(req, res, entityClassName) {
     var personContactData_id = req.params.id;
     var now = new Date();
     new model.models[entityClassName]().query(function (qb) {
-        qb.where({ 'PersonContactData_id': personContactData_id})
+        qb.where({'PersonContactData_id': personContactData_id})
             .andWhere({'valid_end': null});
     }).fetchAll().then(function (allExistingContactItems) {
         if (allExistingContactItems.length > 0) {
@@ -286,6 +292,10 @@ function checkItemIsDirty(itemWithoutValidEnd, contactTypeName, requestDataObjec
 }
 
 function updatePersonContactDataItem(req, res, bodyObjectName, resourceName, contactTypeName, entityClassName) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var personContactData_id = req.params.id;
     var now = new Date();
 
@@ -294,7 +304,7 @@ function updatePersonContactDataItem(req, res, bodyObjectName, resourceName, con
         console.log("Updating " + resourceName + " for PersonContactData " + personContactData_id);
 
         new model.models[entityClassName]().query(function (qb) {
-            qb.where({ 'PersonContactData_id': personContactData_id}).andWhere({'valid_end': null});
+            qb.where({'PersonContactData_id': personContactData_id}).andWhere({'valid_end': null});
             qb.orderBy('valid_start', 'DESC')
         }).fetchAll().then(function (allExistingContactItems) {
             if (allExistingContactItems.length > 0) {
@@ -330,7 +340,9 @@ function updatePersonContactDataItem(req, res, bodyObjectName, resourceName, con
                                 // add new PersonContactDataXXXXX record where valid_end is null and attributes are updated
                                 new model.models[entityClassName](personContactData).save().then(function (newPersonContactDataItem) {
                                     console.log("New " + contactTypeName + " with PersonContactData_id " + newPersonContactDataItem.get('PersonContactData_id') + " saved");
-                                    res.setHeader('X-CSRF-Token', req.csrfToken());
+                                    if (csrfToken) {
+                                        res.setHeader('X-CSRF-Token', csrfToken);
+                                    }
                                     var responseObject = makeResponseObject(contactType, newPersonContactDataItem, personContactData);
                                     res.json(responseObject);
                                 }).catch(function (error) {

@@ -10,6 +10,10 @@ var appName = config.get('appName');
 
 /* GET loginRegister page. */
 router.get('/', function (req, res) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var email = '';
     if (req.user) {
         model.getPagesForUser(req.user).then(function (pages) {
@@ -17,20 +21,20 @@ router.get('/', function (req, res) {
 
             var provider = profile.provider;
             switch (provider) {
-            case 'twitter':
-                email = profile.username;
-                break;
-            default:
-                var emails = req.user.profile.emails;
-                if (emails && emails.length > 0) {
-                    if (emails[0].value) {
-                        email = emails[0].value;
+                case 'twitter':
+                    email = profile.username;
+                    break;
+                default:
+                    var emails = req.user.profile.emails;
+                    if (emails && emails.length > 0) {
+                        if (emails[0].value) {
+                            email = emails[0].value;
+                        }
                     }
-                }
             }
             provider = provider.charAt(0).toUpperCase() + provider.slice(1);
             res.render('loginRegister', {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: 'Registrierung.',
@@ -47,6 +51,10 @@ router.get('/', function (req, res) {
 
 router.post('/', function (req, res, next) {
     if (req.user && req.user.profile) {
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+        }
         model.getPagesForUser(req.user).then(function (pages) {
             var profile = req.user.profile;
             var email = '';
@@ -71,7 +79,7 @@ router.post('/', function (req, res, next) {
             passportStrategies.findByUsername(username, function (err, user) {
                 if (err) {
                     res.render('loginRegister', {
-                        csrfToken: req.csrfToken(),
+                        csrfToken: csrfToken,
                         bootstrapTheme: config.get('bootstrapStyle'),
                         appName: appName,
                         title: 'Registrierung.',
@@ -84,7 +92,7 @@ router.post('/', function (req, res, next) {
                 else {
                     if (user) {
                         res.render('loginRegister', {
-                            csrfToken: req.csrfToken(),
+                            csrfToken: csrfToken,
                             bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: 'Registrierung.',
@@ -111,11 +119,12 @@ router.post('/', function (req, res, next) {
                                 new UserLogin({
                                     LoginProvider: provider,
                                     ProviderKey: providerKey,
-                                    User_id: userId})
+                                    User_id: userId
+                                })
                                     .save()
                                     .then(function (userLoginModel) {
                                         console.log("New UserLogin saved in DB. UserID: " +
-                                                    userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
+                                            userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
                                         // redirect to next page
                                         if (req.body.nexturl) {
                                             res.redirect(req.body.nexturl);
@@ -132,11 +141,11 @@ router.post('/', function (req, res, next) {
                                         });
                                     });
                             }).catch(function (error) {
-                                console.log("Error while saving new user in DB: " + error);
-                                var err = new Error(error);
-                                err.status = 500;
-                                next(err);
-                            });
+                            console.log("Error while saving new user in DB: " + error);
+                            var err = new Error(error);
+                            err.status = 500;
+                            next(err);
+                        });
                     }
                 }
             });

@@ -9,6 +9,10 @@ var ArticleItem = model.models.ArticleItem;
 var appName = config.get('appName');
 
 module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var now = new Date();
     var nowMoment = new moment(now);
 
@@ -16,7 +20,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
 
     if (newMode && canEdit) {
         res.render(page.View + "Edit", {
-            csrfToken: req.csrfToken(),
+            csrfToken: csrfToken,
             bootstrapTheme: config.get('bootstrapStyle'),
             canEdit: canEdit,
             pages: pages,
@@ -48,7 +52,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             page.socialShareEnabledInList = false;
 
             res.render(page.View, {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 canEdit: canEdit,
                 appName: appName,

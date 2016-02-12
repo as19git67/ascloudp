@@ -35,10 +35,10 @@ router.get('/:pageId', passportStrategies.ensureAuthenticated, rp.middleware(2),
                 .then(function (page) {
                     res.render('pagemanagementpageedit', makeResponseObject(req, pages, page));
                 }).catch(function (error) {
-                    var err = new Error(error);
-                    err.status = 500;
-                    next(err);
-                });
+                var err = new Error(error);
+                err.status = 500;
+                next(err);
+            });
         }).catch(function (error) {
                 var err = new Error(error);
                 err.status = 500;
@@ -118,9 +118,9 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
                                                         t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
                                                     });
                                             }).catch(function (error) {
-                                                console.log("ERROR while saving new page with Name=" + page.get('Name'), error);
-                                                t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
-                                            });
+                                            console.log("ERROR while saving new page with Name=" + page.get('Name'), error);
+                                            t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
+                                        });
                                     } else {
                                         console.log("ERROR while saving new page with Name=" + page.get('Name') + ". Missing Model in post data");
                                         t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
@@ -177,9 +177,9 @@ function deletePageContentForPage(transaction, pageName, pageId) {
                         console.log("Page with id " + pageId + " (" + pageName + ") was deleted.");
                         resolve();
                     }).catch(function (error) {
-                        console.log("Error while deleting page with id " + pageId + ". Error: " + error);
-                        reject("Die Seite konnte wegen eines Fehlers nicht gelöscht werden.");
-                    });
+                    console.log("Error while deleting page with id " + pageId + ". Error: " + error);
+                    reject("Die Seite konnte wegen eines Fehlers nicht gelöscht werden.");
+                });
             })
             .catch(function (err) {
                 console.log("Error while deleting PageContent for Page_id=" + pageId + ". Error: " + error);
@@ -449,9 +449,9 @@ router.post('/:pageId', passportStrategies.ensureAuthenticated, rp.middleware(2)
                                                                 t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
                                                             });
                                                     }).catch(function (error) {
-                                                        console.log("ERROR while saving page with id=" + pageId, error);
-                                                        t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
-                                                    });
+                                                    console.log("ERROR while saving page with id=" + pageId, error);
+                                                    t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
+                                                });
                                             } else {
                                                 console.log("ERROR while saving page with id=" + pageId + ". Missing Model in post data");
                                                 t.rollback("Die Seite konnte wegen eines Fehlers nicht gespeichert werden.");
@@ -553,6 +553,10 @@ router.post('/:pageId', passportStrategies.ensureAuthenticated, rp.middleware(2)
 );
 
 function makeResponseObject(req, pages, page) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var pageObj = {
         id: page.get('id'),
         Order: page.get('Order'),
@@ -569,7 +573,7 @@ function makeResponseObject(req, pages, page) {
         pageObj.Model = page.get('Collection');
     }
     var respObj = {
-        csrfToken: req.csrfToken(),
+        csrfToken: csrfToken,
         bootstrapTheme: config.get('bootstrapStyle'),
         appName: appName,
         title: title,

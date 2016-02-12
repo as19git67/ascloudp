@@ -11,9 +11,14 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
     new LinkItem().query(function (qb) {
         qb.leftJoin('Links', 'Links.id', 'LinkItems.Link_id');
         qb.orderBy('Description', 'ASC');
-        qb.where({ 'Page_id': page.Name,  'valid_end': null});
+        qb.where({'Page_id': page.Name, 'valid_end': null});
     }).fetchAll().then(function (dataCollection) {
         var records = [];
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+        }
+
         if (dataCollection && dataCollection.length > 0) {
             records = dataCollection.map(function (dataModel) {
                 var dataObj = {
@@ -23,7 +28,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
                 return dataObj;
             });
             res.render(page.View, {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: page.EntityNamePlural,
@@ -34,7 +39,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
             });
         } else {
             res.render(page.View, {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: page.EntityNamePlural,

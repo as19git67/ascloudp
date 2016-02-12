@@ -12,10 +12,14 @@ var appName = config.get('appName');
 
 /* GET login page. */
 router.get('/', function (req, res) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var strategies = passportStrategies.getEnabledStrategies();
     model.getPagesForUser(req.user).then(function (pages) {
         res.render('login', {
-            csrfToken: req.csrfToken(),
+            csrfToken: csrfToken,
             bootstrapTheme: config.get('bootstrapStyle'),
             appName: appName,
             title: 'Login',
@@ -38,25 +42,26 @@ router.post('/', function (req, res, next) {
         provider = appName;
     }
     switch (provider) {
-    case 'Google':
-        console.log('calling passport.authenticate for google');
-        passport.authenticate('google', {
-                failureRedirect: '/login',
-                scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'},
-            handlePassportAuthenticate(next, res, req))(req, res, next);
-        break;
-    case 'Twitter':
-        passport.authenticate('twitter', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
-        break;
-    case 'Facebook':
-        passport.authenticate('facebook', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
-        break;
-    case 'Azure':
-        res.redirect('/login/auth/azure');
-        break;
-    default:
-        console.log('calling passport.authenticate for local');
-        passport.authenticate('local', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
+        case 'Google':
+            console.log('calling passport.authenticate for google');
+            passport.authenticate('google', {
+                    failureRedirect: '/login',
+                    scope: 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile'
+                },
+                handlePassportAuthenticate(next, res, req))(req, res, next);
+            break;
+        case 'Twitter':
+            passport.authenticate('twitter', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
+            break;
+        case 'Facebook':
+            passport.authenticate('facebook', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
+            break;
+        case 'Azure':
+            res.redirect('/login/auth/azure');
+            break;
+        default:
+            console.log('calling passport.authenticate for local');
+            passport.authenticate('local', {failureRedirect: '/login'}, handlePassportAuthenticate(next, res, req))(req, res, next);
     }
 });
 
@@ -65,7 +70,7 @@ router.post('/', function (req, res, next) {
 //   request.  If authentication fails, the user will be redirected back to the
 //   login page.  Otherwise, the primary route function function will be called,
 //   which, in this example, will redirect the user to the home page.
-router.get('/auth/google/return', passport.authenticate('google', { failureRedirect: '/login' }), function (req, res, next) {
+router.get('/auth/google/return', passport.authenticate('google', {failureRedirect: '/login'}), function (req, res, next) {
     if (req.user) {
         handleExternalLoginCallback(req, res, next);
     } else {
@@ -74,7 +79,7 @@ router.get('/auth/google/return', passport.authenticate('google', { failureRedir
     }
 });
 
-router.get('/auth/twitter/callback', passport.authenticate('twitter', { failureRedirect: '/login' }), function (req, res, next) {
+router.get('/auth/twitter/callback', passport.authenticate('twitter', {failureRedirect: '/login'}), function (req, res, next) {
     if (req.user) {
         handleExternalLoginCallback(req, res, next);
     } else {
@@ -83,7 +88,7 @@ router.get('/auth/twitter/callback', passport.authenticate('twitter', { failureR
     }
 });
 
-router.get('/auth/facebook/callback', passport.authenticate('facebook', { failureRedirect: '/login' }), function (req, res, next) {
+router.get('/auth/facebook/callback', passport.authenticate('facebook', {failureRedirect: '/login'}), function (req, res, next) {
     if (req.user) {
         handleExternalLoginCallback(req, res, next);
     } else {
@@ -93,6 +98,10 @@ router.get('/auth/facebook/callback', passport.authenticate('facebook', { failur
 });
 
 function handlePassportAuthenticate(next, res, req) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     return function (err, user, info) {
         if (err) {
             return next(err);
@@ -101,7 +110,7 @@ function handlePassportAuthenticate(next, res, req) {
             console.log('Authentication failed.');
             model.getPagesForUser(req.user).then(function (pages) {
                 res.render('login', {
-                    csrfToken: req.csrfToken(),
+                    csrfToken: csrfToken,
                     bootstrapTheme: config.get('bootstrapStyle'),
                     appName: config.get('appName'),
                     title: 'Login failed',
@@ -159,11 +168,12 @@ function linkUser(req, res, next) {
             new UserLogin({
                 LoginProvider: provider,
                 ProviderKey: providerKey,
-                User_id: loggedInUserId})
+                User_id: loggedInUserId
+            })
                 .save()
                 .then(function (userLoginModel) {
                     console.log("New UserLogin saved in DB. UserID: " +
-                                userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
+                        userLoginModel.get('User_id') + ", Provider: " + userLoginModel.get('LoginProvider'));
 
                     new Audit({
                             ChangedAt: new Date(),

@@ -20,8 +20,11 @@ var knex = model.bookshelf.knex;
 function respondWithArticleItemData(req, res, articleItem, articleImages) {
     getArticleItemSchema().then(function (article_schema) {
 
-        var csrfToken = req.csrfToken();
-        res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+        var csrfToken;
+        if (req.csrfToken) {
+            csrfToken = req.csrfToken();
+            res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+        }
         res.json(
             {
                 article: {
@@ -48,8 +51,11 @@ function respondWithArticleItemData(req, res, articleItem, articleImages) {
 module.exports.get = function (req, res) {
     if (req.query && req.query.type && req.query.type == "schema") {
         getArticleItemSchema().then(function (article_schema) {
-            var csrfToken = req.csrfToken();
-            res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+            var csrfToken;
+            if (req.csrfToken) {
+                csrfToken = req.csrfToken();
+                res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+            }
             res.json(
                 {
                     article_schema: article_schema
@@ -138,8 +144,11 @@ module.exports.getImages = function (req, res) {
                         });
                     });
                 }
-                var csrfToken = req.csrfToken();
-                res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+                var csrfToken;
+                if (req.csrfToken) {
+                    csrfToken = req.csrfToken();
+                    res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
+                }
                 res.json({article_images: articleImages}
                 );
             })

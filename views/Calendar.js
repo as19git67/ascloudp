@@ -50,6 +50,10 @@ module.exports.getical = function (req, res, next, page, pages, canEdit, collect
 };
 
 module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
     var icalUrl = req.originalUrl;
     var idx = icalUrl.indexOf('?');
     if (idx >= 1) {
@@ -146,7 +150,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                     return dataObj;
                 });
                 res.render(page.View, {
-                    csrfToken: req.csrfToken(),
+                    csrfToken: csrfToken,
                     bootstrapTheme: config.get('bootstrapStyle'),
                     canEdit: canEdit,
                     appName: appName,
@@ -162,7 +166,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 });
             } else {
                 res.render(page.View, {
-                    csrfToken: req.csrfToken(),
+                    csrfToken: csrfToken,
                     bootstrapTheme: config.get('bootstrapStyle'),
                     canEdit: canEdit,
                     appName: appName,
@@ -177,9 +181,9 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
                 });
             }
         }).catch(function (error) {
-            console.log("Error while retrieving Events from the database: " + error);
-            var err = new Error(error);
-            err.status = 500;
-            next(err);
-        });
+        console.log("Error while retrieving Events from the database: " + error);
+        var err = new Error(error);
+        err.status = 500;
+        next(err);
+    });
 };

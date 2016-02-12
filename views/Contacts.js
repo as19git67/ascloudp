@@ -18,9 +18,13 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
         members.listQueryOrderByClause;
 
     knex.raw(query).then(function (persons) {
+            var csrfToken;
+            if (req.csrfToken) {
+                csrfToken = req.csrfToken();
+            }
             var records = members.makeHierarchicalObjectStructureFromPersonResultRecords(persons);
             res.render(page.View, {
-                csrfToken: req.csrfToken(),
+                csrfToken: csrfToken,
                 bootstrapTheme: config.get('bootstrapStyle'),
                 appName: appName,
                 title: page.EntityNamePlural,

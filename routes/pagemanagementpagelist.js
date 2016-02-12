@@ -23,8 +23,12 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                     pages[0].isFirst = true;
                     pages[pages.length - 1].isLast = true;
                 }
+                var csrfToken;
+                if (req.csrfToken) {
+                    csrfToken = req.csrfToken();
+                }
                 res.render('pagemanagementpagelist', {
-                    csrfToken: req.csrfToken(),
+                    csrfToken: csrfToken,
                     bootstrapTheme: config.get('bootstrapStyle'),
                     appName: appName,
                     title: title,
@@ -41,6 +45,10 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
 );
 
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
+    var csrfToken;
+    if (req.csrfToken) {
+        csrfToken = req.csrfToken();
+    }
 
     model.getPages()
         .then(function (pages) {
@@ -105,7 +113,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                                         var newOrder = pagesById[page.id].Order;
                                         page.set('Order', newOrder);
                                         console.log("Set Order=" + newOrder + " of page " + page.id);
-                                        savePromises.push(page.save(null, {transacting: t}).catch(function(err) {
+                                        savePromises.push(page.save(null, {transacting: t}).catch(function (err) {
                                             console.log("ERROR updating page for reordering", err);
                                         }));  // add promise
                                         resolve();
@@ -131,9 +139,9 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                                 console.log("All page orders updated");
                                 t.commit();
                             }).catch(function (error) {
-                                console.log("ERROR while saving page orders", error);
-                                t.rollback(error);
-                            });
+                            console.log("ERROR while saving page orders", error);
+                            t.rollback(error);
+                        });
 
                     })
                     .catch(function (error) {
@@ -150,7 +158,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                             reloadedPages[reloadedPages.length - 1].isLast = true;
                         }
                         res.render('pagemanagementpagelist', {
-                            csrfToken: req.csrfToken(),
+                            csrfToken: csrfToken,
                             bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: title,
@@ -174,7 +182,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), functi
                             reloadedPages[reloadedPages.length - 1].isLast = true;
                         }
                         res.render('pagemanagementpagelist', {
-                            csrfToken: req.csrfToken(),
+                            csrfToken: csrfToken,
                             bootstrapTheme: config.get('bootstrapStyle'),
                             appName: appName,
                             title: title,

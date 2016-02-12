@@ -114,7 +114,11 @@ module.exports.get = function (req, res) {
         });
 
         if (records.length > 0) {
-            res.setHeader('X-CSRF-Token', req.csrfToken());
+            var csrfToken;
+            if (req.csrfToken) {
+                csrfToken = req.csrfToken();
+                res.setHeader('X-CSRF-Token', csrfToken);
+            }
             res.json(
                 {
                     members: records,
