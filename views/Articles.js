@@ -12,45 +12,59 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
     var now = new Date();
     var nowMoment = new moment(now);
 
-    // select all articles
+    var newMode = req.query.new !== undefined;
 
-    new ArticleItem().query(function (qb) {
-        qb.innerJoin('Articles', 'Articles.id', 'ArticleItems.Article_id');
-        if (canEdit) {
-            // in case user can edit, include currently not published articles
-            qb.where({'Page_id': page.Name, 'valid_end': null});
-        } else {
-            qb.where({'Page_id': page.Name, 'valid_end': null})
-                .andWhere('publish_start', '<=', now)
-                .andWhere('publish_end', '>=', now);
-        }
-        qb.orderBy('publish_start', 'DESC');
-    }).fetchAll().then(function (dataCollection) {
-        var records = [];
-        _.each(dataCollection.models, function (articleItem) {
-            records.push(getArticleData(nowMoment, articleItem));
-        });
-
-        page.socialShareEnabled = true; // todo: get from page settings
-        page.socialShareEnabledInList = false;
-
-        res.render(page.View, {
+    if (newMode && canEdit) {
+        res.render(page.View + "Edit", {
             csrfToken: req.csrfToken(),
             bootstrapTheme: config.get('bootstrapStyle'),
             canEdit: canEdit,
-            appName: appName,
-            title: page.EntityNamePlural,
-            user: req.user,
             pages: pages,
-            page: page,
-            Records: records
+            appName: appName,
+            user: req.user,
+            page: page
         });
-    }).catch(function (error) {
-        console.log("Error while retrieving ArticleItems from the database: " + error);
-        var err = new Error(error);
-        err.status = 500;
-        next(err);
-    });
+    } else {
+        // select all articles
+
+        new ArticleItem().query(function (qb) {
+            qb.innerJoin('Articles', 'Articles.id', 'ArticleItems.Article_id');
+            if (canEdit) {
+                // in case user can edit, include currently not published articles
+                qb.where({'Page_id': page.Name, 'valid_end': null});
+            } else {
+                qb.where({'Page_id': page.Name, 'valid_end': null})
+                    .andWhere('publish_start', '<=', now)
+                    .andWhere('publish_end', '>=', now);
+            }
+            qb.orderBy('publish_start', 'DESC');
+        }).fetchAll().then(function (dataCollection) {
+            var records = [];
+            _.each(dataCollection.models, function (articleItem) {
+                records.push(getArticleData(nowMoment, articleItem));
+            });
+
+            page.socialShareEnabled = true; // todo: get from page settings
+            page.socialShareEnabledInList = false;
+
+            res.render(page.View, {
+                csrfToken: req.csrfToken(),
+                bootstrapTheme: config.get('bootstrapStyle'),
+                canEdit: canEdit,
+                appName: appName,
+                title: page.EntityNamePlural,
+                user: req.user,
+                pages: pages,
+                page: page,
+                Records: records
+            });
+        }).catch(function (error) {
+            console.log("Error while retrieving ArticleItems from the database: " + error);
+            var err = new Error(error);
+            err.status = 500;
+            next(err);
+        });
+    }
 };
 
 function getArticleData(nowMoment, articleItem) {
@@ -63,8 +77,7 @@ function getArticleData(nowMoment, articleItem) {
 
     var expectedMatches = 2;
     var re = /.*\!\[(.*)\]\((.*)\).*/;
-    var ma = re.
-        exec(text);
+    var ma = re.exec(text);
     if (!ma) {
         expectedMatches = 1;
         re = /.*\!\((.*)\).*/;
@@ -85,7 +98,9 @@ function getArticleData(nowMoment, articleItem) {
 
     var rawHtml = "";
     if (text && text.length > 0) {
-        md.renderer.rules.table_open  = function () { return '<table class="table">'; };
+        md.renderer.rules.table_open = function () {
+            return '<table class="table">';
+        };
         rawHtml = md.render(text);
     }
     // add class attribute to all image tags to apply bootstrap styles
@@ -94,8 +109,7 @@ function getArticleData(nowMoment, articleItem) {
     article.article_id = articleItem.get(
         'Article_id');
     article.title =
-        articleItem.
-            get('Title');
+        articleItem.get('Title');
     article.leadText = articleItem.get('LeadText');
     if (article.leadText) {
         article.leadText = article.leadText.trim();

@@ -9,7 +9,8 @@ block content
         u #{page.EntityNamePlural}
         if canEdit
             | &nbsp;
-            span(class='articleNew' data-pageid='#{page.Name}') +
+            span(class='articleNew' data-pageid='#{page.Name}')
+                a(href="#{page.Name}?new") +
 
     if !Records || Records.length == 0
         p.text-info Keine #{page.EntityNamePlural} zum Anzeigen

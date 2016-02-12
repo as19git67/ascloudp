@@ -440,8 +440,13 @@ articleEditApp.controller('articleEditCtrl',
                     today.set('second', 0);
                     today.set('millisecond', 0);
                     $scope.article.date = today.toISOString();
-                    $scope.article.publish_start = today.add(2, 'days').toISOString();
-                    $scope.article.publish_end = today.add(9, 'days').toISOString();
+                    $scope.article.publish_start = new moment().add(2, 'days').toISOString();
+                    $scope.article.publish_end = new moment().add(1, 'years').toISOString();
+                    if (!$scope.useDatePicker) {
+                        $scope.article.date_asDate = new Date($scope.article.date);
+                        $scope.article.publish_start_asDate = new Date($scope.article.publish_start);
+                        $scope.article.publish_end_asDate = new Date($scope.article.publish_end);
+                    }
 
                     $scope.current_images_page = 0;
                     $scope.images_pages = [];   // all pages
@@ -554,11 +559,7 @@ articleEditApp.controller('articleEditCtrl',
                     });
             }
             else {
-                console.log("Can't open article because data-id on clicked element is missing");
-            }
-            ui.newItem.click(function () {
-                var clickedElement = $(this);
-
+                //console.log("Can't open article because data-id on clicked element is missing");
                 $scope.newArticle(page_id)
                     .catch(function (error) {
                         if (error) {
@@ -566,8 +567,7 @@ articleEditApp.controller('articleEditCtrl',
                             location.href = "/";
                         }
                     });
-
-            });
+            }
         }
     ])
     .directive('asscroll', function () {
