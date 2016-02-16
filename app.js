@@ -85,7 +85,6 @@ app.use(csrf());
 //app.use('/logoff', csrf());
 //app.use('/api', csrf());
 
-
 app.use('/', routes);
 
 app.use('/admin/databaseManagement', databaseManagement);
@@ -101,6 +100,22 @@ app.use('/logoff', logoff);
 app.use('/loginRegister', loginRegister);
 app.use('/loginRegisterNew', loginRegisterNew);
 app.use('/loginManageAccount', loginManageAccount);
+
+
+app.use(function (req, res, next) {
+    if (!req.user) {
+        console.log("request is anonymous - removing cookies");
+        //var c1 = config.get('appName');
+        //var c2 = config.get('cookieSecret');
+        //res.clearCookie(c1);
+        //res.clearCookie(c2);
+        //req.session = null;
+        res.removeHeader("Set-Cookie");
+        res.removeHeader("Set-Cookie2");
+    }
+    next();
+});
+
 app.use('/images', images);
 
 var rp = new rolePermissions(model.models);
@@ -340,6 +355,7 @@ app.use(function (req, res, next) {
         next();
     }
 });
+
 
 /// error handlers
 
