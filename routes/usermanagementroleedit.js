@@ -19,7 +19,7 @@ var appName = config.get('appName');
 
 router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var title = 'User Management - Rollendetails';
@@ -98,7 +98,7 @@ router.get('/:roleId', passportStrategies.ensureAuthenticated, rp.middleware(2),
 
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var title = 'User Management - Rollendetails';
@@ -272,7 +272,7 @@ router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), funct
 
 function handleError(errMsg, errMsgDetailed, req, res, roleObj) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var title = 'User Management - Rollendetails';

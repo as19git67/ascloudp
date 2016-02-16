@@ -88,7 +88,7 @@ function makePersonContactData(personContactData_id, now, contactTypeName, conta
 
 function putContactData(req, res, contactType, personContactData, contactItemDataObject) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
 
@@ -293,7 +293,7 @@ function checkItemIsDirty(itemWithoutValidEnd, contactTypeName, requestDataObjec
 
 function updatePersonContactDataItem(req, res, bodyObjectName, resourceName, contactTypeName, entityClassName) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var personContactData_id = req.params.id;

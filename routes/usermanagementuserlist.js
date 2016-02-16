@@ -12,7 +12,7 @@ var appName = config.get('appName');
 
 router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res) {
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
         }
         var title = 'User Management - Benutzer';

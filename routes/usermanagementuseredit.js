@@ -82,7 +82,7 @@ function prepareResponse(userId) {
 
 router.get('/:userId', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
         }
         var userId = req.params.userId;
@@ -137,7 +137,7 @@ function makeRoleNamesFormatted(roles, allRoleNamesById) {
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(2), function (req, res, next) {
     if (req.user) {
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
         }
         model.getPagesForUser(req.user).then(function (pages) {

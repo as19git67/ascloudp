@@ -11,7 +11,7 @@ var rp = new rolePermissions(model.models);
 router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res) {
     var appName = config.get('appName');
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     res.render('databaseManagement', {
@@ -26,7 +26,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res) {
     var appName = config.get('appName');
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
 

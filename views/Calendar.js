@@ -51,7 +51,7 @@ module.exports.getical = function (req, res, next, page, pages, canEdit, collect
 
 module.exports.render = function (req, res, next, page, pages, canEdit, collectionModelClass) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var icalUrl = req.originalUrl;

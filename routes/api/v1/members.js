@@ -115,7 +115,7 @@ module.exports.get = function (req, res) {
 
         if (records.length > 0) {
             var csrfToken;
-            if (req.csrfToken) {
+            if (req.csrfToken && req.session) {
                 csrfToken = req.csrfToken();
                 res.setHeader('X-CSRF-Token', csrfToken);
             }

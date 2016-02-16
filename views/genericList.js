@@ -82,7 +82,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
             }
             canPost = false; // todo
             var csrfToken;
-            if (req.csrfToken) {
+            if (req.csrfToken && req.session) {
                 csrfToken = req.csrfToken();
             }
             res.render("genericList", {

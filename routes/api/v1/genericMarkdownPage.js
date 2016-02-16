@@ -20,7 +20,7 @@ function respondWithGenericMarkdownPageData(req, res, genericMarkdownPage, gener
     getMarkdownPageSchema().then(function (markdownPage_schema) {
 
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
             res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
         }
@@ -45,7 +45,7 @@ module.exports.get = function (req, res) {
     if (req.query && req.query.type && req.query.type == "schema") {
         getMarkdownPageSchema().then(function (markdownPage_schema) {
             var csrfToken;
-            if (req.csrfToken) {
+            if (req.csrfToken && req.session) {
                 csrfToken = req.csrfToken();
                 res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
             }
@@ -136,7 +136,7 @@ module.exports.getAssets = function (req, res) {
                     });
                 }
                 var csrfToken;
-                if (req.csrfToken) {
+                if (req.csrfToken && req.session) {
                     csrfToken = req.csrfToken();
                     res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
                 }

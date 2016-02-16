@@ -24,7 +24,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
                     pages[pages.length - 1].isLast = true;
                 }
                 var csrfToken;
-                if (req.csrfToken) {
+                if (req.csrfToken && req.session) {
                     csrfToken = req.csrfToken();
                 }
                 res.render('pagemanagementpagelist', {
@@ -46,7 +46,7 @@ router.get('/', passportStrategies.ensureAuthenticated, rp.middleware(), functio
 
 router.post('/', passportStrategies.ensureAuthenticated, rp.middleware(), function (req, res, next) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
 

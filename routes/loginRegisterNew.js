@@ -11,7 +11,7 @@ var appName = config.get('appName');
 /* GET loginRegisterNew page. */
 router.get('/', function (req, res) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var email = '';
@@ -36,7 +36,7 @@ router.get('/', function (req, res) {
 
 router.post('/', function (req, res, next) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var username = req.body.Email;

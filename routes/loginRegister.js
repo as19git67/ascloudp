@@ -11,7 +11,7 @@ var appName = config.get('appName');
 /* GET loginRegister page. */
 router.get('/', function (req, res) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var email = '';
@@ -52,7 +52,7 @@ router.get('/', function (req, res) {
 router.post('/', function (req, res, next) {
     if (req.user && req.user.profile) {
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
         }
         model.getPagesForUser(req.user).then(function (pages) {

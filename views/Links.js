@@ -15,7 +15,7 @@ module.exports.render = function (req, res, next, page, pages, collectionModelCl
     }).fetchAll().then(function (dataCollection) {
         var records = [];
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
         }
 

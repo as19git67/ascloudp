@@ -13,7 +13,7 @@ var appName = config.get('appName');
 /* GET login page. */
 router.get('/', function (req, res) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var strategies = passportStrategies.getEnabledStrategies();
@@ -99,7 +99,7 @@ router.get('/auth/facebook/callback', passport.authenticate('facebook', {failure
 
 function handlePassportAuthenticate(next, res, req) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     return function (err, user, info) {

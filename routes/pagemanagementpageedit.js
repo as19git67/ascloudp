@@ -554,7 +554,7 @@ router.post('/:pageId', passportStrategies.ensureAuthenticated, rp.middleware(2)
 
 function makeResponseObject(req, pages, page) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     var pageObj = {

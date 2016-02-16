@@ -19,7 +19,7 @@ module.exports.render = function (req, res, next, page, pages, canEdit, collecti
 
     knex.raw(query).then(function (persons) {
             var csrfToken;
-            if (req.csrfToken) {
+            if (req.csrfToken && req.session) {
                 csrfToken = req.csrfToken();
             }
             var records = members.makeHierarchicalObjectStructureFromPersonResultRecords(persons);

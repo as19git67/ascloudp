@@ -14,7 +14,7 @@ var configKeys = ["bootstrapStyle"];
 
 function prepareResponse(req, res, next) {
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     model.getPagesForUser(req.user).then(function (pages) {

@@ -7,7 +7,7 @@ var model = require('../model');
 router.get('/', function (req, res) {
     var appName = config.get('appName');
     var csrfToken;
-    if (req.csrfToken) {
+    if (req.csrfToken && req.session) {
         csrfToken = req.csrfToken();
     }
     model.getPagesForUser(req.user).then(function (pages) {

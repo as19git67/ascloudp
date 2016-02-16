@@ -65,7 +65,7 @@ function respondWithEventItemData(req, res, eventItem) {
 
         var deleted = eventItem.get('valid_end') != undefined;
         var csrfToken;
-        if (req.csrfToken) {
+        if (req.csrfToken && req.session) {
             csrfToken = req.csrfToken();
             res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
         }
@@ -96,7 +96,7 @@ module.exports.get = function (req, res) {
     if (req.query && req.query.type && req.query.type == "schema") {
         getEventItemSchema().then(function (event_schema) {
             var csrfToken;
-            if (req.csrfToken) {
+            if (req.csrfToken && req.session) {
                 csrfToken = req.csrfToken();
                 res.cookie('X-CSRF-Token', csrfToken); // for angularjs use a cookie instead a header parameter
             }

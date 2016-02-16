@@ -109,7 +109,7 @@ app.use(function (req, res, next) {
         //var c2 = config.get('cookieSecret');
         //res.clearCookie(c1);
         //res.clearCookie(c2);
-        //req.session = null;
+        req.session = null;
         res.removeHeader("Set-Cookie");
         res.removeHeader("Set-Cookie2");
     }
@@ -196,7 +196,7 @@ app.use(function (req, res, next) {
                             if (page.isSingleEntity) {
                                 new PageContent({Page_id: page.Name}).fetch().then(function (pageContent) {
                                     var csrfToken;
-                                    if (req.csrfToken) {
+                                    if (req.csrfToken && req.session) {
                                         csrfToken = req.csrfToken();
                                     }
                                     if (isPost && req.body.save) {
