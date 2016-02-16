@@ -3,7 +3,7 @@ var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
 var cookieParser = require('cookie-parser');
-var cookieSession = require('cookie-session');
+var expressSession = require('express-session');
 var bodyParser = require('body-parser');
 var csrf = require('csurf');
 var http = require('http');
@@ -57,11 +57,12 @@ var cookieSecret = config.get('cookieSecret');
 var sessionTimeout = config.get('cookieSessionTimeoutInMinutes') * 60 * 1000;
 app.use(cookieParser(cookieSecret));
 
-var sessionMW = cookieSession({
+var sessionMW = expressSession({
     name: config.get('appName'),
     secret: cookieSecret,
     rolling: true,
     resave: true,
+    saveUninitialized: false,
     maxage: sessionTimeout
 });
 
@@ -112,6 +113,7 @@ app.use(function (req, res, next) {
         req.session = null;
         res.removeHeader("Set-Cookie");
         res.removeHeader("Set-Cookie2");
+        res.setHeader("Arr-Disable-Session-Affinity", "True");  // Let Windows Azure not use a ARRAffinity cookie
     }
     next();
 });

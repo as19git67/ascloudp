@@ -21,18 +21,18 @@ block content
             a(id="#{record.article_id}")
             if record.image
                 div.media-left
-                    a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}")
+                    a(tabindex="#{tabIndex}", href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}")
                         img(src="#{record.image}?type=thumbnail")
             div.media-body
                 h4.media-heading
                     if record.title
-                        a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.title}
+                        a(tabindex="#{tabIndex}", href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") #{record.title}
                         //a(href="#{page.Name}/#{record.article_id}") #{record.title}
                     else
-                        a(href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
+                        a(tabindex="#{tabIndex}", href="#", data-toggle="modal", data-target="#modal_for_article_#{record.article_id}") Artikel: #{record.article_id}
                     if canEdit
-                        a(href="#{page.Name}/#{record.article_id}?edit")
-                            span.glyphicon.glyphicon-edit(tabindex="#{tabIndex}")
+                        a(tabindex="#{tabIndex}", href="#{page.Name}/#{record.article_id}?edit")
+                            span.glyphicon.glyphicon-edit
                 if record.notPublished
                     p.text-warning
                         strong Dieser Artikel wird von #{record.publish_start_formatted} bis #{record.publish_end_formatted} veröffentlicht
@@ -44,7 +44,7 @@ block content
                     p #{record.leadText}
                         if record.rawHtml
                             |&nbsp;
-                            a(href="#{page.Name}/#{record.article_id}") Mehr...
+                            a(tabindex="#{tabIndex}", href="#{page.Name}/#{record.article_id}") Mehr...
         div(class="modal fade", id='modal_for_article_#{record.article_id}', tabindex="-1", role="dialog", aria-labelledby="myLargeModalLabel", aria-hidden="true")
             div(class="modal-dialog modal-lg")
                 div.modal-content

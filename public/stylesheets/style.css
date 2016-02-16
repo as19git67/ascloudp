@@ -176,12 +176,16 @@ textarea.markdown-source {
     max-width: 100px;
 }
 
+h4.media-heading {
+    margin-top: 5px;
+}
+
 h4.media-heading a {
     color: inherit;
+    margin-right: 0.5em;
 }
 
 h4.media-heading span.glyphicon {
-    margin-left: 0.5em;
     font-size: smaller;
 }
 
@@ -244,7 +248,7 @@ h4.media-heading span.glyphicon:hover {
 }
 
 .media-heading a:focus {
-    outline: none;
+    /*outline: none;*/
 }
 
 h3 .social-likes,
