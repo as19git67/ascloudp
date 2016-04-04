@@ -13,6 +13,8 @@ var config = require('./config');
 var _ = require('underscore');
 var moment = require('moment');
 var md = require('markdown-it')();
+var mdAnchor = require('markdown-it-headinganchor');
+
 var passport = require('passport');
 var passportStrategies = require('./passportStrategies');
 
@@ -43,6 +45,14 @@ var apiGenericMarkdownPages = require('./routes/api/v1/genericMarkdownPage');
 var apiCommunicationData = require('./routes/api/v1/communicationData');
 
 moment.locale("de"); // todo: use language from configuration or browser setting
+
+// add mdAnchor plugin to markdown-id
+md.use(mdAnchor, {
+    anchorClass: 'markdown-it-headinganchor', // default: 'markdown-it-headinganchor'
+    addHeadingID: true,           // default: true
+    addHeadingAnchor: true       // default: true
+});
+
 var app = express();
 
 // view engine setup

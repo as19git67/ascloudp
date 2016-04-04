@@ -4,7 +4,16 @@ var config = require('../config');
 var model = require('../model');
 var moment = require('moment');
 var md = require('markdown-it')();
+var mdAnchor = require('markdown-it-headinganchor');
+
 var ArticleItem = model.models.ArticleItem;
+
+// add mdAnchor plugin to markdown-id
+md.use(mdAnchor, {
+    anchorClass: 'markdown-it-headinganchor', // default: 'markdown-it-headinganchor'
+    addHeadingID: true,           // default: true
+    addHeadingAnchor: true       // default: true
+});
 
 var appName = config.get('appName');
 
