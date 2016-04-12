@@ -199,6 +199,7 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
         };
 
         $scope.timeChanged = function (modelName) {
+            /*
             var ngModel = $scope.event[modelName];
             var val = ngModel;
             console.log("time changed to " + val);
@@ -214,6 +215,7 @@ calendarEditApp.controller('calendarEditCtrl', ['$sce', '$log', '$scope', '$cook
                     }
                 }
             }
+            */
         };
 
         // date picker event
