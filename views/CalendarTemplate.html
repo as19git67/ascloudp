@@ -73,7 +73,7 @@
                                                         </span>
                                                             <input type="text" name="event_start_time" class="form-control time-picker"
                                                                    timeformat
-                                                                   ng-model-options="{updateOn: 'blur', debounce: 200}"
+                                                                   ng-model-options="{updateOn: 'default blur', debounce: 200}"
                                                                    ng-change="timeChanged('event_start_time')"
                                                                    ng-model="event.event_start_time"
                                                                    ng-required="event_schema.event_start.required">
@@ -104,7 +104,7 @@
                                                                 </button>
                                                             </span>
                                                             <input type="text" name="event_end_time" class="form-control time-picker"
-                                                                   timeformat ng-model-options="{updateOn: 'blur', debounce: 200}"
+                                                                   timeformat ng-model-options="{updateOn: 'default blur', debounce: 200}"
                                                                    ng-change="timeChanged('event_end_time')"
                                                                    ng-model="event.event_end_time"
                                                                    ng-required="event_schema.event_end.required">
@@ -151,7 +151,7 @@
                                                             </span>
                                                             <input type="text" name="publish_start_time" class="form-control time-picker"
                                                                    timeformat
-                                                                   ng-model-options="{updateOn: 'blur', debounce: 200}"
+                                                                   ng-model-options="{updateOn: 'default blur', debounce: 200}"
                                                                    ng-change="timeChanged('publish_start_time')"
                                                                    ng-model="event.publish_start_time"
                                                                    ng-required="event_schema.publish_start.required">
@@ -183,7 +183,7 @@
                                                             </span>
                                                             <input type="text" name="publish_end_time" class="form-control time-picker"
                                                                    timeformat
-                                                                   ng-model-options="{updateOn: 'blur', debounce: 200}"
+                                                                   ng-model-options="{updateOn: 'default blur', debounce: 200}"
                                                                    ng-change="timeChanged('publish_end_time')"
                                                                    ng-model="event.publish_end_time"
                                                                    ng-required="event_schema.publish_end.required">
