@@ -1,0 +1,20 @@
+# TODOs for Articles in ascloud
+
+* disable SAVE if no changes were done
+* enable SAVE if $scope is dirty
+* Show excerpts only in list (parse # tags to get headings and list only first heading and one or two further lines of text)
+* image upload and image reference 'inserter' (helps inserting url to uploaded image: display list of images/thumbnails to select one)
+
+ * copy to clipboard button at image thumbnail
+ * create new version if file with same name as deleted is being uploaded
+ * Error message that says why upload failed
+ * error handling (cleanup)
+ * cancel upload
+ * pagination to left and right arrows
+ * pagination by carusel 
+
+* Autosave
+* View currently not published / view only published toggle in Article.jade
+* show version timeline
+* diff versions
+* back out old version

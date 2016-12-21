@@ -1,0 +1,27 @@
+{
+  "name": "ascloudp",
+  "description": "AS Cloud",
+  "main": "",
+  "authors": [
+    "Anton Schegg <as5@schegg.de>"
+  ],
+  "license": "MIT",
+  "keywords": [
+    "ascloudp"
+  ],
+  "moduleType": [
+    "globals"
+  ],
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "markdown-it": "~5.1.0"
+  }
+}
