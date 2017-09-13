@@ -22,6 +22,7 @@
     "tests"
   ],
   "dependencies": {
-    "markdown-it": "~5.1.0"
+    "markdown-it": "~5.1.0",
+    "medium-editor": "^5.23.2"
   }
 }
