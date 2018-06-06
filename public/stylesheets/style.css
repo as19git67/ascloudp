@@ -250,3 +250,8 @@ h4.media-heading span.glyphicon:hover {
 .media-heading a:focus {
     /*outline: none;*/
 }
+
+h3 .social-likes,
+.media-heading .social-likes {
+    margin-left: 1em;
+}
