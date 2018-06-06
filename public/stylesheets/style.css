@@ -28,11 +28,11 @@ body > .container-fluid > .row.page-content-row {
     padding-top: 0.5em;
 }
 
-.article-edit-app .row-use-remaining-space > div {
+.row-use-remaining-space > div {
     height: 100%;
 }
 
-.article-edit-app .row-use-remaining-space > div > .form-group {
+.row-use-remaining-space > div > .form-group {
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -40,19 +40,19 @@ body > .container-fluid > .row.page-content-row {
     padding-bottom: 15px;
 }
 
-.article-edit-app .row-use-remaining-space > div > .form-group > .markdown-panel {
+.row-use-remaining-space > div > .form-group > .markdown-panel {
     flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     border: 1px solid #b0b0b0;
 }
 
-.article-edit-app .row-use-remaining-space > div > .form-group > .markdown-panel > .markdown-source {
+.row-use-remaining-space > div > .form-group > .markdown-panel > .markdown-source {
     flex: 1 1 auto;
     overflow-y: scroll;
 }
 
-.article-edit-app .row-use-remaining-space > div > .form-group > .markdown-panel-footer {
+.row-use-remaining-space > div > .form-group > .markdown-panel-footer {
     flex: 0 0 auto;
     font-size: smaller;
 }

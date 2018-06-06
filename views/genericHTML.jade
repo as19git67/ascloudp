@@ -3,10 +3,6 @@ block content
     if error
         p.text-danger #{error}
     if canEdit
-            a(href="#{Page_id}/?edit")
-                span.glyphicon.glyphicon-edit
-
-    if canEdit
         script(type='text/javascript').
             var isEdit = false;
 
