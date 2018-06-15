@@ -123,7 +123,7 @@ app.use(function (req, res, next) {
         req.session = null;
         res.removeHeader("Set-Cookie");
         res.removeHeader("Set-Cookie2");
-        res.setHeader("Arr-Disable-Session-Affinity", "true");  // Let Windows Azure not use a ARRAffinity cookie
+      req.setHeader("Arr-Disable-Session-Affinity", "true");  // Let Windows Azure not use a ARRAffinity cookie
     }
     next();
 });
